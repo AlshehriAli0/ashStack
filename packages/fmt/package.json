@@ -1,0 +1,21 @@
+{
+  "name": "@ashstack/fmt",
+  "version": "0.0.0",
+  "description": "ashStack shared oxfmt configuration. Consume from oxfmt.config.mts.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Ali Alshehri",
+  "exports": {
+    ".": "./index.js"
+  },
+  "files": [
+    "index.js",
+    "index.d.ts"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "oxfmt": ">=0.63.0"
+  }
+}

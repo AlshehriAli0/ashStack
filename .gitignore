@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.tgz
+.DS_Store
+codedb.snapshot
+
+# agent working docs — local only
+CONTEXT.md
+docs/

@@ -1,0 +1,9 @@
+{
+  "name": "smoke",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@ashstack/fmt": "workspace:*",
+    "@ashstack/lint": "workspace:*"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "name": "@ashstack/lint",
+  "version": "0.0.0",
+  "description": "ashStack shared oxlint configuration and custom rules. Entries: core, react, react-native. Consume from oxlint.config.mts.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Ali Alshehri",
+  "exports": {
+    ".": "./index.js",
+    "./core": "./core.js",
+    "./react": "./react.js",
+    "./react-native": "./react-native.js",
+    "./plugins/*": "./plugins/*.js"
+  },
+  "files": [
+    "index.js",
+    "core.js",
+    "react.js",
+    "react-native.js",
+    "lib",
+    "plugins",
+    "*.d.ts"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "eslint-plugin-react-you-might-not-need-an-effect": "^1.0.1"
+  },
+  "peerDependencies": {
+    "oxlint": ">=1.79.0",
+    "oxlint-tsgolint": ">=7.0.0"
+  },
+  "peerDependenciesMeta": {
+    "oxlint-tsgolint": {
+      "optional": true
+    }
+  }
+}
