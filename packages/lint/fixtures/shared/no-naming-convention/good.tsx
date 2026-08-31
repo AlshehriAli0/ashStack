@@ -3,6 +3,7 @@ import { View } from "react-native";
 export const camelVariable = 1;
 export const CONSTANT_VARIABLE = 2;
 export const unstable_settings = { initialRouteName: "index" };
+export const settings$ = { theme$: "dark" };
 
 export const styles = {
   camelCase: 1,

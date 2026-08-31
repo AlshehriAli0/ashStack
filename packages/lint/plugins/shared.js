@@ -571,17 +571,18 @@ const ANY_CASE = ["camelCase", "snake_case", "CONSTANT_CASE", "PascalCase"];
 const CONVENTIONS = {
   objectLiteralMember: {
     match:
-      /^(?:enableFullScreenImage_legacy|experimental_backgroundImage|unstable_conditionNames|(?:[0-9.]+)|[$_]*([A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)_*)$/,
+      /^(?:enableFullScreenImage_legacy|experimental_backgroundImage|unstable_conditionNames|(?:[0-9.]+)|[$_]*([A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)_*\$?)$/,
     formats: ANY_CASE,
     label: "object property",
   },
   typeMember: {
-    match: /^(?:[$_]*([A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)_*)$/,
+    match: /^(?:[$_]*([A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)_*\$?)$/,
     formats: ANY_CASE,
     label: "type member",
   },
   variable: {
-    match: /^(?:unstable_settings|[$_]*([A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)_*)$/,
+    // trailing $ is the Legend State observable suffix — state/naming REQUIRES it
+    match: /^(?:unstable_settings|[$_]*([A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)_*\$?)$/,
     formats: ["camelCase", "CONSTANT_CASE", "PascalCase"],
     label: "variable",
   },
