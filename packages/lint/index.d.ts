@@ -19,6 +19,12 @@ export interface ReactOptions extends CoreOptions {
   i18n?: boolean;
 }
 
+/**
+ * Only rule MODULES are toggleable here. Finer-grained groups (Reanimated,
+ * Turbo Image, Skia, keyboard, gesture-handler/router/font/crypto import bans,
+ * React Compiler) are auto-detect only — disagree with one of their rules?
+ * Turn that rule off by name in your `rules` block.
+ */
 export interface ReactNativeOptions extends ReactOptions {
   /** unistyles/ rules + StyleSheet/Dimensions/SafeArea import bans — `react-native-unistyles` */
   unistyles?: boolean;
@@ -26,24 +32,6 @@ export interface ReactNativeOptions extends ReactOptions {
   legendList?: boolean;
   /** legend-state/ rules + use$/useSelector ban — `@legendapp/state` */
   legendState?: boolean;
-  /** Reanimated/worklets rn/ rules + Animated/runOnJS bans — `react-native-reanimated` */
-  reanimated?: boolean;
-  /** rn/require-turbo-image-* — `react-native-turbo-image` */
-  turboImage?: boolean;
-  /** rn/skia-performance — `@shopify/react-native-skia` */
-  skia?: boolean;
-  /** rn/keyboard-avoiding-view-source — `react-native-keyboard-controller` */
-  keyboard?: boolean;
-  /** RN Pressable/Touchable* ban — `react-native-gesture-handler` */
-  gestureHandler?: boolean;
-  /** react-navigation navigator bans — `expo-router` */
-  expoRouter?: boolean;
-  /** runtime font-loading ban — `expo-font` */
-  expoFont?: boolean;
-  /** crypto-js ban — `react-native-quick-crypto` */
-  quickCrypto?: boolean;
-  /** rn/no-manual-memo (only correct with the compiler) — `babel-plugin-react-compiler` / `react-compiler-runtime` / `react-compiler-marker` */
-  reactCompiler?: boolean;
 }
 
 /**
@@ -75,7 +63,7 @@ export declare const react: (options?: ReactOptions) => OxlintConfig;
  * @example
  * ```ts
  * export default defineConfig({
- *   extends: [reactNative({ skia: false })],
+ *   extends: [reactNative()],
  *   rules: { "unistyles/no-margin": "off" },
  * });
  * ```

@@ -41,7 +41,7 @@ Each entry is a function returning a flat, plain config object — `react()` alr
 
 ## Library rule groups (auto-detected)
 
-Library-specific rules ship only when you actually depend on that library — detected from your package.json (walking up, so monorepos work). Pass a boolean to force either way: `reactNative({ skia: false, i18n: true })`.
+Library-specific rules ship only when you actually depend on that library — detected from your package.json (walking up, so monorepos work). Rule **modules** (`zod`, `query`, `zustand`, `i18n`, `unistyles`, `legendList`, `legendState`) can also be forced with a boolean: `reactNative({ unistyles: false, i18n: true })`. Everything finer-grained (Reanimated/Turbo Image/Skia/keyboard rule subsets, the import bans) is auto-detect only — to disagree with one rule, turn that rule off by name.
 
 | Group / rule prefix                                | Enabled when you depend on                                   |
 | -------------------------------------------------- | ------------------------------------------------------------ |

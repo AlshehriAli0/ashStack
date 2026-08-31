@@ -163,18 +163,21 @@ const restrictedImports = ({
  */
 const reactNative = (options = {}) => {
   const groups = {
+    // modules — the only top-level toggles
     unistyles: detect(options.unistyles, ["react-native-unistyles"]),
     legendList: detect(options.legendList, ["@legendapp/list"]),
     legendState: detect(options.legendState, ["@legendapp/state"]),
-    reanimated: detect(options.reanimated, ["react-native-reanimated"]),
-    turboImage: detect(options.turboImage, ["react-native-turbo-image"]),
-    skia: detect(options.skia, ["@shopify/react-native-skia"]),
-    keyboard: detect(options.keyboard, ["react-native-keyboard-controller"]),
-    gestureHandler: detect(options.gestureHandler, ["react-native-gesture-handler"]),
-    expoRouter: detect(options.expoRouter, ["expo-router"]),
-    expoFont: detect(options.expoFont, ["expo-font"]),
-    quickCrypto: detect(options.quickCrypto, ["react-native-quick-crypto"]),
-    reactCompiler: detect(options.reactCompiler, [
+    // auto-detect only: these gate rule subsets / import bans, not modules.
+    // Disagree with one? Turn the rule off by name in your `rules` block.
+    reanimated: detect(undefined, ["react-native-reanimated"]),
+    turboImage: detect(undefined, ["react-native-turbo-image"]),
+    skia: detect(undefined, ["@shopify/react-native-skia"]),
+    keyboard: detect(undefined, ["react-native-keyboard-controller"]),
+    gestureHandler: detect(undefined, ["react-native-gesture-handler"]),
+    expoRouter: detect(undefined, ["expo-router"]),
+    expoFont: detect(undefined, ["expo-font"]),
+    quickCrypto: detect(undefined, ["react-native-quick-crypto"]),
+    reactCompiler: detect(undefined, [
       "babel-plugin-react-compiler",
       "react-compiler-runtime",
       "react-compiler-marker",
