@@ -7,3 +7,6 @@ codedb.snapshot
 # agent working docs — local only
 CONTEXT.md
 docs/
+
+# build output
+packages/*/dist/

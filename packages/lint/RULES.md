@@ -2,35 +2,34 @@
 
 # @ashstack/lint — custom rules
 
-Every custom rule this package ships, generated from the rules' own metadata and fixtures.
+Every custom rule this package ships, generated from the modules' own metadata and fixtures.
 Built-in oxlint rules (eslint/, typescript/, react/, …) are documented at https://oxc.rs/docs/guide/usage/linter/rules.html.
 
 Disable any rule by its full id in your `rules` block, e.g. `"@ashstack/unistyles/no-margin": "off"`.
 
-- [`@ashstack/core`](#ashstackcore) — 7 rules
+- [`@ashstack/core`](#ashstackcore) — 6 rules
 - [`@ashstack/zod`](#ashstackzod) — 1 rule
 - [`@ashstack/query`](#ashstackquery) — 5 rules
 - [`@ashstack/zustand`](#ashstackzustand) — 1 rule
 - [`@ashstack/i18n`](#ashstacki18n) — 3 rules
-- [`@ashstack/react-native`](#ashstackreactnative) — 10 rules
+- [`@ashstack/react-native`](#ashstackreactnative) — 11 rules
 - [`@ashstack/unistyles`](#ashstackunistyles) — 12 rules
 - [`@ashstack/legend-list`](#ashstacklegendlist) — 11 rules
 - [`@ashstack/legend-state`](#ashstacklegendstate) — 8 rules
 - [`@ashstack/reanimated`](#ashstackreanimated) — 11 rules
 - [`@ashstack/turbo-image`](#ashstackturboimage) — 2 rules
-- [`@ashstack/skia`](#ashstackskia) — 1 rule
+- [`@ashstack/skia`](#ashstackskia) — 2 rules
 - [`@ashstack/keyboard`](#ashstackkeyboard) — 1 rule
 
 ## `@ashstack/core`
 
-_always on via `core()` (except the opt-in rules noted below)._
+_always on via `core()` and every entry above it (opt-in rules noted per rule)._
 
 ### `@ashstack/core/no-comments`
 
-Disallow explanatory comments; prose about unclear code is a refactor that was skipped, so rename, extract and simplify until only a single `// what: <fact>` line is left.
+Reports every comment that is neither a `// what: <fact>` line nor a tooling directive.
 
 > Off by default — opt in per project.
-
 
 **Fails**
 
@@ -51,8 +50,7 @@ export const SettingsPanel = () => <View />;
 
 ### `@ashstack/core/comment-escape-hatch`
 
-Enforce the shape and the per-file budget of `// what:` escape-hatch comments — one short line each, never blocks, never stacked — because every one past the budget is a refactor that was skipped.
-
+Checks each `// what:` comment for the allowed one-line shape and length, and reports the ones past the per-file budget.
 
 **Options**
 
@@ -98,36 +96,9 @@ export const first = 1;
 export const Panel = () => <View />;
 ```
 
-### `@ashstack/core/no-dynamic-import`
-
-Disallow dynamic `import()` outside a React.lazy/dynamic wrapper; Metro inlines it into the same bundle, so it buys no laziness and only hides the module from the typechecker.
-
-
-**Fails**
-
-```tsx
-import { View } from "react-native";
-
-export const loadHelpers = () => import("./helpers");
-
-export const Panel = () => <View />;
-```
-
-**Passes**
-
-```tsx
-import { lazy } from "react";
-import { View } from "react-native";
-
-export const Details = lazy(() => import("./details"));
-
-export const Panel = () => <View />;
-```
-
 ### `@ashstack/core/no-naming-convention`
 
-Enforce the allowed name shapes and casing for variables, object properties, type members and enum members, so a name never has to be read twice to tell what kind of thing it is.
-
+Flags a variable, object property, type member or enum member whose name misses the casings allowed for its kind.
 
 **Fails**
 
@@ -168,10 +139,9 @@ export const Panel = () => <View />;
 
 ### `@ashstack/core/use-design-system`
 
-Disallow importing a react-native primitive the project's own design system already wraps; the wrapper is where the theme colours, the typography tokens and the font-scaling cap live.
+Bans a react-native import whose name matches a component file in the project's own design-system directory.
 
 > Off by default — opt in per project.
-
 
 **Options**
 
@@ -220,10 +190,9 @@ export const Panel = () => (
 
 ### `@ashstack/core/components-tsx-only`
 
-Require every file in components/ to render JSX or be a barrel; helpers, hooks and data access belong in utils, hooks or api instead.
+Reports a file that renders no JSX and is not a re-export barrel. Scope it to `components/`.
 
 > Off by default — opt in per project.
-
 
 **Fails**
 
@@ -241,8 +210,7 @@ export const Panel = () => <View />;
 
 ### `@ashstack/core/hoist-intl`
 
-Disallow constructing an `Intl` formatter inside a function that renders JSX; the constructor is expensive, so hoist it to module scope or wrap it in useMemo keyed on the locale.
-
+Fires on `new Intl.*` inside a function that renders JSX, unless the call already sits in `useMemo` or `useCallback`.
 
 **Fails**
 
@@ -267,12 +235,11 @@ export const Price = () => <View accessibilityValue={{ text: formatter.format(10
 
 ## `@ashstack/zod`
 
-_auto-enabled by `core()` when `zod` is a dependency._
+_auto-enabled when `zod` is a dependency._
 
 ### `@ashstack/zod/prefer-enum`
 
-Require `z.enum()` in place of the deprecated `z.nativeEnum()` and of a `z.union()` of string literals, so a closed set reports one issue and its options stay reusable.
-
+Matches `z.nativeEnum()` calls and any `z.union()` whose members are all `z.literal()` strings.
 
 **Fails**
 
@@ -318,8 +285,7 @@ _auto-enabled by `react()` when `@tanstack/react-query` is a dependency._
 
 ### `@ashstack/query/no-inline-keys`
 
-Disallow inline query-key arrays in query hooks, query-client methods and get/setQueryData; an inline key bypasses the type-safe `*.keys.ts` factory nothing else can invalidate against.
-
+Fires when a query key is written as an array literal at the call site instead of coming from a keys factory.
 
 **Fails**
 
@@ -352,8 +318,7 @@ export const PostList = () => {
 
 ### `@ashstack/query/no-deprecated-filters`
 
-Disallow the positional `(queryKey)` argument that TanStack Query v5 removed from invalidate/remove/refetch/cancel/resetQueries; pass a `{ queryKey }` filter object instead.
-
+Catches the positional key argument that TanStack Query v5 removed from `invalidateQueries` and its sibling methods. Suggests the filter-object form.
 
 **Fails**
 
@@ -385,8 +350,7 @@ export const RefreshPanel = () => {
 
 ### `@ashstack/query/require-destructured-hooks`
 
-Require destructuring the result of a hook imported from an `@/api/*.queries` or `@/api/*.mutations` module, so the read surface is explicit at the call site and refactors stay safe.
-
+Reports a hook imported from an `@/api/*.queries` or `@/api/*.mutations` module whose result is bound to one name instead of destructured.
 
 **Fails**
 
@@ -416,8 +380,7 @@ export const PostList = () => {
 
 ### `@ashstack/query/no-fetch-in-query-fn`
 
-Disallow a bare `fetch(` inside a `queryFn` or `mutationFn`; it skips the shared client, so it sends no auth header, applies no timeout, retries nothing and throws a raw Response.
-
+Looks inside every `queryFn` and `mutationFn` for a bare `fetch(`.
 
 **Fails**
 
@@ -453,8 +416,7 @@ export const PostList = () => {
 
 ### `@ashstack/query/next-page-param-undefined`
 
-Disallow returning `null` from `getNextPageParam`; null is a valid page param, so it reads as a real next cursor and the list keeps fetching forever — return undefined to end pagination.
-
+Fires when the body of a `getNextPageParam` contains `return null`.
 
 **Fails**
 
@@ -508,8 +470,7 @@ _auto-enabled by `react()` when `zustand` is a dependency._
 
 ### `@ashstack/zustand/require-selector`
 
-Require a selector when calling a Zustand store hook; calling it bare or with `undefined` subscribes to the whole store, so the component re-renders for every store change.
-
+Reports a store hook called with no arguments, or with `undefined` where the selector belongs.
 
 **Fails**
 
@@ -539,12 +500,11 @@ export const Panel = () => {
 
 ## `@ashstack/i18n`
 
-_auto-enabled by `react()` when an i18n library is a dependency._
+_auto-enabled by `react()` when an i18n library (i18next, lingui, react-intl, use-intl, next-intl, expo-localization) is a dependency._
 
 ### `@ashstack/i18n/no-bare-text`
 
-Disallow untranslated literal text as the only child of a JSX element; wrap it in t() or <Trans> and add the key to the locale files so every locale resolves.
-
+Fires when a JSX element carries no attributes and its single child is plain literal text.
 
 **Fails**
 
@@ -569,8 +529,7 @@ export const Greeting = () => {
 
 ### `@ashstack/i18n/no-bare-attrs`
 
-Disallow untranslated string literals in user-visible JSX attributes such as placeholder, accessibilityLabel, accessibilityHint and title; wrap the value in t().
-
+Checks a configurable list of user-visible JSX attributes for a plain string literal value. It defaults to placeholder, accessibilityLabel, accessibilityHint and title.
 
 **Options**
 
@@ -613,8 +572,7 @@ export const NameField = () => {
 
 ### `@ashstack/i18n/no-bare-toast`
 
-Disallow a bare string literal as the only argument to a `toast.*` call; wrap it in t() so the message resolves in every locale.
-
+Matches a `toast.*` call whose only argument is a string literal.
 
 **Fails**
 
@@ -646,8 +604,7 @@ _always on via `reactNative()`._
 
 ### `@ashstack/react-native/no-keyboard-will-events`
 
-Disallow the iOS-only `keyboardWill*` event names; on Android the listener is registered and never fires, so whatever it drives silently does nothing on half the devices.
-
+Bans the `keyboardWill*` event names. They are iOS-only, so on Android the listener registers and never fires.
 
 **Fails**
 
@@ -675,8 +632,7 @@ export function subscribeGood() {
 
 ### `@ashstack/react-native/no-scroll-position-state`
 
-Disallow calling a React state setter from a scroll handler prop; scroll fires every frame, so the whole screen re-renders every frame.
-
+Bans a React state setter inside a scroll handler prop. Scroll fires every frame, and so would the re-render.
 
 **Fails**
 
@@ -706,8 +662,7 @@ export function GoodScroll() {
 
 ### `@ashstack/react-native/no-conditional-style-array`
 
-Disallow conditional or logical entries inside a JSX `style` array; an entry that evaluates falsy leaves a hole that shifts the array indices and breaks the Unistyles C++ proxy.
-
+Bans conditional and logical entries inside a JSX `style` array. A falsy entry leaves a hole that breaks the Unistyles C++ proxy.
 
 **Fails**
 
@@ -739,8 +694,7 @@ const styles = StyleSheet.create({
 
 ### `@ashstack/react-native/no-leaked-render`
 
-Disallow guarding JSX with a `&&` on a `.length` expression; the falsy left operand leaks into the output, and a bare `0` crashes React Native with "Text strings must be rendered within a <Text> component".
-
+Bans a `&&` guard on a `.length` expression in JSX. The falsy left operand leaks into the output, and a bare `0` crashes React Native with "Text strings must be rendered within a <Text> component".
 
 **Fails**
 
@@ -764,8 +718,7 @@ export function GoodLeakedRender({ items }: { items: string[] }) {
 
 ### `@ashstack/react-native/no-rn-image-network-source`
 
-Disallow a react-native `<Image>` with a network `{ uri }` source; it has no disk cache and no decode sizing, so it re-downloads on every cold start — use TurboImage instead.
-
+Bans a react-native `<Image>` with a network `{ uri }` source. It has no disk cache and no decode sizing, so the image re-downloads at full size on every cold start.
 
 **Fails**
 
@@ -796,8 +749,7 @@ export function GoodNetworkImage({ uri }: { uri: string }) {
 
 ### `@ashstack/react-native/no-redundant-view-nesting`
 
-Disallow a View or Animated.View that only wraps an identical view when neither carries anything but a style; every extra host view is a real node in the native tree and costs layout and memory.
-
+Bans a View or Animated.View that wraps an identical view when neither carries anything but a style. Every extra host view is a real node in the native tree.
 
 **Fails**
 
@@ -835,8 +787,7 @@ const styles = StyleSheet.create({ merged: {} });
 
 ### `@ashstack/react-native/no-rn-namespace-import`
 
-Disallow namespace-importing react-native or re-exporting its `Platform`; both defeat Metro's platform shaking, so dead `Platform.OS` branches ship in both bundles.
-
+Bans a namespace import of react-native and a re-export of its `Platform`. Both defeat Metro's platform shaking, so dead `Platform.OS` branches ship in both bundles.
 
 **Fails**
 
@@ -856,8 +807,7 @@ export const GoodNamespace = () => <View />;
 
 ### `@ashstack/react-native/no-unlabeled-icon-pressable`
 
-Require an accessible name on an icon-only touchable or an icon-only Expo UI `<Button>`; with no label, hint or visible text the control is unreachable to a screen reader.
-
+Requires an accessible name on an icon-only touchable or an icon-only Expo UI `<Button>`. Without a label, hint or visible text, a screen reader cannot reach the control.
 
 **Fails**
 
@@ -891,8 +841,7 @@ export function GoodIconButton({ onPress }: { onPress: () => void }) {
 
 ### `@ashstack/react-native/hoist-stateless-function`
 
-Require hoisting a non-component function that reads nothing from the component around it to module scope, where it is created once, keeps a stable identity and can be tested without rendering.
-
+Requires module scope for a non-component function that reads nothing from the component around it. Out there it is created once, keeps a stable identity, and can be tested without rendering.
 
 **Fails**
 
@@ -920,10 +869,9 @@ export function GoodHoist({ count }: { count: number }) {
 
 ### `@ashstack/react-native/no-manual-memo`
 
-Disallow `useMemo`, `useCallback` and `memo` unless a `why:` comment on the line above states the case the React Compiler cannot see — something rendered per list row, or a cost that was measured.
+Bans `useMemo`, `useCallback` and `memo` unless a `why:` comment on the line above states the case the React Compiler cannot see: something rendered per list row, or a cost that was measured.
 
-> Enabled only when a React Compiler package is a dependency.
-
+> Enabled only when one of `babel-plugin-react-compiler`, `react-compiler-runtime`, `react-compiler-marker` is a dependency.
 
 **Fails**
 
@@ -946,14 +894,38 @@ export function useGoodTotal(items: number[]) {
 }
 ```
 
+### `@ashstack/react-native/no-dynamic-import`
+
+Bans dynamic `import()` outside a `React.lazy` or `dynamic` wrapper. Metro inlines it into the same bundle, so nothing is deferred and the module is hidden from the typechecker.
+
+**Fails**
+
+```tsx
+import { View } from "react-native";
+
+export const loadHelpers = () => import("./helpers");
+
+export const Panel = () => <View />;
+```
+
+**Passes**
+
+```tsx
+import { lazy } from "react";
+import { View } from "react-native";
+
+export const Details = lazy(() => import("./details"));
+
+export const Panel = () => <View />;
+```
+
 ## `@ashstack/unistyles`
 
 _auto-enabled when `react-native-unistyles` is a dependency._
 
 ### `@ashstack/unistyles/animated-theme`
 
-Disallow reading the `useUnistyles()` theme inside a Reanimated worklet hook; use `useAnimatedTheme()` and read its shared value so theme changes reach the UI thread.
-
+A Reanimated worklet hook cannot see `useUnistyles()` theme changes on the UI thread. Read the shared value from `useAnimatedTheme()` there instead.
 
 **Fails**
 
@@ -985,8 +957,7 @@ export function Fade() {
 
 ### `@ashstack/unistyles/content-container`
 
-Disallow passing a theme- or `rt`-dependent stylesheet style as `contentContainerStyle` to a raw component; it never subscribes to those updates unless the component is wrapped with withUnistyles.
-
+A raw component never subscribes its `contentContainerStyle` to theme or `rt` updates. Wrap the component with `withUnistyles` when the style depends on either.
 
 **Fails**
 
@@ -1022,8 +993,7 @@ const styles = StyleSheet.create((theme, rt) => ({
 
 ### `@ashstack/unistyles/in-sheet`
 
-Enforce reactive sources inside StyleSheet.create — `rt` and the theme rather than Dimensions, PixelRatio, Appearance, I18nManager, StatusBar, UnistylesRuntime or the theme's screen snapshot — plus RTL-safe logical spacing, boxShadow over legacy shadow props, borderCurve beside borderRadius, and no redundant `as const`, so Unistyles can recalculate the style natively.
-
+Inside `StyleSheet.create`, require `rt` and theme values rather than Dimensions, PixelRatio, Appearance, I18nManager, StatusBar or `UnistylesRuntime`. It also covers logical spacing, `boxShadow`, `borderCurve` and a redundant `as const`.
 
 **Fails**
 
@@ -1065,8 +1035,7 @@ export const styles = StyleSheet.create((theme, rt) => ({
 
 ### `@ashstack/unistyles/insets`
 
-Disallow feeding `useSafeAreaInsets()` values into a dynamic style function or an inline JSX style object; read safe-area values from `rt.insets` inside StyleSheet.create.
-
+Disallow passing `useSafeAreaInsets()` values into a dynamic style function or an inline JSX style object. Read `rt.insets` inside `StyleSheet.create` instead.
 
 **Fails**
 
@@ -1103,8 +1072,7 @@ const styles = StyleSheet.create((theme, rt) => ({
 
 ### `@ashstack/unistyles/no-hardcoded-color`
 
-Disallow hardcoded hex or CSS-function colors inside StyleSheet.create; a raw value bypasses dark mode and never shifts with the theme.
-
+Disallow hex and CSS-function colors inside `StyleSheet.create`. A raw color skips dark mode and never changes with the theme.
 
 **Fails**
 
@@ -1130,8 +1098,7 @@ export const styles = StyleSheet.create(theme => ({
 
 ### `@ashstack/unistyles/no-hardcoded-spacing`
 
-Disallow raw numbers for spacing, radius and type properties inside StyleSheet.create; theme.spacing / theme.sizing.scale is what keeps the rhythm consistent and makes changing it one edit.
-
+Require `theme.spacing` or `theme.sizing.scale` for spacing, radius and type values inside `StyleSheet.create`, instead of raw numbers.
 
 **Fails**
 
@@ -1171,8 +1138,7 @@ export const styles = StyleSheet.create(theme => ({
 
 ### `@ashstack/unistyles/no-margin`
 
-Disallow non-negative margin inside StyleSheet.create; margin escapes the child's own box, so it leaves stray space when a first or last child is removed — use gap on the parent or padding here.
-
+Disallow non-negative `margin` inside `StyleSheet.create`; `gap` on the parent or `padding` on the element spaces children without leaving a hole when one is removed.
 
 **Fails**
 
@@ -1200,8 +1166,7 @@ export const styles = StyleSheet.create(theme => ({
 
 ### `@ashstack/unistyles/no-style-spread`
 
-Disallow spreading a stylesheet style; the spread reads the object once and breaks the Unistyles C++ proxy, so the style silently stops reacting to the theme — compose with an array instead.
-
+Disallow spreading a stylesheet style into another object. The spread reads through the Unistyles C++ proxy once, so the result stops reacting to the theme.
 
 **Fails**
 
@@ -1236,8 +1201,7 @@ const styles = StyleSheet.create(theme => ({
 
 ### `@ashstack/unistyles/no-unused-styles`
 
-Disallow stylesheet keys nothing in the file reads; an unused style is dead weight the next reader has to rule out and it keeps a token alive that nothing renders.
-
+Report stylesheet keys that nothing in the file reads. A computed key, a computed read, or a sheet that leaves the module skips the whole file.
 
 **Fails**
 
@@ -1272,8 +1236,7 @@ const styles = StyleSheet.create(theme => ({
 
 ### `@ashstack/unistyles/rtl-style-call`
 
-Disallow passing `I18nManager.isRTL` from JSX into a dynamic stylesheet style function; read `rt.rtl` inside the style so Unistyles tracks the dependency natively.
-
+Disallow passing `I18nManager.isRTL` from JSX into a dynamic style function. Unistyles tracks the dependency itself once the style reads `rt.rtl`.
 
 **Fails**
 
@@ -1307,8 +1270,7 @@ const styles = StyleSheet.create((theme, rt) => ({
 
 ### `@ashstack/unistyles/theme-screen-component`
 
-Disallow reading `theme.screen.*` inside a component; it is a module-initialization snapshot, so read current values from `useUnistyles().rt.screen` or useWindowDimensions.
-
+`theme.screen.*` is a snapshot taken at module initialization, so a component that reads it never sees the current size. `useUnistyles().rt.screen` and `useWindowDimensions` do.
 
 **Fails**
 
@@ -1338,8 +1300,7 @@ export function Panel() {
 
 ### `@ashstack/unistyles/theme-style-attr`
 
-Disallow reading the Unistyles theme in a JSX `style` prop when the component already destructures it from `useUnistyles()`; resolve theme-dependent values inside StyleSheet.create instead.
-
+Theme-dependent values belong in `StyleSheet.create`, not in a JSX `style` prop that reads a `useUnistyles()` theme.
 
 **Fails**
 
@@ -1375,8 +1336,7 @@ _auto-enabled when `@legendapp/list` is a dependency._
 
 ### `@ashstack/legend-list/required-props`
 
-Require `keyExtractor` and an explicit `recycleItems` on a Legend List; without them the list keys rows by index and leaves the decision that most of its native speed depends on unstated.
-
+Require `keyExtractor` and an explicit `recycleItems` on a Legend List. Without a key extractor the list keys its rows by index.
 
 **Fails**
 
@@ -1413,8 +1373,7 @@ export const NoRecycle = () => (
 
 ### `@ashstack/legend-list/no-index-key-extractor`
 
-Disallow a `keyExtractor` that uses its index parameter; Legend List hangs cached sizes and recycled row state off the key, so one prepend re-points every measurement at the wrong item.
-
+Disallow a `keyExtractor` that uses its index parameter. Cached sizes and recycled row state hang off the key, so a prepend points every measurement at the wrong item.
 
 **Fails**
 
@@ -1451,8 +1410,7 @@ export const Good = () => (
 
 ### `@ashstack/legend-list/no-remount-key`
 
-Disallow `key` on a Legend List; a changing key remounts it and throws away every measurement, cached size and scroll position — pass `dataKey` instead.
-
+Disallow `key` on a Legend List, which remounts on any key change and loses its measurements and scroll position. Pass `dataKey` instead.
 
 **Fails**
 
@@ -1488,8 +1446,7 @@ export const Good = () => (
 
 ### `@ashstack/legend-list/no-inline-data`
 
-Disallow building a Legend List's `data` inline; a fresh array reference each render makes the list re-diff, re-key and invalidate everything it had cached.
-
+Disallow building a Legend List's `data` inline. Each render produces a new array reference, and the list re-diffs, re-keys and drops what it had cached.
 
 **Fails**
 
@@ -1529,8 +1486,7 @@ export const Good = () => {
 
 ### `@ashstack/legend-list/no-inline-extra-data`
 
-Disallow an inline object or array literal as `extraData`; its identity changes every render, so every mounted row re-evaluates whenever the parent renders.
-
+An inline object or array as `extraData` takes a new identity on every parent render, and every mounted row re-evaluates with it.
 
 **Fails**
 
@@ -1571,8 +1527,7 @@ export const Good = () => (
 
 ### `@ashstack/legend-list/no-inline-render-item-props`
 
-Disallow inline object or array literals on props nested inside `renderItem`; the new reference each render means a row can never be skipped, so typing anywhere re-renders every visible row.
-
+Disallow inline object and array literals on props nested inside `renderItem`. A row whose props take a new identity every render can never be skipped.
 
 **Fails**
 
@@ -1614,8 +1569,7 @@ export const Good = () => (
 
 ### `@ashstack/legend-list/no-mixed-children`
 
-Disallow passing both `data` and real children to a Legend List; the combination is unsupported and fails silently, with no guarantee about which of the two is ignored.
-
+Disallow passing both `data` and real children to a Legend List. The combination is unsupported and one of the two is dropped without a warning.
 
 **Fails**
 
@@ -1661,8 +1615,7 @@ export const ChildrenMode = () => (
 
 ### `@ashstack/legend-list/no-flex-in-content-container`
 
-Disallow `flex` in a Legend List's `contentContainerStyle`; it sizes the scrolled content to the viewport, so the list measures as zero height and renders a blank screen with no error.
-
+Disallow `flex` in a Legend List's `contentContainerStyle`, where it sizes the scrolled content to the viewport and the list ends up measuring zero height.
 
 **Fails**
 
@@ -1720,8 +1673,7 @@ const styles = StyleSheet.create({
 
 ### `@ashstack/legend-list/typed-items-need-item-type`
 
-Require `getItemType` when a row branches on `item.type`; one recycling pool for several layouts rebuilds most of the tree on reuse and collapses the per-type size estimates into one average.
-
+Require `getItemType` when a row branches on `item.type`. Without it every layout shares one recycling pool and one size average.
 
 **Fails**
 
@@ -1765,8 +1717,7 @@ export const Good = () => (
 
 ### `@ashstack/legend-list/no-scrollview-map`
 
-Disallow rendering a mapped collection as ScrollView children; a ScrollView mounts every child up front, so the memory and the mount time are paid whether or not a row is on screen.
-
+A `ScrollView` mounts every child up front, so a mapped collection does not belong in its children.
 
 **Fails**
 
@@ -1804,8 +1755,7 @@ export const Good = () => (
 
 ### `@ashstack/legend-list/no-unsupported-props`
 
-Disallow FlashList/FlatList props that do not exist on Legend List v3; they are silently ignored rather than rejected, so the feature simply reads as broken.
-
+Disallow FlashList and FlatList props that Legend List v3 does not have. It ignores them rather than rejecting them, so the feature looks broken.
 
 **Fails**
 
@@ -1850,8 +1800,7 @@ _auto-enabled when `@legendapp/state` is a dependency._
 
 ### `@ashstack/legend-state/no-assignment`
 
-Disallow assigning to or incrementing an observable; the write is a silent no-op, so use `.set(...)` or `.assign({...})` instead.
-
+Write an observable with `.set(...)` or `.assign({...})`. Assigning or incrementing it with an operator is a silent no-op.
 
 **Fails**
 
@@ -1887,8 +1836,7 @@ export const bump = () => {
 
 ### `@ashstack/legend-state/naming`
 
-Require a trailing `$` on a variable initialized from `observable()` or `useObservable()`; the suffix is how a reader tells an observable from a plain value, and every other rule here keys off it.
-
+A variable initialized from `observable()` or `useObservable()` needs a trailing `$`. The other rules in this module key off that suffix.
 
 **Fails**
 
@@ -1908,8 +1856,7 @@ export const counter$ = observable(0);
 
 ### `@ashstack/legend-state/no-nested-observable`
 
-Disallow passing an observable to `observable()` or `useObservable()`; wrapping it creates a second node whose reads and writes never reach the original.
-
+Never pass an observable to `observable()` or `useObservable()`. The wrapper is a second node, and reads and writes on it never reach the original.
 
 **Fails**
 
@@ -1933,8 +1880,7 @@ export const doubled$ = observable(() => count$.get() * 2);
 
 ### `@ashstack/legend-state/no-react-mirror`
 
-Disallow seeding `useState` from an observable's `get()` or `peek()`; there must be one owner, so read the observable with `useValue(...)` where it renders.
-
+Seeding `useState` from an observable's `get()` or `peek()` gives the value two owners. Read it with `useValue(...)` where it renders.
 
 **Fails**
 
@@ -1963,8 +1909,7 @@ export const useCounter = () => useValue(count$);
 
 ### `@ashstack/legend-state/no-untracked-get-in-jsx`
 
-Disallow calling an observable's `get()` directly in a JSX expression container; outside a tracking function it is a plain read, so the value renders once and never updates.
-
+A `get()` placed directly in a JSX expression container is a plain read. The value renders once and never updates.
 
 **Fails**
 
@@ -1995,8 +1940,7 @@ export const Counter = () => (
 
 ### `@ashstack/legend-state/no-peek-in-selector`
 
-Disallow `peek()` inside a selector or tracking callback such as useValue, observe or when; peek never subscribes, so the selector never re-runs and the component keeps rendering the first value.
-
+`peek()` never subscribes, so a selector or tracking callback that uses it never re-runs. Call `get()` there and keep `peek()` for handlers.
 
 **Fails**
 
@@ -2024,8 +1968,7 @@ export const readThemeOnce = () => settings$.theme.peek();
 
 ### `@ashstack/legend-state/no-object-selector`
 
-Disallow a `useValue` selector that returns a new object or array; its identity differs every run, so the component re-renders on every store change.
-
+A `useValue` selector that builds a new object or array returns a fresh identity every run. The component then re-renders on every store change.
 
 **Fails**
 
@@ -2054,8 +1997,7 @@ export const useLocale = () => useValue(() => settings$.locale.get());
 
 ### `@ashstack/legend-state/no-observable-in-component`
 
-Disallow calling `observable()` inside a component or hook; it creates a new observable on every render, so nothing that read the previous one is listening — use `useObservable()` or a store module.
-
+Calling `observable()` inside a component or hook makes a new observable on every render. Use `useObservable()` or a module-level store instead.
 
 **Fails**
 
@@ -2087,8 +2029,7 @@ _auto-enabled when `react-native-reanimated` is a dependency._
 
 ### `@ashstack/reanimated/animated-reaction-safety`
 
-Disallow a useAnimatedReaction result callback writing a shared value its prepare callback reads (an infinite loop) or calling scheduleOnRN without comparing the current and previous results, which bridges to RN every frame.
-
+A `useAnimatedReaction` result callback loops forever if it writes a shared value the prepare callback reads. Guard `scheduleOnRN` there on the current result differing from the previous one.
 
 **Fails**
 
@@ -2141,8 +2082,7 @@ export function GoodReaction() {
 
 ### `@ashstack/reanimated/animated-style-needs-animated-component`
 
-Require an `Animated.*` component wherever a useAnimatedStyle or useAnimatedProps result is passed as `style`; on a plain component the style is applied once at mount and silently never updates.
-
+An animated style only takes effect on an `Animated.*` component. A plain element applies it once at mount and then never updates.
 
 **Fails**
 
@@ -2171,8 +2111,7 @@ export function GoodAnimatedStyleHost() {
 
 ### `@ashstack/reanimated/animated-updater-purity`
 
-Disallow `.set()`, `.modify()` and `scheduleOnRN` inside useAnimatedStyle or useAnimatedProps; an animated updater must stay pure, so move the write to an event, effect, derived value or reaction.
-
+An updater passed to `useAnimatedStyle` or `useAnimatedProps` must stay pure, so it may not write a shared value or call `scheduleOnRN`.
 
 **Fails**
 
@@ -2206,8 +2145,7 @@ export function useGoodUpdater() {
 
 ### `@ashstack/reanimated/gpu-properties-only`
 
-Disallow animating layout properties in useAnimatedStyle or useAnimatedProps; they recalculate layout on every frame, so animate transform and opacity instead.
-
+Animate `transform` and `opacity` in `useAnimatedStyle` and `useAnimatedProps`. Layout properties such as `width` or `margin` recalculate layout every frame.
 
 **Fails**
 
@@ -2238,8 +2176,7 @@ export function GoodGpu() {
 
 ### `@ashstack/reanimated/hoist-layout-animation-builder`
 
-Disallow constructing a Reanimated layout-animation builder inside a component's `entering`, `exiting` or `layout` prop; build static builders at module scope and memoize ones that depend on component values.
-
+A layout animation belongs at module scope, or inside a memo when it depends on component values. The `entering`/`exiting`/`layout` props otherwise rebuild it on every render.
 
 **Fails**
 
@@ -2265,8 +2202,7 @@ export function GoodLayoutBuilder() {
 
 ### `@ashstack/reanimated/interpolate-needs-clamp`
 
-Require an explicit `Extrapolation.CLAMP` fourth argument on a bare `interpolate()` call; without it the output keeps extrapolating past the ends of the input range.
-
+Give `interpolate()` an explicit `Extrapolation.CLAMP` fourth argument. Without it the output keeps going past the ends of the input range.
 
 **Fails**
 
@@ -2296,8 +2232,7 @@ export function GoodInterpolate() {
 
 ### `@ashstack/reanimated/no-shared-value-dot-value`
 
-Disallow reading or writing a shared value's `.value`; use `.get()` and `.set(...)` so React Compiler can track the read or the mutation.
-
+Shared values are read with `.get()` and written with `.set(...)`, never through `.value`. React Compiler cannot track a `.value` access.
 
 **Fails**
 
@@ -2325,8 +2260,7 @@ export function useGoodDotValue() {
 
 ### `@ashstack/reanimated/no-react-state-from-continuous-worklet`
 
-Disallow scheduling a React state setter through `scheduleOnRN` from a continuously evaluated worklet; it can put a Fabric commit or a Skia re-recording on an animation frame.
-
+A worklet that runs every frame must not send a React state setter through `scheduleOnRN`. That puts a Fabric commit on an animation frame.
 
 **Fails**
 
@@ -2364,8 +2298,7 @@ export function GoodWorkletState() {
 
 ### `@ashstack/reanimated/prefer-lazy-shared-value-initializer`
 
-Require a lazy initializer for a computed `useSharedValue(...)`; an eager call or `new` expression runs on every React render even though only the first result is kept.
-
+Pass a computed `useSharedValue` initial value as a function. An eager call runs on every render while only the first result is kept.
 
 **Fails**
 
@@ -2393,8 +2326,7 @@ export function useGoodInitializer() {
 
 ### `@ashstack/reanimated/schedule-on-rn-scope`
 
-Disallow inline function arguments to `scheduleOnRN`; an inline callback has ambiguous runtime ownership and can be created on the wrong runtime, so pass one declared in RN Runtime scope.
-
+`scheduleOnRN` takes a function declared in RN Runtime scope. An inline callback can end up created on the wrong runtime.
 
 **Fails**
 
@@ -2428,8 +2360,7 @@ export function useGoodSchedule() {
 
 ### `@ashstack/reanimated/shared-value-usage`
 
-Disallow destructuring a shared value, mutating what its `get()` returned, and reading or writing it while JSX is evaluated; each detaches the value from Reanimated reactivity or makes render impure.
-
+Destructuring a shared value or mutating what its `get()` returned detaches it from Reanimated reactivity. Reading or writing one while JSX evaluates also makes render impure.
 
 **Fails**
 
@@ -2466,8 +2397,7 @@ _auto-enabled when `react-native-turbo-image` is a dependency._
 
 ### `@ashstack/turbo-image/require-resize`
 
-Require `resize` on a TurboImage so the native decoder downsamples before the bitmap reaches memory; a full-resolution decode wastes tens of megabytes and stalls the first frame.
-
+Requires `resize` on a TurboImage so the native decoder downsamples before the bitmap reaches memory. A full-resolution decode wastes tens of megabytes and stalls the first frame.
 
 **Fails**
 
@@ -2491,8 +2421,7 @@ export function GoodTurboResize({ uri }: { uri: string }) {
 
 ### `@ashstack/turbo-image/require-cache-policy`
 
-Require `cachePolicy` on a TurboImage; without one the image is re-fetched over the network on every cold start, so an already-scrolled feed costs its bandwidth again.
-
+Requires `cachePolicy` on a TurboImage. Without one the image is re-fetched over the network on every cold start, so an already-scrolled feed costs its bandwidth again.
 
 **Fails**
 
@@ -2518,10 +2447,9 @@ export function GoodTurboCache({ uri }: { uri: string }) {
 
 _auto-enabled when `@shopify/react-native-skia` is a dependency._
 
-### `@ashstack/skia/performance`
+### `@ashstack/skia/canvas-opaque`
 
-Require an explicit `opaque` prop on a Skia `<Canvas>` and disallow the legacy path-value hooks, which self-dirty Reanimated mappers and re-record idle canvases.
-
+Requires an explicit `opaque` prop on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.
 
 **Fails**
 
@@ -2544,14 +2472,49 @@ export function GoodCanvas() {
 }
 ```
 
+### `@ashstack/skia/no-legacy-path-hooks`
+
+Bans the `usePathValue` and `usePathInterpolation` imports. Both self-dirty Reanimated mappers and re-record idle canvases.
+
+**Fails**
+
+```tsx
+import { Skia, usePathValue } from "@shopify/react-native-skia";
+
+const basePath = Skia.Path.Make();
+
+export function useBadPath(width: number) {
+  return usePathValue(path => {
+    path.reset();
+    path.addRect({ x: 0, y: 0, width, height: 8 });
+  }, basePath);
+}
+```
+
+**Passes**
+
+```tsx
+import { Skia } from "@shopify/react-native-skia";
+import { useDerivedValue, type SharedValue } from "react-native-reanimated";
+
+const basePath = Skia.Path.Make();
+
+export function useGoodPath(width: SharedValue<number>) {
+  return useDerivedValue(() => {
+    basePath.reset();
+    basePath.addRect({ x: 0, y: 0, width: width.get(), height: 8 });
+    return basePath;
+  });
+}
+```
+
 ## `@ashstack/keyboard`
 
 _auto-enabled when `react-native-keyboard-controller` is a dependency._
 
 ### `@ashstack/keyboard/avoiding-view-source`
 
-Disallow importing `KeyboardAvoidingView` from react-native; it listens for keyboardDidShow and never subscribes to WindowInsetsAnimationCallback, so under edge-to-edge Android it leaves the input under the keyboard — import it from react-native-keyboard-controller.
-
+Bans `KeyboardAvoidingView` imported from react-native. It waits on `keyboardDidShow` and never subscribes to WindowInsetsAnimationCallback, so under edge-to-edge Android the input sits under the keyboard.
 
 **Fails**
 

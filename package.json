@@ -7,13 +7,14 @@
     "examples/*"
   ],
   "scripts": {
-    "check:fixtures": "bun scripts/check-fixtures.ts",
-    "check:smoke": "bun scripts/check-smoke.ts",
+    "check:fixtures": "bun run build && bun scripts/check-fixtures.ts",
+    "check:smoke": "bun run build && bun scripts/check-smoke.ts",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
     "release": "changeset publish",
-    "docs:rules": "bun scripts/generate-rule-docs.ts",
-    "docs:rules:check": "bun scripts/generate-rule-docs.ts --check"
+    "docs:rules": "bun run build && bun scripts/generate-rule-docs.ts",
+    "docs:rules:check": "bun run build && bun scripts/generate-rule-docs.ts --check",
+    "build": "tsc -p packages/lint"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.0",

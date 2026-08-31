@@ -3,5 +3,12 @@ import fmt from "@ashstack/fmt";
 
 export default {
   ...fmt,
-  ignorePatterns: ["**/node_modules/**", "CONTEXT.md", "docs/**", "**/fixtures/**", "packages/lint/RULES.md"],
+  ignorePatterns: [
+    "**/node_modules/**",
+    "CONTEXT.md",
+    "docs/**",
+    "**/fixtures/**",
+    "**/dist/**",
+    "packages/lint/RULES.md",
+  ],
 };

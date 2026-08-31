@@ -9,6 +9,7 @@ export interface AstNode {
 
 export interface RuleContext {
   options?: unknown[];
+  sourceCode?: { text?: unknown; [key: string]: unknown };
   report(descriptor: { node: AstNode; message: string; [key: string]: unknown }): void;
   [key: string]: unknown;
 }
@@ -19,6 +20,8 @@ export interface RuleMeta {
   type?: "problem" | "suggestion" | "layout";
   docs: { description: string };
   schema?: unknown[];
+  /** rule reports carry `suggest` fixes */
+  hasSuggestions?: boolean;
   /** rule ships disabled; consumers opt in per project */
   defaultOff?: boolean;
   /** rule (not just its module) is gated on one of these packages being a dependency */

@@ -132,7 +132,7 @@ export const isFunction = (node: AstNode | null | undefined): boolean => !!node 
  * Source-text gate for createOnce rules: skip whole files that can't contain
  * the pattern. Fails open (lints) when the source text is unavailable.
  */
-export const gate = (context: { sourceCode?: { text?: unknown } }, ...markers: string[]): boolean => {
+export const gate = (context: { sourceCode?: { text?: unknown } | undefined }, ...markers: string[]): boolean => {
   const text = context.sourceCode?.text;
   if (typeof text !== "string") return true;
   return markers.some(marker => text.includes(marker));
