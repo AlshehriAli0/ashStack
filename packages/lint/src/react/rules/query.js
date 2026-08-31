@@ -199,7 +199,7 @@ const nextPageParamUndefined = {
 };
 
 export default {
-  meta: { name: "query" },
+  meta: { name: "@ashstack/query" },
   rules: {
     "no-inline-keys": noInlineKeys,
     "no-deprecated-filters": noDeprecatedFilters,

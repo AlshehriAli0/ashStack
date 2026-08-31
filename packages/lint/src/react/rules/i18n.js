@@ -81,7 +81,7 @@ const noBareToast = {
 };
 
 export default {
-  meta: { name: "i18n" },
+  meta: { name: "@ashstack/i18n" },
   rules: {
     "no-bare-text": noBareText,
     "no-bare-attrs": noBareAttrs,

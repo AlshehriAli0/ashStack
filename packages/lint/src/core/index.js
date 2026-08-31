@@ -14,7 +14,7 @@ const core = (options = {}) => {
 
   return {
     plugins: ["eslint", "typescript", "import", "unicorn", "promise", "oxc"],
-    jsPlugins: [ownPlugin("core/rules/ash.js"), ...(zod ? [ownPlugin("core/rules/zod.js")] : [])],
+    jsPlugins: [ownPlugin("core/rules/base.js"), ...(zod ? [ownPlugin("core/rules/zod.js")] : [])],
     env: { builtin: true, es2024: true },
     categories: {
       correctness: "error",
@@ -183,8 +183,8 @@ const core = (options = {}) => {
       "promise/no-multiple-resolved": "off",
       "promise/no-promise-in-callback": "off",
       "oxc/no-async-endpoint-handlers": "off",
-      "ash/comment-escape-hatch": "error",
-      ...(zod && { "zod/prefer-enum": "error" }),
+      "@ashstack/core/comment-escape-hatch": "error",
+      ...(zod && { "@ashstack/zod/prefer-enum": "error" }),
     },
     overrides: [
       {
@@ -202,7 +202,7 @@ const core = (options = {}) => {
           "typescript/no-unsafe-type-assertion": "off",
           "typescript/require-await": "off",
           "typescript/unbound-method": "off",
-          "ash/comment-escape-hatch": "off",
+          "@ashstack/core/comment-escape-hatch": "off",
         },
       },
     ],

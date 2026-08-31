@@ -98,7 +98,7 @@ const createdObject = node => {
 const problem = visitors => ({ meta: { type: "problem" }, createOnce: visitors });
 
 export default {
-  meta: { name: "legend-list" },
+  meta: { name: "@ashstack/legend-list" },
   rules: {
     "required-props": problem(context => ({
       before: () => gate(context, LIST),

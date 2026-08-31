@@ -31,31 +31,32 @@ oxfmt --check .
 
 ## Entries
 
-| Entry            | For                    | Always adds                                                                  |
-| ---------------- | ---------------------- | ---------------------------------------------------------------------------- |
-| `core()`         | any TypeScript project | strict eslint/typescript/unicorn/promise base + `ash/` convention rules      |
-| `react()`        | React (web)            | react + jsx-a11y + React Compiler + you-might-not-need-an-effect             |
-| `react-native()` | Expo / RN              | generic `rn/` rules (leaked renders, view nesting, keyboard events, images…) |
+| Entry            | For                    | Always adds                                                                                      |
+| ---------------- | ---------------------- | ------------------------------------------------------------------------------------------------ |
+| `core()`         | any TypeScript project | strict eslint/typescript/unicorn/promise base + `@ashstack/core/` convention rules               |
+| `react()`        | React (web)            | react + jsx-a11y + React Compiler + you-might-not-need-an-effect                                 |
+| `react-native()` | Expo / RN              | generic `@ashstack/react-native/` rules (leaked renders, view nesting, keyboard events, images…) |
 
 Each entry is a function returning a flat, plain config object — `react()` already contains all of `core()`.
 
 ## Library rule groups (auto-detected)
 
-Library-specific rules ship only when you actually depend on that library — detected from your package.json (walking up, so monorepos work). Rule **modules** (`zod`, `query`, `zustand`, `i18n`, `unistyles`, `legendList`, `legendState`) can also be forced with a boolean: `reactNative({ unistyles: false, i18n: true })`. Everything finer-grained (Reanimated/Turbo Image/Skia/keyboard rule subsets, the import bans) is auto-detect only — to disagree with one rule, turn that rule off by name.
+Library-specific rules ship only when you actually depend on that library — detected from your package.json (walking up, so monorepos work). Every group below is a **module**: one rule namespace, one boolean to force it either way, e.g. `reactNative({ unistyles: false, i18n: true })`. Only the import bans (and the React Compiler gate on `@ashstack/react-native/no-manual-memo`) are auto-detect-only — to disagree with one rule, turn that rule off by name.
 
-| Group / rule prefix                                | Enabled when you depend on                                   |
-| -------------------------------------------------- | ------------------------------------------------------------ |
-| `zod/`                                             | `zod`                                                        |
-| `query/`                                           | `@tanstack/react-query`                                      |
-| `zustand/`                                         | `zustand`                                                    |
-| `i18n/`                                            | i18next / lingui / react-intl / use-intl / expo-localization |
-| `unistyles/` + bans                                | `react-native-unistyles`                                     |
-| `legend-list/` + bans                              | `@legendapp/list`                                            |
-| `legend-state/` + ban                              | `@legendapp/state`                                           |
-| Reanimated `rn/` rules + bans                      | `react-native-reanimated`                                    |
-| Turbo Image `rn/` rules                            | `react-native-turbo-image`                                   |
-| `rn/skia-performance`                              | `@shopify/react-native-skia`                                 |
-| keyboard / Pressable / router / font / crypto bans | the matching library                                         |
+| Group / rule prefix                                 | Enabled when you depend on                                   |
+| --------------------------------------------------- | ------------------------------------------------------------ |
+| `@ashstack/zod/`                                    | `zod`                                                        |
+| `@ashstack/query/`                                  | `@tanstack/react-query`                                      |
+| `@ashstack/zustand/`                                | `zustand`                                                    |
+| `@ashstack/i18n/`                                   | i18next / lingui / react-intl / use-intl / expo-localization |
+| `@ashstack/unistyles/` + bans                       | `react-native-unistyles`                                     |
+| `@ashstack/legend-list/` + bans                     | `@legendapp/list`                                            |
+| `@ashstack/legend-state/` + ban                     | `@legendapp/state`                                           |
+| `@ashstack/reanimated/` + bans                      | `react-native-reanimated`                                    |
+| `@ashstack/turbo-image/`                            | `react-native-turbo-image`                                   |
+| `@ashstack/skia/`                                   | `@shopify/react-native-skia`                                 |
+| `@ashstack/keyboard/`                               | `react-native-keyboard-controller`                           |
+| Pressable / router / font / crypto bans (auto-only) | the matching library                                         |
 
 ## Overriding
 
@@ -66,14 +67,14 @@ export default defineConfig({
   extends: [reactNative()],
   rules: {
     complexity: ["error", { max: 20 }],
-    "unistyles/no-margin": "off",
+    "@ashstack/unistyles/no-margin": "off",
   },
 });
 ```
 
-Rules people turn off first: `max-lines` / `max-lines-per-function` / `complexity` (size caps), `no-await-in-loop`, `typescript/no-unnecessary-condition` (noisy with imprecise types), `ash/no-naming-convention`, `unicorn/filename-case`, `typescript/no-floating-promises` (only if you can't run `--type-aware`).
+Rules people turn off first: `max-lines` / `max-lines-per-function` / `complexity` (size caps), `no-await-in-loop`, `typescript/no-unnecessary-condition` (noisy with imprecise types), `@ashstack/core/no-naming-convention`, `unicorn/filename-case`, `typescript/no-floating-promises` (only if you can't run `--type-aware`).
 
-Shipped but **off by default** (opt in): `ash/no-comments`, `ash/use-design-system`, `ash/components-tsx-only`.
+Shipped but **off by default** (opt in): `@ashstack/core/no-comments`, `@ashstack/core/use-design-system`, `@ashstack/core/components-tsx-only`.
 
 ## Development
 

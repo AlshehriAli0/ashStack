@@ -6,32 +6,40 @@ type OxlintConfig = Record<string, unknown>;
  * work) depends on that library. `true`/`false` forces it either way.
  */
 export interface CoreOptions {
-  /** zod/ rules — detected from `zod` */
+  /** @ashstack/zod/ rules — detected from `zod` */
   zod?: boolean;
 }
 
 export interface ReactOptions extends CoreOptions {
-  /** query/ rules — detected from `@tanstack/react-query` */
+  /** @ashstack/query/ rules — detected from `@tanstack/react-query` */
   query?: boolean;
-  /** zustand/ rules — detected from `zustand` */
+  /** @ashstack/zustand/ rules — detected from `zustand` */
   zustand?: boolean;
-  /** i18n/ rules — detected from i18next/lingui/react-intl/use-intl/next-intl/expo-localization */
+  /** @ashstack/i18n/ rules — detected from i18next/lingui/react-intl/use-intl/next-intl/expo-localization */
   i18n?: boolean;
 }
 
 /**
- * Only rule MODULES are toggleable here. Finer-grained groups (Reanimated,
- * Turbo Image, Skia, keyboard, gesture-handler/router/font/crypto import bans,
- * React Compiler) are auto-detect only — disagree with one of their rules?
- * Turn that rule off by name in your `rules` block.
+ * Every toggle is a rule MODULE — one rule namespace each. Import bans and
+ * single gated rules (gesture-handler/router/font/crypto bans, the React
+ * Compiler gate on @ashstack/react-native/no-manual-memo) are auto-detect only — disagree with
+ * one rule? Turn that rule off by name in your `rules` block.
  */
 export interface ReactNativeOptions extends ReactOptions {
-  /** unistyles/ rules + StyleSheet/Dimensions/SafeArea import bans — `react-native-unistyles` */
+  /** @ashstack/unistyles/ rules + StyleSheet/Dimensions/SafeArea import bans — `react-native-unistyles` */
   unistyles?: boolean;
-  /** legend-list/ rules + FlatList/FlashList bans — `@legendapp/list` */
+  /** @ashstack/legend-list/ rules + FlatList/FlashList bans — `@legendapp/list` */
   legendList?: boolean;
-  /** legend-state/ rules + use$/useSelector ban — `@legendapp/state` */
+  /** @ashstack/legend-state/ rules + use$/useSelector ban — `@legendapp/state` */
   legendState?: boolean;
+  /** @ashstack/reanimated/ rules + Animated/runOnJS bans — `react-native-reanimated` */
+  reanimated?: boolean;
+  /** @ashstack/turbo-image/ rules — `react-native-turbo-image` */
+  turboImage?: boolean;
+  /** @ashstack/skia/ rules — `@shopify/react-native-skia` */
+  skia?: boolean;
+  /** @ashstack/keyboard/ rules — `react-native-keyboard-controller` */
+  keyboard?: boolean;
 }
 
 /**
@@ -64,7 +72,7 @@ export declare const react: (options?: ReactOptions) => OxlintConfig;
  * ```ts
  * export default defineConfig({
  *   extends: [reactNative()],
- *   rules: { "unistyles/no-margin": "off" },
+ *   rules: { "@ashstack/unistyles/no-margin": "off" },
  * });
  * ```
  */

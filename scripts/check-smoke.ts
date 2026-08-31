@@ -37,7 +37,7 @@ const detection = Bun.spawnSync(
     "-e",
     `const { reactNative } = await import("@ashstack/lint");
      const rules = Object.keys(reactNative().rules);
-     console.log(JSON.stringify({ zod: rules.some(r => r.startsWith("zod/")), turbo: rules.some(r => r.includes("turbo-image")) }));`,
+     console.log(JSON.stringify({ zod: rules.some(r => r.startsWith("@ashstack/zod/")), turbo: rules.some(r => r.includes("turbo-image")) }));`,
   ],
   { cwd: smokeDir }
 );

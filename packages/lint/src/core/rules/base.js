@@ -450,7 +450,7 @@ const componentsTsxOnly = {
 };
 
 export default {
-  meta: { name: "ash" },
+  meta: { name: "@ashstack/core" },
   rules: {
     "no-comments": noComments,
     "comment-escape-hatch": commentEscapeHatch,

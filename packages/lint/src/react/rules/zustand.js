@@ -57,7 +57,7 @@ const requireSelector = {
 };
 
 export default {
-  meta: { name: "zustand" },
+  meta: { name: "@ashstack/zustand" },
   rules: {
     "require-selector": requireSelector,
   },

@@ -8,17 +8,22 @@ const lintDir = join(import.meta.dir, "..", "packages", "lint");
 const fixturesDir = join(lintDir, "fixtures");
 const oxlint = join(import.meta.dir, "..", "node_modules", ".bin", "oxlint");
 
-// fixture namespace -> plugin file (relative to packages/lint)
+// fixture module dir -> plugin file (relative to packages/lint).
+// Rule ids are `@ashstack/<module>/<rule>`.
 const PLUGIN_FILES: Record<string, string> = {
-  ash: "src/core/rules/ash.js",
+  core: "src/core/rules/base.js",
   zod: "src/core/rules/zod.js",
   query: "src/react/rules/query.js",
   zustand: "src/react/rules/zustand.js",
   i18n: "src/react/rules/i18n.js",
-  rn: "src/react-native/rules/base.js",
+  "react-native": "src/react-native/rules/base.js",
   unistyles: "src/react-native/rules/unistyles.js",
   "legend-list": "src/react-native/rules/legend-list.js",
   "legend-state": "src/react-native/rules/legend-state.js",
+  reanimated: "src/react-native/rules/reanimated.js",
+  "turbo-image": "src/react-native/rules/turbo-image.js",
+  skia: "src/react-native/rules/skia.js",
+  keyboard: "src/react-native/rules/keyboard.js",
 };
 
 const failures: string[] = [];
@@ -49,7 +54,7 @@ for (const domain of domains) {
         rules.map(rule => {
           const optionsPath = join(domainDir, rule, "options.json");
           const config = existsSync(optionsPath) ? JSON.parse(readFileSync(optionsPath, "utf8")) : "error";
-          return [`${domain}/${rule}`, config];
+          return [`@ashstack/${domain}/${rule}`, config];
         })
       ),
     })
@@ -75,7 +80,7 @@ for (const domain of domains) {
         d =>
           d.filename?.includes(`fixtures/${domain}/${rule}/`) &&
           d.filename?.includes(`/${file}.`) &&
-          (d.code?.includes(`${domain}(${rule})`) || d.code?.includes(`${domain}/${rule}`))
+          (d.code?.includes(`@ashstack/${domain}(${rule})`) || d.code?.includes(`@ashstack/${domain}/${rule}`))
       ).length;
     if (hits("bad") === 0) failures.push(`${domain}/${rule}: bad fixture did not fire`);
     if (hits("good") > 0) failures.push(`${domain}/${rule}: good fixture fired`);

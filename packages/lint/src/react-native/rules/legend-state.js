@@ -307,7 +307,7 @@ const noObservableInComponent = {
 };
 
 export default {
-  meta: { name: "legend-state" },
+  meta: { name: "@ashstack/legend-state" },
   rules: {
     "no-assignment": noAssignment,
     naming: naming,

@@ -40,7 +40,7 @@ const preferEnum = {
 };
 
 export default {
-  meta: { name: "zod" },
+  meta: { name: "@ashstack/zod" },
   rules: {
     "prefer-enum": preferEnum,
   },

@@ -693,7 +693,7 @@ const noStyleSpread = {
 };
 
 export default {
-  meta: { name: "unistyles" },
+  meta: { name: "@ashstack/unistyles" },
   rules: {
     "animated-theme": animatedTheme,
     "content-container": contentContainer,
