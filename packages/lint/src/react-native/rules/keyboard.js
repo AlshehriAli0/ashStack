@@ -15,7 +15,7 @@ const gate = (context, ...markers) => {
 
 const NEW_MESSAGES = {
   keyboardAvoidingView:
-    "Import KeyboardAvoidingView from react-native-keyboard-controller: same props, and it follows the keyboard per frame. React Native's listens for keyboardDidShow, which Android fires after the animation finishes, and it never subscribes to WindowInsetsAnimationCallback - under edge-to-edge that leaves the input sitting under the keyboard. For a scrolling form use KeyboardAwareScrollView, and for something that only has to move, rt.insets.ime needs no component at all.",
+    "Import `KeyboardAvoidingView` from `react-native-keyboard-controller` — same props, and it tracks the keyboard per frame instead of waiting for Android's post-animation `keyboardDidShow`. For a scrolling form use its `KeyboardAwareScrollView`; to just shift a view, use `rt.insets.ime`.",
 };
 
 const keyboardAvoidingViewSource = {

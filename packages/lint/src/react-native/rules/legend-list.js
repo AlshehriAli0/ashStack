@@ -114,7 +114,7 @@ export default {
             context.report({
               node: node.openingElement,
               message:
-                "Add `keyExtractor` returning something that identifies the item. Without one the list falls back to the index, which attaches cached measurements and recycled row state to whatever is currently in that position - the cause of a row showing the previous row's data after a prepend.",
+                "Add `keyExtractor={item => item.id}` returning a stable per-item identity. The index fallback pins cached measurements and recycled row state to a position, so a prepend leaves rows showing the previous row's data.",
             });
           }
 
@@ -122,7 +122,7 @@ export default {
             context.report({
               node: node.openingElement,
               message:
-                "Make the recycling decision explicit: add `recycleItems` - it is where most of the list's speed comes from on native. If the row genuinely cannot be recycled, pass `recycleItems={false}` deliberately and say which part of the row required it.",
+                "Add `recycleItems={true}` — recycling is where most of the list's native speed comes from. If a row genuinely cannot be recycled, pass `recycleItems={false}` and state which part of the row required it.",
             });
           }
         },
@@ -147,7 +147,7 @@ export default {
           context.report({
             node: fn,
             message:
-              "Return something that identifies the item, not its position. Legend List hangs cached sizes and recycled row state off this key, so an index key means one prepend re-points every cached measurement at the wrong item: rows show the wrong data and the scroll position jumps.",
+              "Return a stable per-item id from this `keyExtractor` instead of the index. Legend List hangs cached sizes and recycled row state off the key, so one prepend re-points every measurement at the wrong item.",
           });
         },
       })
@@ -165,7 +165,7 @@ export default {
           context.report({
             node: key,
             message:
-              "A changing `key` remounts the list and throws away every measurement, cached size and scroll position. To re-initialise for a different dataset, pass `dataKey` instead - it does the same job inside the list, without the remount.",
+              "Pass `dataKey` instead of `key` here: it re-initialises the list for a different dataset from the inside, without the remount that discards every measurement, cached size and scroll position.",
           });
         },
       })
@@ -183,7 +183,7 @@ export default {
           context.report({
             node: data,
             message:
-              "`data` is built inline, so every parent render hands the list a new array reference and it re-evaluates the whole dataset - diffing, re-keying and invalidating what it had cached. Hoist it to a `useMemo`, or compute it upstream.",
+              "Hoist this `data` into a `useMemo` or compute it upstream so its reference is stable. A new array each render makes the list re-diff, re-key and invalidate everything it had cached.",
           });
         },
       })
@@ -202,7 +202,7 @@ export default {
 
           context.report({
             node: value,
-            message: `This ${kind} is a new reference on every render, so every mounted row re-evaluates every time the parent renders - which is what \`extraData\` is for, and not what you meant. Pass the primitive that actually changed, or hoist the ${kind} if it is stable.`,
+            message: `Pass the primitive that actually changed as \`extraData\`, or hoist this ${kind} when it is stable. A fresh ${kind} reference each render re-evaluates every mounted row.`,
           });
         },
       })
@@ -231,7 +231,7 @@ export default {
 
             context.report({
               node: value,
-              message: `This ${kind} is a new reference on every render, so the row can never be skipped and typing anywhere on the screen re-renders every visible row. Pass \`item\` or its primitive fields and build the ${kind} inside the row, or hoist it to module scope if it is static.`,
+              message: `Pass \`item\` or its primitive fields and build this ${kind} inside the row, or hoist it to module scope when it is static. A fresh ${kind} each render means the row can never be skipped, so typing anywhere re-renders every visible row.`,
             });
           },
           "JSXAttribute:exit"(node) {
@@ -253,7 +253,7 @@ export default {
           context.report({
             node: node.openingElement,
             message:
-              "Use either `data` with `renderItem`, or children mode. Passing both is unsupported and fails silently: one of the two is ignored and which one is not guaranteed.",
+              "Keep either `data` with `renderItem` or children mode here, and remove the other. Passing both fails silently, with no guarantee about which one is ignored.",
           });
         },
       })
@@ -303,7 +303,7 @@ export default {
               context.report({
                 node,
                 message:
-                  "`flex` belongs on `style`, not on `contentContainerStyle`. Here it makes the scrolled content size to the viewport, so the list measures as zero height and renders nothing - a blank screen with no error. Use `contentContainerStyle` for padding inside the content.",
+                  "Move `flex` onto `style` and keep `contentContainerStyle` for padding inside the content. On the content container it sizes the content to the viewport, so the list measures as zero height and renders a blank screen with no error.",
               });
             }
           },
@@ -349,7 +349,7 @@ export default {
               context.report({
                 node: node.openingElement,
                 message:
-                  "This row branches on `item.type`, so add `getItemType={item => item.type}`. Without it every layout shares one recycling pool and a header is handed to a photo row, which rebuilds most of the tree on reuse - the opposite of what recycling is for. It is also what makes a mixed list estimate well: the list keeps a measured-size average per type, so with one pool every unmeasured row gets one average of three different shapes.",
+                  "Add `getItemType={item => item.type}` to match the branch this row makes on `item.type`. It gives each layout its own recycling pool and its own measured-size average, instead of handing a header's view to a photo row.",
               });
             }
           },
@@ -373,7 +373,7 @@ export default {
             context.report({
               node: child,
               message:
-                "Use LegendList from '@legendapp/list/react-native' instead. A ScrollView mounts every child up front, so a list of 200 rows mounts 200 components to show ten - the memory and the mount time are both paid whether or not anything is on screen.",
+                "Render this collection with `LegendList` from '@legendapp/list/react-native', passing the array as `data` and the mapped body as `renderItem`. A ScrollView mounts every child up front, so 200 rows cost 200 mounts to show ten.",
             });
             return;
           }
@@ -395,7 +395,7 @@ export default {
             context.report({
               node: attribute,
               message:
-                "This FlashList/FlatList prop does not exist on Legend List v3, so it is silently ignored rather than rejected. Inverted chat lists are built from `maintainScrollAtEnd` / `initialScrollAtEnd` / `maintainVisibleContentPosition`.",
+                "Remove this prop: Legend List v3 has no such prop and ignores it silently rather than rejecting it. Build inverted chat lists from `maintainScrollAtEnd` / `initialScrollAtEnd` / `maintainVisibleContentPosition` instead.",
             });
           }
         },

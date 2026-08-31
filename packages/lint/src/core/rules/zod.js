@@ -1,9 +1,10 @@
 // @ashstack/lint — Zod conventions.
 
 const MESSAGES = {
-  nativeEnum: "z.nativeEnum() is deprecated in Zod 4 — z.enum() accepts native enum objects with the same params.",
+  nativeEnum:
+    "Call `z.enum()` here — it takes the same native enum object and params, and `z.nativeEnum()` is deprecated in Zod 4.",
   literalUnion:
-    "a union of string literals is a closed set — write z.enum([...]) so invalid input produces one issue and the options stay reusable.",
+    "Replace this union with `z.enum([...])` listing the same string values, so invalid input reports one issue and the options stay reusable.",
 };
 
 const isZodCall = (node, method) =>

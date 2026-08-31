@@ -2,9 +2,9 @@
 
 const MESSAGES = {
   zustandBare:
-    "Pass a selector to the Zustand store hook, for example `useSettingsStore(state => state.theme)`. Bare store subscriptions re-render for every store change; use `.getState()` for an imperative read.",
+    "Pass a selector to this store hook, for example `useSettingsStore(state => state.theme)`, so it re-renders only on that slice. Use `.getState()` instead for an imperative read.",
   zustandUndefined:
-    "Passing `undefined` still subscribes to the entire Zustand store. Pass a selector such as `state => state.theme`, or use `.getState()` for an imperative read.",
+    "Replace `undefined` with a selector such as `state => state.theme` — it still subscribes to the whole store otherwise. Use `.getState()` instead for an imperative read.",
 };
 
 const STORE_MODULE = /^(?:@\/stores\/|(?:\.\.?\/)+stores\/)[^"']*-store$/;

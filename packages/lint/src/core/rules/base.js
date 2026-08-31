@@ -7,9 +7,9 @@ import { calleeName, closestAncestor, hasAncestor, subtreeHas } from "../../lib/
 
 const MESSAGES = {
   hoistIntl:
-    "Intl formatters are expensive to construct — hoist to module scope (static locale/options) or wrap in useMemo keyed on the locale.",
+    "Move this `Intl` formatter to module scope when the locale and options are static, or wrap it in `useMemo` keyed on the locale — constructing one per render is expensive.",
   componentsTsxOnly:
-    "components/ holds components and a barrel, nothing else, and this file renders no JSX. Move it to src/utils (helpers, pure logic), src/hooks (a hook), or src/api/<feature>/ (data access).",
+    "Move this file to `src/utils` (helpers, pure logic), `src/hooks` (a hook), or `src/api/<feature>/` (data access). `components/` holds only files that render JSX, plus a barrel.",
 };
 
 const MEMO_HOOKS = new Set(["useMemo", "useCallback"]);
@@ -46,7 +46,7 @@ const LAZY_WRAPPERS = new Set(["lazy", "dynamic"]);
 
 const DATA_MESSAGES = {
   dynamicImport:
-    "Import this at the top of the file. A dynamic import() buys no laziness here - Metro inlines it into the same bundle - so all it costs is a module the typechecker cannot follow and a path nothing resolves on a rename. React.lazy(() => import(...)) is exempt, since deferring the component is the point there.",
+    "Turn this into a static `import` at the top of the file. Metro inlines `import()` into the same bundle, so it buys no laziness and only hides the module from the typechecker; wrapping it in `React.lazy(() => import(...))` or `dynamic(() => import(...))` stays allowed.",
 };
 
 const ESCAPE_HATCH = /^what:\s*(?<fact>.+)$/i;
@@ -58,15 +58,14 @@ const IGNORED_COMMENT_TYPES = new Set(["Shebang", "Hashbang"]);
 
 const HATCH_MESSAGES = {
   refactorFirst:
-    "Delete this comment and make the code say it: rename the value so it states its own meaning, extract a named function, and simplify the logic and the control flow until someone tracing it by eye needs no prose to follow it. Explaining unclear code is not a fix, rewriting it is. Only when the fact cannot live in code at all — a platform bug, an ordering constraint, a value measured outside this codebase — keep exactly ONE line as `// what: <fact>`.",
+    "Delete this comment and let the code say it: rename the value to state its own meaning, extract a named function, and flatten the control flow until it reads without prose. Keep exactly one `// what: <fact>` line only when the fact cannot live in code at all — a platform bug, an ordering constraint, a value measured outside this codebase.",
   block:
-    "`what:` has to be a single `//` line, not a block comment. A fact that fills a paragraph is a design that needs simplifying: name the pieces so the paragraph has nothing left to say.",
-  multiline:
-    "`what:` has to fit on one line. Refactor until the rest is unnecessary rather than wrapping the explanation onto another line.",
-  shortFact: "`what:` needs an actual fact after it.",
-  tooLong: `Keep the whole \`what:\` line under ${HATCH_MAX_LENGTH} characters. Past that it is prose, and prose belongs in code that reads without it.`,
+    "Rewrite this as a single `// what: <fact>` line comment. If the fact needs a paragraph, name the pieces in code until it fits on one line.",
+  multiline: `Fit this \`what:\` on one \`//\` line under ${HATCH_MAX_LENGTH} characters, and move whatever spills over into names in the code.`,
+  shortFact: `Write the fact after \`what:\` (at least ${HATCH_MIN_FACT} characters), or delete the comment.`,
+  tooLong: `Trim this \`what:\` line under ${HATCH_MAX_LENGTH} characters, moving what is left into names in the code.`,
   stacked:
-    "Consecutive `what:` lines are a paragraph in disguise. Keep the one irreducible fact and refactor whatever the others were explaining into names.",
+    "Keep one `what:` line here — the single irreducible fact — and refactor what the others explain into named values and functions.",
 };
 
 const commentBody = comment =>
@@ -181,7 +180,7 @@ const commentEscapeHatch = {
         if (accepted.length > budget) {
           context.report({
             node: accepted[budget],
-            message: `${accepted.length} \`what:\` comments in this file and the budget is ${budget}. Each one past the budget is a refactor that was skipped: move the annotated logic into functions whose names carry what these lines are saying, then delete them.`,
+            message: `Delete \`what:\` comments from this file until at most ${budget} remain (it has ${accepted.length}): move the logic each one annotates into a function whose name carries what the comment says.`,
           });
         }
       },
@@ -272,12 +271,14 @@ const memberName = key => {
 
 const namingViolation = (name, kind) => {
   const convention = CONVENTIONS[kind];
-  const wrongFormat = `${convention.label} "${name}" should be one of: ${convention.formats.join(", ")}.`;
+  const wrongFormat = `Rename this ${convention.label} \`${name}\` to ${convention.formats.join(", ")}.`;
   if (convention.match === null) {
     return convention.formats.some(format => FORMAT_TESTS[format](name)) ? null : wrongFormat;
   }
   const matched = convention.match.exec(name);
-  if (!matched) return `${convention.label} "${name}" is not an allowed name shape.`;
+  if (!matched) {
+    return `Rename this ${convention.label} \`${name}\` to a plain ${convention.formats.join("/")} identifier, with at most a leading \`_\` or a trailing \`$\`.`;
+  }
   const captured = matched[1];
   if (!captured) return null;
   return convention.formats.some(format => FORMAT_TESTS[format](captured)) ? null : wrongFormat;
@@ -440,7 +441,7 @@ const useDesignSystem = {
 
           context.report({
             node: specifier,
-            message: `This project has its own ${replacement.name}. Import it from "${replacement.from}" instead of taking ${imported} from react-native. The wrapper is where the theme colours, the typography tokens and the font-scaling cap live, so the raw one renders unthemed and drifts from every screen around it.`,
+            message: `Import \`${replacement.name}\` from "${replacement.from}" instead of \`${imported}\` from react-native. That wrapper carries the theme colours, the typography tokens and the font-scaling cap, so the raw primitive renders unthemed.`,
           });
         }
       },

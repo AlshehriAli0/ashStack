@@ -15,7 +15,7 @@ const gate = (context, ...markers) => {
 
 const NEW_MESSAGES = {
   turboImageCachePolicy:
-    'Add a cachePolicy (normally "dataCache"). Without it the image is re-fetched over the network on every cold start, so a feed the user already scrolled costs its bandwidth again and shows placeholders on a slow connection.',
+    'Add `cachePolicy` to this TurboImage (normally `cachePolicy="dataCache"`), or it re-fetches over the network on every cold start.',
 };
 
 const requireTurboImageResize = {
@@ -42,7 +42,7 @@ const requireTurboImageResize = {
         context.report({
           node: node.name,
           message:
-            "TurboImage must set `resize` so the native decoder downsamples before the bitmap reaches memory. Decoding at full source resolution wastes memory - a 4000px photo in a 100pt avatar holds roughly 48MB of decoded pixels - and stalls the first frame. Pick a value slightly BELOW the rendered width, never above it: rounding down costs nothing visible, rounding up re-introduces the oversized decode the prop exists to avoid.",
+            "Add `resize` to this TurboImage, set slightly BELOW the rendered width in points, so the native decoder downsamples before the bitmap reaches memory. Rounding down costs nothing visible; a value above the rendered width keeps the full-resolution decode (a 4000px photo in a 100pt avatar holds roughly 48MB of pixels).",
         });
       },
     };

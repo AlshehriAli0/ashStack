@@ -17,9 +17,9 @@ const PATH_HOOKS = new Set(["usePathValue", "usePathInterpolation"]);
 
 const MESSAGES = {
   canvasMode:
-    "Declare the Skia Canvas composition path explicitly. Use `opaque={Platform.OS === 'android'}` for an opaque/fullscreen animated canvas, or `opaque={false}` when transparency, view transforms, or ordinary stacking are required.",
+    "Add an explicit `opaque` prop to this `<Canvas>`: `opaque={Platform.OS === 'android'}` for a fullscreen animated canvas, or `opaque={false}` when it needs transparency, view transforms, or ordinary stacking.",
   pathHooks:
-    "Skia's legacy path-value hooks can self-dirty Reanimated mappers and re-record idle canvases. Own a stable SkPath buffer and mutate it from useDerivedValue instead; ensure consumers also read the driving shared value.",
+    "Keep one stable `SkPath` buffer and mutate it inside `useDerivedValue`, with consumers reading the driving shared value. These legacy path-value hooks self-dirty Reanimated mappers and re-record idle canvases.",
 };
 
 const skiaPerformance = {

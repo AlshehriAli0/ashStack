@@ -2,9 +2,10 @@
 import { tagIdentifier } from "../../lib/ast.js";
 
 const MESSAGES = {
-  bareJsxText: "bare JSX text — wrap with t() or <Trans>. Add the key under the locale translation files.",
-  bareJsxAttribute: "bare translatable attribute — wrap with t(). Add the key under the locale translation files.",
-  bareToast: "bare toast message — wrap with t() so every locale resolves.",
+  bareJsxText:
+    'Wrap this text in `t("<key>")`, or `<Trans>` when it holds markup, and add the key to every locale file.',
+  bareJsxAttribute: 'Pass `t("<key>")` as this attribute value and add the key to every locale file.',
+  bareToast: 'Pass `t("<key>")` to this toast instead of the literal, and add the key to every locale file.',
 };
 
 const I18N_COMPONENTS = new Set(["Trans", "Plural", "Select"]);

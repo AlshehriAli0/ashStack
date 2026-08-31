@@ -2,15 +2,13 @@
 
 const MESSAGES = {
   deprecatedFilters:
-    "TanStack Query v5 removed the positional `(queryKey)` form. Pass a filter object: `.invalidateQueries({ queryKey: someKeys.scope(...) })`.",
+    "Pass a filter object here: `.invalidateQueries({ queryKey: someKeys.scope(...) })`. TanStack Query v5 removed the positional `(queryKey)` form.",
   inlineQueryKey:
-    "Inline `queryKey` arrays bypass the type-safe factory pattern. Define the key in a `*.keys.ts` factory and reference it: `queryKey: someKeys.scope(...)`.",
-  inlineGetQueryData:
-    "Inline query keys bypass the type-safe factory pattern. Use a factory: `getQueryData(someKeys.scope())`.",
-  inlineSetQueryData:
-    "Inline query keys bypass the type-safe factory pattern. Use a factory: `setQueryData(someKeys.scope(), updater)`.",
+    "Define this key in the feature's `*.keys.ts` factory and reference it: `queryKey: someKeys.scope(...)`, so invalidation elsewhere matches the same key.",
+  inlineGetQueryData: "Read through the feature's `*.keys.ts` factory: `getQueryData(someKeys.scope())`.",
+  inlineSetQueryData: "Write through the feature's `*.keys.ts` factory: `setQueryData(someKeys.scope(), updater)`.",
   destructureQueryHook:
-    "Destructure the result of an API query/mutation hook at the call site: `const { data } = useFooQuery()` instead of `const foo = useFooQuery()`. Makes the read surface explicit and refactors safer.",
+    "Destructure this hook at the call site: `const { data } = useFooQuery()` rather than binding the whole result to one name.",
 };
 
 const FILTER_METHODS = new Set([
@@ -50,9 +48,9 @@ const QUERY_FN_KEYS = new Set(["queryFn", "mutationFn"]);
 
 const DATA_MESSAGES = {
   fetchInQueryFn:
-    "Call a typed function from the feature's requests module instead. A bare fetch here skips the shared client, so it sends no auth header, applies no timeout, never retries a 429 or a 5xx, and throws a raw Response rather than the app's error type.",
+    "Call a typed function from the feature's `*.requests.ts` module here instead of `fetch`. That client is what sends the auth header, applies the timeout, retries a 429 or 5xx, and throws the app's error type.",
   nextPageParamNull:
-    "Return undefined to mean there are no more pages. null is a valid page param, so returning it tells the query the next cursor is null and the list keeps fetching forever.",
+    "Return `undefined` to signal there are no more pages. `null` is a valid page param, so returning it reads as a real next cursor and the list keeps fetching forever.",
 };
 
 const noDeprecatedFilters = {

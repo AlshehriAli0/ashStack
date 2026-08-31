@@ -1,6 +1,6 @@
 # ashStack
 
-Shared, strict oxc tooling: [`@ashstack/lint`](packages/lint) (oxlint configs + ~60 custom rules) and [`@ashstack/fmt`](packages/fmt) (oxfmt config). One install per new project instead of hand-copying lint setups around.
+Shared, strict oxc tooling: [`@ashstack/lint`](packages/lint) (oxlint configs + custom rules) and [`@ashstack/fmt`](packages/fmt) (oxfmt config). One install per new project instead of hand-copying lint setups around.
 
 ## Quick start
 
