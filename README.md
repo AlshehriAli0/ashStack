@@ -13,7 +13,7 @@ bun add -d oxlint oxfmt oxlint-tsgolint @ashstack/lint @ashstack/fmt
 import { reactNative } from "@ashstack/lint"; // or: core, react
 import { defineConfig } from "oxlint";
 
-export default defineConfig({ extends: [reactNative] });
+export default defineConfig({ extends: [reactNative()] });
 ```
 
 ```ts
@@ -31,13 +31,31 @@ oxfmt --check .
 
 ## Entries
 
-| Entry          | For                    | Adds                                                                                    |
-| -------------- | ---------------------- | --------------------------------------------------------------------------------------- |
-| `core`         | any TypeScript project | strict eslint/typescript/unicorn/promise base, `shared/` rules                          |
-| `react`        | React (web)            | react + jsx-a11y + React Compiler + you-might-not-need-an-effect + TanStack Query rules |
-| `react-native` | Expo / RN              | `rn/`, `unistyles/`, `legend-list/`, `state/` custom rules + stack import bans          |
+| Entry            | For                    | Always adds                                                                  |
+| ---------------- | ---------------------- | ---------------------------------------------------------------------------- |
+| `core()`         | any TypeScript project | strict eslint/typescript/unicorn/promise base + `ash/` convention rules      |
+| `react()`        | React (web)            | react + jsx-a11y + React Compiler + you-might-not-need-an-effect             |
+| `react-native()` | Expo / RN              | generic `rn/` rules (leaked renders, view nesting, keyboard events, images…) |
 
-Each entry is a flat, plain object — `react` already contains all of `core`.
+Each entry is a function returning a flat, plain config object — `react()` already contains all of `core()`.
+
+## Library rule groups (auto-detected)
+
+Library-specific rules ship only when you actually depend on that library — detected from your package.json (walking up, so monorepos work). Pass a boolean to force either way: `reactNative({ skia: false, i18n: true })`.
+
+| Group / rule prefix                                | Enabled when you depend on                                   |
+| -------------------------------------------------- | ------------------------------------------------------------ |
+| `zod/`                                             | `zod`                                                        |
+| `query/`                                           | `@tanstack/react-query`                                      |
+| `zustand/`                                         | `zustand`                                                    |
+| `i18n/`                                            | i18next / lingui / react-intl / use-intl / expo-localization |
+| `unistyles/` + bans                                | `react-native-unistyles`                                     |
+| `legend-list/` + bans                              | `@legendapp/list`                                            |
+| `legend-state/` + ban                              | `@legendapp/state`                                           |
+| Reanimated `rn/` rules + bans                      | `react-native-reanimated`                                    |
+| Turbo Image `rn/` rules                            | `react-native-turbo-image`                                   |
+| `rn/skia-performance`                              | `@shopify/react-native-skia`                                 |
+| keyboard / Pressable / router / font / crypto bans | the matching library                                         |
 
 ## Overriding
 
@@ -45,7 +63,7 @@ Your `rules` block always wins:
 
 ```ts
 export default defineConfig({
-  extends: [reactNative],
+  extends: [reactNative()],
   rules: {
     complexity: ["error", { max: 20 }],
     "unistyles/no-margin": "off",
@@ -53,9 +71,9 @@ export default defineConfig({
 });
 ```
 
-Rules people turn off first: `max-lines` / `max-lines-per-function` / `complexity` (size caps), `no-await-in-loop`, `typescript/no-unnecessary-condition` (noisy with imprecise types), `shared/no-naming-convention`, `unicorn/filename-case`, `shared/no-bare-jsx-text` (if not localizing), `typescript/no-floating-promises` (only if you can't run `--type-aware`).
+Rules people turn off first: `max-lines` / `max-lines-per-function` / `complexity` (size caps), `no-await-in-loop`, `typescript/no-unnecessary-condition` (noisy with imprecise types), `ash/no-naming-convention`, `unicorn/filename-case`, `typescript/no-floating-promises` (only if you can't run `--type-aware`).
 
-Shipped but **off by default** (opt in): `shared/no-comments`, `shared/use-design-system`, `shared/components-tsx-only`.
+Shipped but **off by default** (opt in): `ash/no-comments`, `ash/use-design-system`, `ash/components-tsx-only`.
 
 ## Development
 

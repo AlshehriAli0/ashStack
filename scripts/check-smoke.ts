@@ -28,7 +28,26 @@ const expectFired = (fragment: string) => {
 expectFired("eqeqeq"); // built-in eslint rule from core
 expectFired("no-var"); // categories/correctness pipeline
 expectFired("jsx-key"); // react plugin propagated through the entry
-expectFired("prefer-zod-enum"); // custom js-plugin rule loaded via npm self-reference
+expectFired("prefer-enum"); // zod/ group auto-detected from the smoke package's zod dep
+
+// detection: zod is a smoke dep (group on), turbo-image is not (group absent)
+const detection = Bun.spawnSync(
+  [
+    "bun",
+    "-e",
+    `const { reactNative } = await import("@ashstack/lint");
+     const rules = Object.keys(reactNative().rules);
+     console.log(JSON.stringify({ zod: rules.some(r => r.startsWith("zod/")), turbo: rules.some(r => r.includes("turbo-image")) }));`,
+  ],
+  { cwd: smokeDir }
+);
+try {
+  const { zod, turbo } = JSON.parse(detection.stdout.toString());
+  if (!zod) failures.push("detection failed: zod/ rules missing despite zod dependency");
+  if (turbo) failures.push("detection failed: turbo-image rules present without the dependency");
+} catch {
+  failures.push(`detection probe failed: ${detection.stderr.toString().slice(0, 300)}`);
+}
 
 // consumer override must win
 if (diagnostics.some(d => d.filename?.includes("overridden.ts") && d.code?.includes("no-nested-ternary"))) {

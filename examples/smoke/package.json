@@ -4,6 +4,7 @@
   "type": "module",
   "dependencies": {
     "@ashstack/fmt": "workspace:*",
-    "@ashstack/lint": "workspace:*"
+    "@ashstack/lint": "workspace:*",
+    "zod": "^4.1.5"
   }
 }

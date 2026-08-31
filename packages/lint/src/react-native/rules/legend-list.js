@@ -9,7 +9,7 @@
 // Every rule gates on the source text first, so a file with no list in it is
 // skipped before its AST is walked. Gates fail OPEN.
 
-import { attributeName, findInSubtree, subtreeHas, tagIdentifier } from "./internal/ast.js";
+import { attributeName, findInSubtree, subtreeHas, tagIdentifier } from "../../lib/ast.js";
 
 const LIST = "LegendList";
 

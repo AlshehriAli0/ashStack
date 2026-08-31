@@ -1,281 +1,19 @@
-// @ashstack/lint — shared oxlint JS plugin. Rules that apply to any file in the
-// stack: i18n, TanStack Query, Zod, comments, naming and project structure.
+// @ashstack/lint — ash oxlint JS plugin. Rules that apply to any file in the
+// stack: comments, naming, dynamic imports and project structure.
 import { readdirSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 
-import { calleeName, closestAncestor, hasAncestor, subtreeHas, tagIdentifier } from "./internal/ast.js";
+import { calleeName, closestAncestor, hasAncestor, subtreeHas } from "../../lib/ast.js";
 
 const MESSAGES = {
-  nativeEnum: "z.nativeEnum() is deprecated in Zod 4 — z.enum() accepts native enum objects with the same params.",
-  literalUnion:
-    "a union of string literals is a closed set — write z.enum([...]) so invalid input produces one issue and the options stay reusable.",
-  bareJsxText: "bare JSX text — wrap with t() or <Trans>. Add the key under the locale translation files.",
-  bareJsxAttribute: "bare translatable attribute — wrap with t(). Add the key under the locale translation files.",
-  bareToast: "bare toast message — wrap with t() so every locale resolves.",
-  deprecatedFilters:
-    "TanStack Query v5 removed the positional `(queryKey)` form. Pass a filter object: `.invalidateQueries({ queryKey: someKeys.scope(...) })`.",
-  inlineQueryKey:
-    "Inline `queryKey` arrays bypass the type-safe factory pattern. Define the key in a `*.keys.ts` factory and reference it: `queryKey: someKeys.scope(...)`.",
-  inlineGetQueryData:
-    "Inline query keys bypass the type-safe factory pattern. Use a factory: `getQueryData(someKeys.scope())`.",
-  inlineSetQueryData:
-    "Inline query keys bypass the type-safe factory pattern. Use a factory: `setQueryData(someKeys.scope(), updater)`.",
-  destructureQueryHook:
-    "Destructure the result of an API query/mutation hook at the call site: `const { data } = useFooQuery()` instead of `const foo = useFooQuery()`. Makes the read surface explicit and refactors safer.",
   hoistIntl:
     "Intl formatters are expensive to construct — hoist to module scope (static locale/options) or wrap in useMemo keyed on the locale.",
-  zustandBare:
-    "Pass a selector to the Zustand store hook, for example `useSettingsStore(state => state.theme)`. Bare store subscriptions re-render for every store change; use `.getState()` for an imperative read.",
-  zustandUndefined:
-    "Passing `undefined` still subscribes to the entire Zustand store. Pass a selector such as `state => state.theme`, or use `.getState()` for an imperative read.",
   componentsTsxOnly:
     "components/ holds components and a barrel, nothing else, and this file renders no JSX. Move it to src/utils (helpers, pure logic), src/hooks (a hook), or src/api/<feature>/ (data access).",
 };
 
-const I18N_COMPONENTS = new Set(["Trans", "Plural", "Select"]);
-const NATIVE_TRANSLATABLE_ATTRIBUTES = ["placeholder", "accessibilityLabel", "accessibilityHint", "title"];
-const TOAST_METHODS = new Set(["success", "error", "info", "warning", "loading", "message"]);
-const FILTER_METHODS = new Set([
-  "invalidateQueries",
-  "removeQueries",
-  "refetchQueries",
-  "cancelQueries",
-  "resetQueries",
-]);
-const QUERY_KEY_HOOKS = new Set([
-  "useQuery",
-  "useSuspenseQuery",
-  "useInfiniteQuery",
-  "useSuspenseInfiniteQuery",
-  "useQueries",
-]);
-const QUERY_KEY_METHODS = new Set([
-  "invalidateQueries",
-  "removeQueries",
-  "refetchQueries",
-  "cancelQueries",
-  "resetQueries",
-  "fetchQuery",
-  "prefetchQuery",
-  "ensureQueryData",
-  "getQueriesData",
-  "setQueriesData",
-]);
-const API_HOOK_MODULE = /^@\/api\/.*\.(?:queries|mutations)$/;
-const STORE_MODULE = /^(?:@\/stores\/|(?:\.\.?\/)+stores\/)[^"']*-store$/;
-const STORE_HOOK = /^use[A-Za-z0-9_$]*Store$/;
-const BARE_TEXT = /^[A-Za-z][^<{}]{2,}$/;
 const MEMO_HOOKS = new Set(["useMemo", "useCallback"]);
 const FUNCTION_TYPES = new Set(["ArrowFunctionExpression", "FunctionDeclaration", "FunctionExpression"]);
-
-const isZodCall = (node, method) =>
-  node?.type === "CallExpression" &&
-  node.callee?.type === "MemberExpression" &&
-  node.callee.object?.type === "Identifier" &&
-  node.callee.object.name === "z" &&
-  node.callee.property?.name === method;
-
-const isStringLiteralCall = node =>
-  isZodCall(node, "literal") &&
-  node.arguments?.length === 1 &&
-  node.arguments[0]?.type === "Literal" &&
-  typeof node.arguments[0].value === "string";
-
-const preferZodEnum = {
-  meta: { type: "problem" },
-  createOnce(context) {
-    return {
-      CallExpression(node) {
-        if (isZodCall(node, "nativeEnum")) {
-          context.report({ node, message: MESSAGES.nativeEnum });
-          return;
-        }
-        if (!isZodCall(node, "union")) return;
-        const members = node.arguments?.[0];
-        if (members?.type !== "ArrayExpression") return;
-        const elements = members.elements ?? [];
-        if (elements.length === 0 || !elements.every(isStringLiteralCall)) return;
-        context.report({ node, message: MESSAGES.literalUnion });
-      },
-    };
-  },
-};
-
-const noBareJsxText = {
-  meta: { type: "problem" },
-  createOnce(context) {
-    return {
-      JSXElement(node) {
-        if ((node.openingElement?.attributes ?? []).length > 0) return;
-        const children = (node.children ?? []).filter(
-          child => child.type !== "JSXText" || (child.value ?? "").trim() !== ""
-        );
-        if (children.length !== 1) return;
-        const only = children[0];
-        if (only.type !== "JSXText") return;
-        if (!BARE_TEXT.test((only.value ?? "").trim())) return;
-        if (I18N_COMPONENTS.has(tagIdentifier(node.openingElement?.name))) return;
-        context.report({ node: only, message: MESSAGES.bareJsxText });
-      },
-    };
-  },
-};
-
-const noBareJsxAttrs = {
-  meta: {
-    type: "problem",
-    schema: [
-      {
-        type: "object",
-        properties: { attributes: { type: "array", items: { type: "string" } } },
-        additionalProperties: false,
-      },
-    ],
-  },
-  createOnce(context) {
-    const attributes = new Set();
-    return {
-      before() {
-        attributes.clear();
-        for (const attribute of context.options?.[0]?.attributes ?? NATIVE_TRANSLATABLE_ATTRIBUTES) {
-          attributes.add(attribute);
-        }
-      },
-      JSXAttribute(node) {
-        if (!attributes.has(node.name?.name ?? "")) return;
-        const value = node.value;
-        if (value?.type !== "Literal" || typeof value.value !== "string" || value.value.length === 0) return;
-        context.report({ node, message: MESSAGES.bareJsxAttribute });
-      },
-    };
-  },
-};
-
-const noBareToast = {
-  meta: { type: "problem" },
-  createOnce(context) {
-    return {
-      CallExpression(node) {
-        const callee = node.callee;
-        if (callee?.type !== "MemberExpression") return;
-        if (callee.object?.type !== "Identifier" || callee.object.name !== "toast") return;
-        if (!TOAST_METHODS.has(callee.property?.name ?? "")) return;
-        if ((node.arguments ?? []).length !== 1) return;
-        const argument = node.arguments?.[0];
-        if (argument?.type !== "Literal" || typeof argument.value !== "string") return;
-        context.report({ node: argument, message: MESSAGES.bareToast });
-      },
-    };
-  },
-};
-
-const noDeprecatedTanstackQueryFilters = {
-  meta: { type: "problem", hasSuggestions: true },
-  createOnce(context) {
-    return {
-      CallExpression(node) {
-        const callee = node.callee;
-        if (callee?.type !== "MemberExpression") return;
-        if (!FILTER_METHODS.has(callee.property?.name ?? "")) return;
-        const argument = node.arguments?.[0];
-        if (!argument || node.arguments.length !== 1) return;
-        const source = context.sourceCode ?? context.getSourceCode();
-        if (argument.type === "ArrayExpression") {
-          const text = source.getText(argument);
-          context.report({
-            node: argument,
-            message: MESSAGES.deprecatedFilters,
-            suggest: [
-              {
-                desc: "Wrap in a filter object",
-                fix: fixer => fixer.replaceText(argument, `{ queryKey: ${text} }`),
-              },
-            ],
-          });
-          return;
-        }
-        if (argument.type === "Literal" && typeof argument.value === "string") {
-          const text = source.getText(argument);
-          context.report({
-            node: argument,
-            message: MESSAGES.deprecatedFilters,
-            suggest: [
-              {
-                desc: "Wrap in a filter object",
-                fix: fixer => fixer.replaceText(argument, `{ queryKey: [${text}] }`),
-              },
-            ],
-          });
-        }
-      },
-    };
-  },
-};
-
-const noInlineTanstackQueryKeys = {
-  meta: { type: "problem" },
-  createOnce(context) {
-    return {
-      CallExpression(node) {
-        const callee = node.callee;
-        const method = callee?.type === "MemberExpression" ? (callee.property?.name ?? "") : "";
-        if (method === "getQueryData" || method === "setQueryData") {
-          const key = node.arguments?.[0];
-          if (key?.type !== "ArrayExpression") return;
-          context.report({
-            node: key,
-            message: method === "getQueryData" ? MESSAGES.inlineGetQueryData : MESSAGES.inlineSetQueryData,
-          });
-          return;
-        }
-        const isHook = callee?.type === "Identifier" && QUERY_KEY_HOOKS.has(callee.name);
-        const isMethod = method !== "" && QUERY_KEY_METHODS.has(method);
-        if (!isHook && !isMethod) return;
-        const options = node.arguments?.[0];
-        if (options?.type !== "ObjectExpression") return;
-        for (const property of options.properties ?? []) {
-          if (property.type !== "Property") continue;
-          if ((property.key?.name ?? property.key?.value) !== "queryKey") continue;
-          if (property.value?.type !== "ArrayExpression") continue;
-          context.report({ node: property.value, message: MESSAGES.inlineQueryKey });
-        }
-      },
-    };
-  },
-};
-
-const requireDestructuredQueryHooks = {
-  meta: { type: "problem" },
-  createOnce(context) {
-    const apiHooks = new Set();
-    const candidates = [];
-    return {
-      before() {
-        apiHooks.clear();
-        candidates.length = 0;
-      },
-      ImportDeclaration(node) {
-        const source = node.source?.value;
-        if (typeof source !== "string" || !API_HOOK_MODULE.test(source)) return;
-        for (const specifier of node.specifiers ?? []) {
-          if (specifier.type === "ImportSpecifier" && specifier.local?.name) apiHooks.add(specifier.local.name);
-        }
-      },
-      VariableDeclarator(node) {
-        if (node.id?.type !== "Identifier") return;
-        if (node.init?.type !== "CallExpression" || node.init.callee?.type !== "Identifier") return;
-        if (!/^use[A-Z]/.test(node.init.callee.name)) return;
-        candidates.push({ node, hook: node.init.callee.name });
-      },
-      "Program:exit"() {
-        for (const candidate of candidates) {
-          if (!apiHooks.has(candidate.hook)) continue;
-          context.report({ node: candidate.node.id, message: MESSAGES.destructureQueryHook });
-        }
-      },
-    };
-  },
-};
 
 const COMMENT_DIRECTIVES = [
   "@ts-expect-error",
@@ -306,20 +44,9 @@ const COMMENT_DIRECTIVES = [
 
 const LAZY_WRAPPERS = new Set(["lazy", "dynamic"]);
 
-const propertyKeyName = node =>
-  node.key?.type === "Identifier" ? node.key.name : node.key?.type === "Literal" ? String(node.key.value) : "";
-
-const BARE_FETCH = /\bfetch\s*\(/;
-const RETURNS_NULL = /\breturn\s+null\b/;
-const QUERY_FN_KEYS = new Set(["queryFn", "mutationFn"]);
-
 const DATA_MESSAGES = {
-  fetchInQueryFn:
-    "Call a typed function from the feature's requests module instead. A bare fetch here skips the shared client, so it sends no auth header, applies no timeout, never retries a 429 or a 5xx, and throws a raw Response rather than the app's error type.",
   dynamicImport:
     "Import this at the top of the file. A dynamic import() buys no laziness here - Metro inlines it into the same bundle - so all it costs is a module the typechecker cannot follow and a path nothing resolves on a rename. React.lazy(() => import(...)) is exempt, since deferring the component is the point there.",
-  nextPageParamNull:
-    "Return undefined to mean there are no more pages. null is a valid page param, so returning it tells the query the next cursor is null and the list keeps fetching forever.",
 };
 
 const ESCAPE_HATCH = /^what:\s*(?<fact>.+)$/i;
@@ -359,41 +86,6 @@ const eachComment = (context, visit) => ({
     }
   },
 });
-
-const noFetchInQueryFn = {
-  meta: { type: "problem" },
-  createOnce(context) {
-    return {
-      before() {
-        const text = context.sourceCode?.getText?.();
-        return text === undefined || text.includes("queryFn") || text.includes("mutationFn");
-      },
-      Property(node) {
-        if (!QUERY_FN_KEYS.has(propertyKeyName(node))) return;
-        const body = context.sourceCode?.getText?.(node.value) ?? "";
-        if (!BARE_FETCH.test(body)) return;
-        context.report({ node: node.value, message: DATA_MESSAGES.fetchInQueryFn });
-      },
-    };
-  },
-};
-
-const nextPageParamUndefined = {
-  meta: { type: "problem" },
-  createOnce(context) {
-    return {
-      before() {
-        return context.sourceCode?.getText?.()?.includes("getNextPageParam") !== false;
-      },
-      Property(node) {
-        if (propertyKeyName(node) !== "getNextPageParam") return;
-        const body = context.sourceCode?.getText?.(node.value) ?? "";
-        if (!RETURNS_NULL.test(body)) return;
-        context.report({ node: node.value, message: DATA_MESSAGES.nextPageParamNull });
-      },
-    };
-  },
-};
 
 const noDynamicImport = {
   meta: { type: "problem" },
@@ -474,52 +166,6 @@ const commentEscapeHatch = {
           context.report({
             node: accepted[budget],
             message: `${accepted.length} \`what:\` comments in this file and the budget is ${budget}. Each one past the budget is a refactor that was skipped: move the annotated logic into functions whose names carry what these lines are saying, then delete them.`,
-          });
-        }
-      },
-    };
-  },
-};
-
-const requireZustandSelector = {
-  meta: { type: "problem" },
-  createOnce(context) {
-    const hooks = new Set();
-    const calls = [];
-    return {
-      before() {
-        hooks.clear();
-        calls.length = 0;
-      },
-      ImportDeclaration(node) {
-        const source = node.source?.value;
-        if (typeof source !== "string" || !STORE_MODULE.test(source)) return;
-        for (const specifier of node.specifiers ?? []) {
-          if (specifier.type !== "ImportSpecifier") continue;
-          const imported = specifier.imported?.name ?? "";
-          const local = specifier.local?.name ?? "";
-          if (STORE_HOOK.test(imported) || STORE_HOOK.test(local)) hooks.add(local);
-        }
-      },
-      CallExpression(node) {
-        if (node.callee?.type !== "Identifier") return;
-        const name = node.callee.name;
-        if (!hooks.has(name) && !STORE_HOOK.test(name)) return;
-        const args = node.arguments ?? [];
-        if (args.length === 0) {
-          calls.push({ node, name, bare: true });
-          return;
-        }
-        if (args.length === 1 && args[0]?.type === "Identifier" && args[0].name === "undefined") {
-          calls.push({ node, name, bare: false });
-        }
-      },
-      "Program:exit"() {
-        for (const call of calls) {
-          if (!hooks.has(call.name)) continue;
-          context.report({
-            node: call.node,
-            message: call.bare ? MESSAGES.zustandBare : MESSAGES.zustandUndefined,
           });
         }
       },
@@ -722,7 +368,7 @@ const readDesignSystem = (dir, alias) => {
 const designSystems = new Map();
 
 const designSystemFor = (dir, alias) => {
-  const cacheKey = `${dir} ${alias}`;
+  const cacheKey = `${dir} ${alias}`;
   let banned = designSystems.get(cacheKey);
   if (banned === undefined) {
     banned = readDesignSystem(dir, alias);
@@ -804,24 +450,14 @@ const componentsTsxOnly = {
 };
 
 export default {
-  meta: { name: "shared" },
+  meta: { name: "ash" },
   rules: {
-    "prefer-zod-enum": preferZodEnum,
-    "no-bare-jsx-text": noBareJsxText,
-    "no-bare-jsx-attrs": noBareJsxAttrs,
-    "no-bare-toast": noBareToast,
-    "no-deprecated-tanstack-query-filters": noDeprecatedTanstackQueryFilters,
-    "no-inline-tanstack-query-keys": noInlineTanstackQueryKeys,
-    "require-destructured-query-hooks": requireDestructuredQueryHooks,
-    "no-fetch-in-query-fn": noFetchInQueryFn,
-    "next-page-param-undefined": nextPageParamUndefined,
-    "no-dynamic-import": noDynamicImport,
     "no-comments": noComments,
     "comment-escape-hatch": commentEscapeHatch,
-    "require-zustand-selector": requireZustandSelector,
-    "hoist-intl": hoistIntl,
+    "no-dynamic-import": noDynamicImport,
     "no-naming-convention": noNamingConvention,
     "use-design-system": useDesignSystem,
     "components-tsx-only": componentsTsxOnly,
+    "hoist-intl": hoistIntl,
   },
 };

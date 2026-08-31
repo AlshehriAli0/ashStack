@@ -19,7 +19,7 @@ import {
   receiverName,
   subtreeHas,
   tagIdentifier,
-} from "./internal/ast.js";
+} from "../../lib/ast.js";
 
 const gate = (context, ...markers) => {
   const text = context.sourceCode?.getText?.();

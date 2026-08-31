@@ -1,11 +1,25 @@
-// Fixture gate: for every packages/lint/fixtures/<domain>/<rule>/, bad.* must fire
-// <domain>/<rule> at least once and good.* must never fire it.
+// Fixture gate: for every packages/lint/fixtures/<namespace>/<rule>/, bad.* must fire
+// <namespace>/<rule> at least once and good.* must never fire it. A rule dir may
+// carry options.json when the rule needs configuration to fire.
 import { existsSync, readFileSync, readdirSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
 const lintDir = join(import.meta.dir, "..", "packages", "lint");
 const fixturesDir = join(lintDir, "fixtures");
 const oxlint = join(import.meta.dir, "..", "node_modules", ".bin", "oxlint");
+
+// fixture namespace -> plugin file (relative to packages/lint)
+const PLUGIN_FILES: Record<string, string> = {
+  ash: "src/core/rules/ash.js",
+  zod: "src/core/rules/zod.js",
+  query: "src/react/rules/query.js",
+  zustand: "src/react/rules/zustand.js",
+  i18n: "src/react/rules/i18n.js",
+  rn: "src/react-native/rules/base.js",
+  unistyles: "src/react-native/rules/unistyles.js",
+  "legend-list": "src/react-native/rules/legend-list.js",
+  "legend-state": "src/react-native/rules/legend-state.js",
+};
 
 const failures: string[] = [];
 
@@ -14,6 +28,11 @@ const domains = readdirSync(fixturesDir, { withFileTypes: true })
   .map(d => d.name);
 
 for (const domain of domains) {
+  const pluginFile = PLUGIN_FILES[domain];
+  if (!pluginFile) {
+    failures.push(`${domain}: no plugin file mapped in check-fixtures.ts`);
+    continue;
+  }
   const domainDir = join(fixturesDir, domain);
   const rules = readdirSync(domainDir, { withFileTypes: true })
     .filter(d => d.isDirectory())
@@ -25,10 +44,9 @@ for (const domain of domains) {
     JSON.stringify({
       plugins: [],
       categories: { correctness: "off", suspicious: "off", perf: "off" },
-      jsPlugins: [`./plugins/${domain}.js`],
+      jsPlugins: [`./${pluginFile}`],
       rules: Object.fromEntries(
         rules.map(rule => {
-          // a rule dir may carry options.json when the rule needs configuration to fire
           const optionsPath = join(domainDir, rule, "options.json");
           const config = existsSync(optionsPath) ? JSON.parse(readFileSync(optionsPath, "utf8")) : "error";
           return [`${domain}/${rule}`, config];

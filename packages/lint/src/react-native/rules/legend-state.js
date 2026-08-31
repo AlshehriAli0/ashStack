@@ -307,7 +307,7 @@ const noObservableInComponent = {
 };
 
 export default {
-  meta: { name: "state" },
+  meta: { name: "legend-state" },
   rules: {
     "no-assignment": noAssignment,
     naming: naming,

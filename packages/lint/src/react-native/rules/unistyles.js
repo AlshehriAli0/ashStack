@@ -9,7 +9,7 @@
 // text gate where a cheap marker can rule the file out. Gates fail OPEN — if the
 // source text is unavailable the rule still runs, because a missed gate costs
 // milliseconds and a wrong gate costs correctness.
-import { calleeName, closestAncestor, findInSubtree, hasAncestor, subtreeHas } from "./internal/ast.js";
+import { calleeName, closestAncestor, findInSubtree, hasAncestor, subtreeHas } from "../../lib/ast.js";
 
 const LOGICAL_SPACING = new Set(["paddingLeft", "paddingRight", "marginLeft", "marginRight"]);
 

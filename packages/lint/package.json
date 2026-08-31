@@ -1,25 +1,22 @@
 {
   "name": "@ashstack/lint",
   "version": "0.0.0",
-  "description": "ashStack shared oxlint configuration and custom rules. Entries: core, react, react-native. Consume from oxlint.config.mts.",
+  "description": "ashStack shared oxlint configuration and custom rules. Entries: core, react, react-native, with per-library rule groups auto-detected from your dependencies. Consume from oxlint.config.mts.",
   "type": "module",
   "license": "MIT",
   "author": "Ali Alshehri (https://github.com/AlshehriAli0)",
   "exports": {
-    ".": "./index.js",
-    "./core": "./core.js",
-    "./react": "./react.js",
-    "./react-native": "./react-native.js",
-    "./plugins/*": "./plugins/*.js"
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./src/index.js"
+    },
+    "./core": "./src/core/index.js",
+    "./react": "./src/react/index.js",
+    "./react-native": "./src/react-native/index.js"
   },
   "files": [
-    "index.js",
-    "core.js",
-    "react.js",
-    "react-native.js",
-    "lib",
-    "plugins",
-    "*.d.ts"
+    "src",
+    "index.d.ts"
   ],
   "publishConfig": {
     "access": "public"
