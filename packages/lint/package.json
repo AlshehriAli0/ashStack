@@ -4,7 +4,7 @@
   "description": "ashStack shared oxlint configuration and custom rules. Entries: core, react, react-native. Consume from oxlint.config.mts.",
   "type": "module",
   "license": "MIT",
-  "author": "Ali Alshehri",
+  "author": "Ali Alshehri (https://github.com/AlshehriAli0)",
   "exports": {
     ".": "./index.js",
     "./core": "./core.js",
