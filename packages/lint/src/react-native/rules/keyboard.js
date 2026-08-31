@@ -19,7 +19,13 @@ const NEW_MESSAGES = {
 };
 
 const keyboardAvoidingViewSource = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow importing `KeyboardAvoidingView` from react-native; it listens for keyboardDidShow and never subscribes to WindowInsetsAnimationCallback, so under edge-to-edge Android it leaves the input under the keyboard — import it from react-native-keyboard-controller.",
+    },
+  },
   createOnce(context) {
     return {
       before() {

@@ -23,7 +23,13 @@ const MESSAGES = {
 };
 
 const skiaPerformance = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require an explicit `opaque` prop on a Skia `<Canvas>` and disallow the legacy path-value hooks, which self-dirty Reanimated mappers and re-record idle canvases.",
+    },
+  },
   createOnce(context) {
     const canvasLocals = new Set();
     const elements = [];

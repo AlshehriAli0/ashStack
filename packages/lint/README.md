@@ -13,6 +13,8 @@ export default defineConfig({
 });
 ```
 
+Every custom rule is documented in [RULES.md](./RULES.md) — description, options, failing and passing examples, generated from the rules themselves.
+
 Run with `oxlint --type-aware --deny-warnings .` (type-aware rules need the `oxlint-tsgolint` peer). Node 22.18+.
 
 **Library rule groups auto-detect from your dependencies** — `@ashstack/zod/`, `@ashstack/query/`, `@ashstack/zustand/`, `@ashstack/i18n/`, `@ashstack/unistyles/`, `@ashstack/legend-list/`, `@ashstack/legend-state/`, `@ashstack/reanimated/`, `@ashstack/turbo-image/`, `@ashstack/skia/`, `@ashstack/keyboard/` plus their import bans only ship when the library is in your package.json. Each module is one boolean: `reactNative({ unistyles: false, i18n: true })`. Import bans are auto-detect only; disable individual rules by name.

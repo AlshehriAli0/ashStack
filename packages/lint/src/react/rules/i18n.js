@@ -13,7 +13,13 @@ const TOAST_METHODS = new Set(["success", "error", "info", "warning", "loading",
 const BARE_TEXT = /^[A-Za-z][^<{}]{2,}$/;
 
 const noBareText = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow untranslated literal text as the only child of a JSX element; wrap it in t() or <Trans> and add the key to the locale files so every locale resolves.",
+    },
+  },
   createOnce(context) {
     return {
       JSXElement(node) {
@@ -35,6 +41,10 @@ const noBareText = {
 const noBareAttrs = {
   meta: {
     type: "problem",
+    docs: {
+      description:
+        "Disallow untranslated string literals in user-visible JSX attributes such as placeholder, accessibilityLabel, accessibilityHint and title; wrap the value in t().",
+    },
     schema: [
       {
         type: "object",
@@ -63,7 +73,13 @@ const noBareAttrs = {
 };
 
 const noBareToast = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow a bare string literal as the only argument to a `toast.*` call; wrap it in t() so the message resolves in every locale.",
+    },
+  },
   createOnce(context) {
     return {
       CallExpression(node) {

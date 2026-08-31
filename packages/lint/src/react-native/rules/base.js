@@ -40,7 +40,13 @@ const NEW_MESSAGES = {
 };
 
 const noConditionalStyleArray = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow conditional or logical entries inside a JSX `style` array; an entry that evaluates falsy leaves a hole that shifts the array indices and breaks the Unistyles C++ proxy.",
+    },
+  },
   createOnce(context) {
     return {
       JSXAttribute(node) {
@@ -63,7 +69,13 @@ const noConditionalStyleArray = {
 };
 
 const noRnNamespaceImport = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow namespace-importing react-native or re-exporting its `Platform`; both defeat Metro's platform shaking, so dead `Platform.OS` branches ship in both bundles.",
+    },
+  },
   createOnce(context) {
     return {
       before() {
@@ -96,7 +108,13 @@ const noRnNamespaceImport = {
 };
 
 const noUnlabeledIconPressable = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require an accessible name on an icon-only touchable or an icon-only Expo UI `<Button>`; with no label, hint or visible text the control is unreachable to a screen reader.",
+    },
+  },
   createOnce(context) {
     return {
       JSXElement(node) {
@@ -180,7 +198,13 @@ const isLengthGuard = node => {
 };
 
 const noLeakedRender = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        'Disallow guarding JSX with a `&&` on a `.length` expression; the falsy left operand leaks into the output, and a bare `0` crashes React Native with "Text strings must be rendered within a <Text> component".',
+    },
+  },
   createOnce(context) {
     return {
       JSXExpressionContainer(node) {
@@ -211,7 +235,13 @@ const hasUriProperty = node => {
 };
 
 const noRnImageNetworkSource = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow a react-native `<Image>` with a network `{ uri }` source; it has no disk cache and no decode sizing, so it re-downloads on every cold start — use TurboImage instead.",
+    },
+  },
   createOnce(context) {
     const imageBindings = new Set();
     const candidates = [];
@@ -268,7 +298,13 @@ const onlyLayoutProps = opening =>
   );
 
 const noRedundantViewNesting = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow a View or Animated.View that only wraps an identical view when neither carries anything but a style; every extra host view is a real node in the native tree and costs layout and memory.",
+    },
+  },
   createOnce(context) {
     return {
       JSXElement(node) {
@@ -293,7 +329,13 @@ const noRedundantViewNesting = {
 // Every occurrence of the string counts, not only a listener argument: the
 // event does not exist on Android wherever the name is written.
 const noKeyboardWillEvents = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow the iOS-only `keyboardWill*` event names; on Android the listener is registered and never fires, so whatever it drives silently does nothing on half the devices.",
+    },
+  },
   createOnce(context) {
     return {
       before() {
@@ -308,7 +350,13 @@ const noKeyboardWillEvents = {
 };
 
 const noScrollPositionState = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow calling a React state setter from a scroll handler prop; scroll fires every frame, so the whole screen re-renders every frame.",
+    },
+  },
   createOnce(context) {
     return {
       before() {
@@ -351,7 +399,13 @@ const scopeContains = (scope, ancestor) => {
 };
 
 const hoistStatelessFunction = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require hoisting a non-component function that reads nothing from the component around it to module scope, where it is created once, keeps a stable identity and can be tested without rendering.",
+    },
+  },
   createOnce(context) {
     const check = node => {
       const name = boundFunctionName(node);
@@ -421,7 +475,13 @@ const lineFinder = text => {
 // render, and what is expensive. Both are claims a person makes, so the rule
 // asks for the claim in writing.
 const noManualMemo = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow `useMemo`, `useCallback` and `memo` unless a `why:` comment on the line above states the case the React Compiler cannot see — something rendered per list row, or a cost that was measured.",
+    },
+  },
   createOnce(context) {
     let calls;
     return {

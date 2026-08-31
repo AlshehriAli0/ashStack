@@ -16,7 +16,8 @@
   },
   "files": [
     "src",
-    "index.d.ts"
+    "index.d.ts",
+    "RULES.md"
   ],
   "publishConfig": {
     "access": "public"

@@ -11,7 +11,13 @@ const STORE_MODULE = /^(?:@\/stores\/|(?:\.\.?\/)+stores\/)[^"']*-store$/;
 const STORE_HOOK = /^use[A-Za-z0-9_$]*Store$/;
 
 const requireSelector = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require a selector when calling a Zustand store hook; calling it bare or with `undefined` subscribes to the whole store, so the component re-renders for every store change.",
+    },
+  },
   createOnce(context) {
     const hooks = new Set();
     const calls = [];

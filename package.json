@@ -12,7 +12,9 @@
     "check:smoke": "bun scripts/check-smoke.ts",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
-    "release": "changeset publish"
+    "release": "changeset publish",
+    "docs:rules": "bun scripts/generate-rule-docs.ts",
+    "docs:rules:check": "bun scripts/generate-rule-docs.ts --check"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.0",

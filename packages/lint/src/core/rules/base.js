@@ -88,7 +88,13 @@ const eachComment = (context, visit) => ({
 });
 
 const noDynamicImport = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow dynamic `import()` outside a React.lazy/dynamic wrapper; Metro inlines it into the same bundle, so it buys no laziness and only hides the module from the typechecker.",
+    },
+  },
   createOnce(context) {
     return {
       before() {
@@ -105,7 +111,13 @@ const noDynamicImport = {
 };
 
 const noComments = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow explanatory comments; prose about unclear code is a refactor that was skipped, so rename, extract and simplify until only a single `// what: <fact>` line is left.",
+    },
+  },
   createOnce(context) {
     return eachComment(context, (comment, _body, fact) => {
       if (fact === undefined) context.report({ node: comment, message: HATCH_MESSAGES.refactorFirst });
@@ -116,6 +128,10 @@ const noComments = {
 const commentEscapeHatch = {
   meta: {
     type: "problem",
+    docs: {
+      description:
+        "Enforce the shape and the per-file budget of `// what:` escape-hatch comments — one short line each, never blocks, never stacked — because every one past the budget is a refactor that was skipped.",
+    },
     schema: [
       {
         type: "object",
@@ -174,7 +190,13 @@ const commentEscapeHatch = {
 };
 
 const hoistIntl = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow constructing an `Intl` formatter inside a function that renders JSX; the constructor is expensive, so hoist it to module scope or wrap it in useMemo keyed on the locale.",
+    },
+  },
   createOnce(context) {
     return {
       NewExpression(node) {
@@ -262,7 +284,13 @@ const namingViolation = (name, kind) => {
 };
 
 const noNamingConvention = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Enforce the allowed name shapes and casing for variables, object properties, type members and enum members, so a name never has to be read twice to tell what kind of thing it is.",
+    },
+  },
   createOnce(context) {
     const check = (node, name, kind) => {
       if (name === null) return;
@@ -380,6 +408,10 @@ const designSystemFor = (dir, alias) => {
 const useDesignSystem = {
   meta: {
     type: "problem",
+    docs: {
+      description:
+        "Disallow importing a react-native primitive the project's own design system already wraps; the wrapper is where the theme colours, the typography tokens and the font-scaling cap live.",
+    },
     schema: [
       {
         type: "object",
@@ -428,7 +460,13 @@ const isBarrel = program =>
 // renders no JSX and is not a barrel, so a component file is never flagged even
 // when the rule is left on everywhere.
 const componentsTsxOnly = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require every file in components/ to render JSX or be a barrel; helpers, hooks and data access belong in utils, hooks or api instead.",
+    },
+  },
   createOnce(context) {
     let sawJsx = false;
     return {

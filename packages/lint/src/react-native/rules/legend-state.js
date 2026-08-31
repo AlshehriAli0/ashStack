@@ -40,7 +40,13 @@ const factoryCalled = node =>
     : null;
 
 const noAssignment = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow assigning to or incrementing an observable; the write is a silent no-op, so use `.set(...)` or `.assign({...})` instead.",
+    },
+  },
   createOnce(context) {
     return {
       before() {
@@ -67,7 +73,13 @@ const noAssignment = {
 };
 
 const naming = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require a trailing `$` on a variable initialized from `observable()` or `useObservable()`; the suffix is how a reader tells an observable from a plain value, and every other rule here keys off it.",
+    },
+  },
   createOnce(context) {
     return {
       before() {
@@ -87,7 +99,13 @@ const naming = {
 };
 
 const noNestedObservable = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow passing an observable to `observable()` or `useObservable()`; wrapping it creates a second node whose reads and writes never reach the original.",
+    },
+  },
   createOnce(context) {
     return {
       before() {
@@ -108,7 +126,13 @@ const noNestedObservable = {
 };
 
 const noReactMirror = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow seeding `useState` from an observable's `get()` or `peek()`; there must be one owner, so read the observable with `useValue(...)` where it renders.",
+    },
+  },
   createOnce(context) {
     return {
       before() {
@@ -137,7 +161,13 @@ const noReactMirror = {
 // components call — `<Memo>{() => count$.get()}</Memo>`. Directly in the
 // container it is a plain read, so the value renders once and never updates.
 const noUntrackedGetInJsx = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow calling an observable's `get()` directly in a JSX expression container; outside a tracking function it is a plain read, so the value renders once and never updates.",
+    },
+  },
   createOnce(context) {
     let fnDepth = 0;
     let containers = [];
@@ -189,7 +219,13 @@ const noUntrackedGetInJsx = {
 // The mirror of the rule above: inside a selector, peek() is the one read
 // that does not subscribe, so the component never re-renders for it.
 const noPeekInSelector = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow `peek()` inside a selector or tracking callback such as useValue, observe or when; peek never subscribes, so the selector never re-runs and the component keeps rendering the first value.",
+    },
+  },
   createOnce(context) {
     let selectors = new WeakSet();
     let depth = 0;
@@ -234,7 +270,13 @@ const noPeekInSelector = {
 };
 
 const noObjectSelector = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow a `useValue` selector that returns a new object or array; its identity differs every run, so the component re-renders on every store change.",
+    },
+  },
   createOnce(context) {
     return {
       before() {
@@ -264,7 +306,13 @@ const noObjectSelector = {
 };
 
 const noObservableInComponent = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow calling `observable()` inside a component or hook; it creates a new observable on every render, so nothing that read the previous one is listening — use `useObservable()` or a store module.",
+    },
+  },
   createOnce(context) {
     let componentDepth = 0;
     const enter = name => {

@@ -20,7 +20,13 @@ const isStringLiteralCall = node =>
   typeof node.arguments[0].value === "string";
 
 const preferEnum = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require `z.enum()` in place of the deprecated `z.nativeEnum()` and of a `z.union()` of string literals, so a closed set reports one issue and its options stay reusable.",
+    },
+  },
   createOnce(context) {
     return {
       CallExpression(node) {

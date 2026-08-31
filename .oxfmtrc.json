@@ -12,5 +12,5 @@
   "insertFinalNewline": true,
   "sortPackageJson": false,
   "sortImports": { "newlinesBetween": true },
-  "ignorePatterns": ["**/node_modules/**", "CONTEXT.md", "docs/**", "**/fixtures/**"]
+  "ignorePatterns": ["**/node_modules/**", "CONTEXT.md", "docs/**", "**/fixtures/**", "packages/lint/RULES.md"]
 }

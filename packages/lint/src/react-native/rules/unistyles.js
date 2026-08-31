@@ -163,8 +163,8 @@ const stylesObjectOf = factory => {
 
 // Depth tracking shared by the rules that only apply inside StyleSheet.create().
 // Depth resets per file in before(), which also runs the text gate.
-const inCreate = visit => ({
-  meta: { type: "problem" },
+const inCreate = (description, visit) => ({
+  meta: { type: "problem", docs: { description } },
   createOnce(context) {
     let depth = 0;
     const inside = () => depth > 0;
@@ -189,24 +189,30 @@ const inCreate = visit => ({
   },
 });
 
-const noMargin = inCreate((context, inside) => ({
-  Property(node) {
-    if (!inside()) return;
-    const name = propertyName(node);
-    if (name === "" || !ANY_MARGIN.test(name)) return;
-    if (subtreeHas(node.value, isNegation)) return;
-    context.report({ node, message: MESSAGES.noMargin });
-  },
-}));
+const noMargin = inCreate(
+  "Disallow non-negative margin inside StyleSheet.create; margin escapes the child's own box, so it leaves stray space when a first or last child is removed — use gap on the parent or padding here.",
+  (context, inside) => ({
+    Property(node) {
+      if (!inside()) return;
+      const name = propertyName(node);
+      if (name === "" || !ANY_MARGIN.test(name)) return;
+      if (subtreeHas(node.value, isNegation)) return;
+      context.report({ node, message: MESSAGES.noMargin });
+    },
+  })
+);
 
-const noHardcodedColor = inCreate((context, inside) => ({
-  Literal(node) {
-    if (!inside()) return;
-    if (typeof node.value !== "string") return;
-    if (!HEX_COLOR.test(node.value) && !CSS_COLOR_FUNCTION.test(node.value)) return;
-    context.report({ node, message: MESSAGES.hardcodedColor });
-  },
-}));
+const noHardcodedColor = inCreate(
+  "Disallow hardcoded hex or CSS-function colors inside StyleSheet.create; a raw value bypasses dark mode and never shifts with the theme.",
+  (context, inside) => ({
+    Literal(node) {
+      if (!inside()) return;
+      if (typeof node.value !== "string") return;
+      if (!HEX_COLOR.test(node.value) && !CSS_COLOR_FUNCTION.test(node.value)) return;
+      context.report({ node, message: MESSAGES.hardcodedColor });
+    },
+  })
+);
 
 const SIGNIFICANT_NUMBER = /^-?[1-9][0-9]*(?:\.[0-9]+)?$/;
 
@@ -236,100 +242,106 @@ const isTokenDerived = node =>
     return false;
   });
 
-const noHardcodedSpacing = inCreate((context, inside) => ({
-  Property(node) {
-    if (!inside()) return;
-    const name = propertyName(node);
-    if (!TOKEN_SPACING.has(name)) return;
-    if (isTokenDerived(node.value)) return;
-    const rawNumber = findInSubtree(
-      node.value,
-      current =>
-        (current.type === "Literal" &&
-          typeof current.value === "number" &&
-          SIGNIFICANT_NUMBER.test(String(current.value)) &&
-          !isThemeScaleHost(current)) ||
-        (current.type === "UnaryExpression" &&
-          current.operator === "-" &&
-          current.argument?.type === "Literal" &&
-          typeof current.argument.value === "number" &&
-          SIGNIFICANT_NUMBER.test(`-${current.argument.value}`) &&
-          !isThemeScaleHost(current))
-    );
-    if (rawNumber) context.report({ node: rawNumber, message: MESSAGES.spacingToken });
-  },
-}));
+const noHardcodedSpacing = inCreate(
+  "Disallow raw numbers for spacing, radius and type properties inside StyleSheet.create; theme.spacing / theme.sizing.scale is what keeps the rhythm consistent and makes changing it one edit.",
+  (context, inside) => ({
+    Property(node) {
+      if (!inside()) return;
+      const name = propertyName(node);
+      if (!TOKEN_SPACING.has(name)) return;
+      if (isTokenDerived(node.value)) return;
+      const rawNumber = findInSubtree(
+        node.value,
+        current =>
+          (current.type === "Literal" &&
+            typeof current.value === "number" &&
+            SIGNIFICANT_NUMBER.test(String(current.value)) &&
+            !isThemeScaleHost(current)) ||
+          (current.type === "UnaryExpression" &&
+            current.operator === "-" &&
+            current.argument?.type === "Literal" &&
+            typeof current.argument.value === "number" &&
+            SIGNIFICANT_NUMBER.test(`-${current.argument.value}`) &&
+            !isThemeScaleHost(current))
+      );
+      if (rawNumber) context.report({ node: rawNumber, message: MESSAGES.spacingToken });
+    },
+  })
+);
 
-const inSheet = inCreate((context, inside) => ({
-  CallExpression(node) {
-    if (!inside() || isStyleSheetCreate(node)) return;
-    const path = node.callee?.type === "MemberExpression" ? memberPath(node.callee) : calleeName(node);
-    if (path === "Dimensions.get") context.report({ node, message: MESSAGES.screenDimensions });
-    else if (path === "PixelRatio.get") context.report({ node, message: MESSAGES.pixelRatio });
-    else if (path === "PixelRatio.getFontScale") context.report({ node, message: MESSAGES.fontScale });
-    else if (path === "Appearance.getColorScheme") context.report({ node, message: MESSAGES.colorScheme });
-    else if (path === "useColorScheme") context.report({ node, message: MESSAGES.colorScheme });
-  },
-  MemberExpression(node) {
-    if (!inside()) return;
-    if (node.parent?.type === "MemberExpression" && node.parent.object === node) return;
-    const path = memberPath(node);
-    if (path === "I18nManager.isRTL") {
-      context.report({ node, message: MESSAGES.rtlInSheet });
-      return;
-    }
-    if (path === "StatusBar.currentHeight") {
-      context.report({ node, message: MESSAGES.statusBar });
-      return;
-    }
-    if (path.startsWith("UnistylesRuntime.")) {
-      context.report({ node, message: MESSAGES.fullRuntime });
-      return;
-    }
-    if (/^theme\.screen\./.test(path)) context.report({ node, message: MESSAGES.themeScreen });
-  },
-  VariableDeclarator(node) {
-    if (!inside()) return;
-    if (node.id?.type !== "ObjectPattern") return;
-    if (node.init?.type === "Identifier" && node.init.name === "UnistylesRuntime") {
-      context.report({ node, message: MESSAGES.fullRuntimeDestructure });
-    }
-  },
-  TSAsExpression(node) {
-    if (!inside()) return;
-    const annotation = node.typeAnnotation;
-    if (annotation?.type !== "TSTypeReference") return;
-    if (annotation.typeName?.name !== "const") return;
-    context.report({ node, message: MESSAGES.asConst });
-  },
-  ObjectExpression(node) {
-    if (!inside()) return;
-    let borderRadius = null;
-    let hasBorderCurve = false;
-    for (const property of node.properties ?? []) {
-      if (property.type !== "Property") continue;
-      const name = propertyName(property);
-      if (name === "borderRadius") borderRadius = property;
-      else if (name === "borderCurve") hasBorderCurve = true;
-    }
-    if (borderRadius && !hasBorderCurve) context.report({ node: borderRadius, message: MESSAGES.borderCurve });
-  },
-  Property(node) {
-    if (!inside()) return;
-    const name = propertyName(node);
-    if (LEGACY_SHADOW.has(name)) {
-      context.report({ node, message: MESSAGES.legacyShadow });
-      return;
-    }
-    if (!LOGICAL_SPACING.has(name)) return;
-    const usesInsets = subtreeHas(node, current => {
-      if (current.type !== "MemberExpression") return false;
-      const path = memberPath(current);
-      return path === "rt.insets.left" || path === "rt.insets.right";
-    });
-    if (!usesInsets) context.report({ node, message: MESSAGES.logicalSpacing });
-  },
-}));
+const inSheet = inCreate(
+  "Enforce reactive sources inside StyleSheet.create — `rt` and the theme rather than Dimensions, PixelRatio, Appearance, I18nManager, StatusBar, UnistylesRuntime or the theme's screen snapshot — plus RTL-safe logical spacing, boxShadow over legacy shadow props, borderCurve beside borderRadius, and no redundant `as const`, so Unistyles can recalculate the style natively.",
+  (context, inside) => ({
+    CallExpression(node) {
+      if (!inside() || isStyleSheetCreate(node)) return;
+      const path = node.callee?.type === "MemberExpression" ? memberPath(node.callee) : calleeName(node);
+      if (path === "Dimensions.get") context.report({ node, message: MESSAGES.screenDimensions });
+      else if (path === "PixelRatio.get") context.report({ node, message: MESSAGES.pixelRatio });
+      else if (path === "PixelRatio.getFontScale") context.report({ node, message: MESSAGES.fontScale });
+      else if (path === "Appearance.getColorScheme") context.report({ node, message: MESSAGES.colorScheme });
+      else if (path === "useColorScheme") context.report({ node, message: MESSAGES.colorScheme });
+    },
+    MemberExpression(node) {
+      if (!inside()) return;
+      if (node.parent?.type === "MemberExpression" && node.parent.object === node) return;
+      const path = memberPath(node);
+      if (path === "I18nManager.isRTL") {
+        context.report({ node, message: MESSAGES.rtlInSheet });
+        return;
+      }
+      if (path === "StatusBar.currentHeight") {
+        context.report({ node, message: MESSAGES.statusBar });
+        return;
+      }
+      if (path.startsWith("UnistylesRuntime.")) {
+        context.report({ node, message: MESSAGES.fullRuntime });
+        return;
+      }
+      if (/^theme\.screen\./.test(path)) context.report({ node, message: MESSAGES.themeScreen });
+    },
+    VariableDeclarator(node) {
+      if (!inside()) return;
+      if (node.id?.type !== "ObjectPattern") return;
+      if (node.init?.type === "Identifier" && node.init.name === "UnistylesRuntime") {
+        context.report({ node, message: MESSAGES.fullRuntimeDestructure });
+      }
+    },
+    TSAsExpression(node) {
+      if (!inside()) return;
+      const annotation = node.typeAnnotation;
+      if (annotation?.type !== "TSTypeReference") return;
+      if (annotation.typeName?.name !== "const") return;
+      context.report({ node, message: MESSAGES.asConst });
+    },
+    ObjectExpression(node) {
+      if (!inside()) return;
+      let borderRadius = null;
+      let hasBorderCurve = false;
+      for (const property of node.properties ?? []) {
+        if (property.type !== "Property") continue;
+        const name = propertyName(property);
+        if (name === "borderRadius") borderRadius = property;
+        else if (name === "borderCurve") hasBorderCurve = true;
+      }
+      if (borderRadius && !hasBorderCurve) context.report({ node: borderRadius, message: MESSAGES.borderCurve });
+    },
+    Property(node) {
+      if (!inside()) return;
+      const name = propertyName(node);
+      if (LEGACY_SHADOW.has(name)) {
+        context.report({ node, message: MESSAGES.legacyShadow });
+        return;
+      }
+      if (!LOGICAL_SPACING.has(name)) return;
+      const usesInsets = subtreeHas(node, current => {
+        if (current.type !== "MemberExpression") return false;
+        const path = memberPath(current);
+        return path === "rt.insets.left" || path === "rt.insets.right";
+      });
+      if (!usesInsets) context.report({ node, message: MESSAGES.logicalSpacing });
+    },
+  })
+);
 
 const declaresUseUnistylesTheme = scope =>
   subtreeHas(
@@ -345,7 +357,13 @@ const readsTheme = node =>
   subtreeHas(node, current => current.type === "MemberExpression" && memberPath(current).startsWith("theme."));
 
 const rtlStyleCall = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow passing `I18nManager.isRTL` from JSX into a dynamic stylesheet style function; read `rt.rtl` inside the style so Unistyles tracks the dependency natively.",
+    },
+  },
   createOnce(context) {
     const sheets = new Set();
     const candidates = [];
@@ -377,7 +395,13 @@ const rtlStyleCall = {
 };
 
 const themeStyleAttr = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow reading the Unistyles theme in a JSX `style` prop when the component already destructures it from `useUnistyles()`; resolve theme-dependent values inside StyleSheet.create instead.",
+    },
+  },
   createOnce(context) {
     return {
       JSXAttribute(node) {
@@ -392,7 +416,13 @@ const themeStyleAttr = {
 };
 
 const themeScreenComponent = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow reading `theme.screen.*` inside a component; it is a module-initialization snapshot, so read current values from `useUnistyles().rt.screen` or useWindowDimensions.",
+    },
+  },
   createOnce(context) {
     return {
       MemberExpression(node) {
@@ -410,7 +440,13 @@ const themeScreenComponent = {
 const WORKLET_HOOKS = new Set(["useAnimatedStyle", "useDerivedValue", "useAnimatedProps"]);
 
 const animatedTheme = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow reading the `useUnistyles()` theme inside a Reanimated worklet hook; use `useAnimatedTheme()` and read its shared value so theme changes reach the UI thread.",
+    },
+  },
   createOnce(context) {
     let declaresTheme = false;
     const candidates = [];
@@ -444,7 +480,13 @@ const animatedTheme = {
 const INSET_TEXT = /(?:inset|safearea|top|bottom|left|right)/i;
 
 const insets = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow feeding `useSafeAreaInsets()` values into a dynamic style function or an inline JSX style object; read safe-area values from `rt.insets` inside StyleSheet.create.",
+    },
+  },
   createOnce(context) {
     const bindings = new Set();
     const sheets = new Set();
@@ -514,7 +556,13 @@ const insets = {
 };
 
 const contentContainer = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow passing a theme- or `rt`-dependent stylesheet style as `contentContainerStyle` to a raw component; it never subscribes to those updates unless the component is wrapped with withUnistyles.",
+    },
+  },
   createOnce(context) {
     const sheetStyles = new Map();
     const wrapped = new Set();
@@ -585,7 +633,13 @@ const contentContainer = {
 // then report at the end. Anything that could hide a use — a computed key, a
 // computed read, or the sheet escaping the module — bails the whole file.
 const noUnusedStyles = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow stylesheet keys nothing in the file reads; an unused style is dead weight the next reader has to rule out and it keeps a token alive that nothing renders.",
+    },
+  },
   createOnce(context) {
     let sheets = new Map();
     let reads = new Set();
@@ -665,7 +719,13 @@ const spreadBase = node => {
 };
 
 const noStyleSpread = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow spreading a stylesheet style; the spread reads the object once and breaks the Unistyles C++ proxy, so the style silently stops reacting to the theme — compose with an array instead.",
+    },
+  },
   createOnce(context) {
     const sheets = new Set();
     const candidates = [];

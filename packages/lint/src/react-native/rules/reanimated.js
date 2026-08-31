@@ -233,7 +233,14 @@ const findBuilderCall = value => {
 };
 
 const noSharedValueDotValue = {
-  meta: { type: "problem", hasSuggestions: true },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow reading or writing a shared value's `.value`; use `.get()` and `.set(...)` so React Compiler can track the read or the mutation.",
+    },
+    hasSuggestions: true,
+  },
   createOnce(context) {
     const names = new Set();
     const candidates = [];
@@ -283,7 +290,13 @@ const noSharedValueDotValue = {
 };
 
 const animatedUpdaterPurity = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow `.set()`, `.modify()` and `scheduleOnRN` inside useAnimatedStyle or useAnimatedProps; an animated updater must stay pure, so move the write to an event, effect, derived value or reaction.",
+    },
+  },
   createOnce(context) {
     let depth = 0;
     return {
@@ -316,7 +329,13 @@ const animatedUpdaterPurity = {
 };
 
 const animatedReactionSafety = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow a useAnimatedReaction result callback writing a shared value its prepare callback reads (an infinite loop) or calling scheduleOnRN without comparing the current and previous results, which bridges to RN every frame.",
+    },
+  },
   createOnce(context) {
     let stack = [];
     return {
@@ -373,7 +392,13 @@ const animatedReactionSafety = {
 };
 
 const scheduleOnRnScope = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow inline function arguments to `scheduleOnRN`; an inline callback has ambiguous runtime ownership and can be created on the wrong runtime, so pass one declared in RN Runtime scope.",
+    },
+  },
   createOnce(context) {
     return {
       before() {
@@ -392,7 +417,13 @@ const scheduleOnRnScope = {
 };
 
 const hoistLayoutAnimationBuilder = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow constructing a Reanimated layout-animation builder inside a component's `entering`, `exiting` or `layout` prop; build static builders at module scope and memoize ones that depend on component values.",
+    },
+  },
   createOnce(context) {
     return {
       JSXAttribute(node) {
@@ -407,7 +438,13 @@ const hoistLayoutAnimationBuilder = {
 };
 
 const preferLazySharedValueInitializer = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require a lazy initializer for a computed `useSharedValue(...)`; an eager call or `new` expression runs on every React render even though only the first result is kept.",
+    },
+  },
   createOnce(context) {
     return {
       before() {
@@ -428,7 +465,13 @@ const preferLazySharedValueInitializer = {
 };
 
 const sharedValueUsage = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow destructuring a shared value, mutating what its `get()` returned, and reading or writing it while JSX is evaluated; each detaches the value from Reanimated reactivity or makes render impure.",
+    },
+  },
   createOnce(context) {
     const names = new Set();
     const candidates = [];
@@ -489,7 +532,13 @@ const sharedValueUsage = {
 };
 
 const noReactStateFromContinuousWorklet = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow scheduling a React state setter through `scheduleOnRN` from a continuously evaluated worklet; it can put a Fabric commit or a Skia re-recording on an animation frame.",
+    },
+  },
   createOnce(context) {
     const setters = new Set();
     const pending = [];
@@ -540,7 +589,13 @@ const noReactStateFromContinuousWorklet = {
 };
 
 const gpuPropertiesOnly = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow animating layout properties in useAnimatedStyle or useAnimatedProps; they recalculate layout on every frame, so animate transform and opacity instead.",
+    },
+  },
   createOnce(context) {
     let depth = 0;
     return {
@@ -566,7 +621,13 @@ const gpuPropertiesOnly = {
 };
 
 const animatedStyleNeedsAnimatedComponent = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require an `Animated.*` component wherever a useAnimatedStyle or useAnimatedProps result is passed as `style`; on a plain component the style is applied once at mount and silently never updates.",
+    },
+  },
   createOnce(context) {
     let animatedStyles;
     let animatedComponents;
@@ -622,7 +683,13 @@ const animatedStyleNeedsAnimatedComponent = {
 // Only a bare `interpolate(...)` call, so an unrelated `something.interpolate()`
 // on another object is not mistaken for Reanimated's.
 const interpolateNeedsClamp = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require an explicit `Extrapolation.CLAMP` fourth argument on a bare `interpolate()` call; without it the output keeps extrapolating past the ends of the input range.",
+    },
+  },
   createOnce(context) {
     return {
       before() {

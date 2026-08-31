@@ -56,7 +56,14 @@ const DATA_MESSAGES = {
 };
 
 const noDeprecatedFilters = {
-  meta: { type: "problem", hasSuggestions: true },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow the positional `(queryKey)` argument that TanStack Query v5 removed from invalidate/remove/refetch/cancel/resetQueries; pass a `{ queryKey }` filter object instead.",
+    },
+    hasSuggestions: true,
+  },
   createOnce(context) {
     return {
       CallExpression(node) {
@@ -99,7 +106,13 @@ const noDeprecatedFilters = {
 };
 
 const noInlineKeys = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow inline query-key arrays in query hooks, query-client methods and get/setQueryData; an inline key bypasses the type-safe `*.keys.ts` factory nothing else can invalidate against.",
+    },
+  },
   createOnce(context) {
     return {
       CallExpression(node) {
@@ -131,7 +144,13 @@ const noInlineKeys = {
 };
 
 const requireDestructuredHooks = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require destructuring the result of a hook imported from an `@/api/*.queries` or `@/api/*.mutations` module, so the read surface is explicit at the call site and refactors stay safe.",
+    },
+  },
   createOnce(context) {
     const apiHooks = new Set();
     const candidates = [];
@@ -164,7 +183,13 @@ const requireDestructuredHooks = {
 };
 
 const noFetchInQueryFn = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow a bare `fetch(` inside a `queryFn` or `mutationFn`; it skips the shared client, so it sends no auth header, applies no timeout, retries nothing and throws a raw Response.",
+    },
+  },
   createOnce(context) {
     return {
       before() {
@@ -182,7 +207,13 @@ const noFetchInQueryFn = {
 };
 
 const nextPageParamUndefined = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Disallow returning `null` from `getNextPageParam`; null is a valid page param, so it reads as a real next cursor and the list keeps fetching forever — return undefined to end pagination.",
+    },
+  },
   createOnce(context) {
     return {
       before() {

@@ -19,7 +19,13 @@ const NEW_MESSAGES = {
 };
 
 const requireTurboImageResize = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require `resize` on a TurboImage so the native decoder downsamples before the bitmap reaches memory; a full-resolution decode wastes tens of megabytes and stalls the first frame.",
+    },
+  },
   createOnce(context) {
     return {
       before() {
@@ -44,7 +50,13 @@ const requireTurboImageResize = {
 };
 
 const requireTurboImageCachePolicy = {
-  meta: { type: "problem" },
+  meta: {
+    type: "problem",
+    docs: {
+      description:
+        "Require `cachePolicy` on a TurboImage; without one the image is re-fetched over the network on every cold start, so an already-scrolled feed costs its bandwidth again.",
+    },
+  },
   createOnce(context) {
     return {
       before() {

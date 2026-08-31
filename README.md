@@ -58,6 +58,8 @@ Library-specific rules ship only when you actually depend on that library — de
 | `@ashstack/keyboard/`                               | `react-native-keyboard-controller`                           |
 | Pressable / router / font / crypto bans (auto-only) | the matching library                                         |
 
+Every custom rule is documented in [packages/lint/RULES.md](packages/lint/RULES.md) — description, options, examples — generated from the rules themselves (`bun run docs:rules`, checked in CI).
+
 ## Overriding
 
 Your `rules` block always wins:
