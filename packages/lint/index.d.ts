@@ -42,7 +42,7 @@ export interface ReactNativeOptions extends ReactOptions {
   expoFont?: boolean;
   /** crypto-js ban — `react-native-quick-crypto` */
   quickCrypto?: boolean;
-  /** rn/no-manual-memo (only correct with the compiler) — `babel-plugin-react-compiler` */
+  /** rn/no-manual-memo (only correct with the compiler) — `babel-plugin-react-compiler` / `react-compiler-runtime` / `react-compiler-marker` */
   reactCompiler?: boolean;
 }
 

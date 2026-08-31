@@ -174,7 +174,11 @@ const reactNative = (options = {}) => {
     expoRouter: detect(options.expoRouter, ["expo-router"]),
     expoFont: detect(options.expoFont, ["expo-font"]),
     quickCrypto: detect(options.quickCrypto, ["react-native-quick-crypto"]),
-    reactCompiler: detect(options.reactCompiler, ["babel-plugin-react-compiler", "react-compiler-runtime"]),
+    reactCompiler: detect(options.reactCompiler, [
+      "babel-plugin-react-compiler",
+      "react-compiler-runtime",
+      "react-compiler-marker",
+    ]),
   };
 
   return mergeConfigs(react(options), {
