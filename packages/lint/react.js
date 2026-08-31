@@ -117,4 +117,8 @@ const react = {
   ],
 };
 
+/**
+ * React (web) entry — everything in core plus react, jsx-a11y, React Compiler
+ * diagnostics, you-might-not-need-an-effect, and TanStack Query / naming rules.
+ */
 export default mergeConfigs(core, react);

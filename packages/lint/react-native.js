@@ -196,4 +196,8 @@ const reactNative = {
   ],
 };
 
+/**
+ * React Native / Expo entry — everything in react plus the rn/, unistyles/,
+ * legend-list/, state/ custom rule domains and the stack's import bans.
+ */
 export default mergeConfigs(react, reactNative);

@@ -9,6 +9,10 @@ import { fileURLToPath } from "node:url";
 // makes the entries work from anywhere.
 export const ownPlugin = relative => fileURLToPath(new URL(relative, import.meta.url));
 
+/**
+ * Base entry — strict TypeScript rules for any project (backend, CLI, library).
+ * Type-aware rules need `oxlint --type-aware` + the `oxlint-tsgolint` peer.
+ */
 export default {
   plugins: ["eslint", "typescript", "import", "unicorn", "promise", "oxc"],
   jsPlugins: [ownPlugin("./plugins/shared.js")],
