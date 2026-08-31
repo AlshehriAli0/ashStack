@@ -34,9 +34,9 @@ const MEMO_HOOKS = new Set(["useMemo", "useCallback"]);
 
 const NEW_MESSAGES = {
   keyboardWillEvent:
-    "keyboardWill* events are iOS-only: on Android the listener is registered and never fires, so whatever it drives silently does nothing on half the devices. Drive the animation from rt.insets.ime, which is per-frame on both platforms, or use a component from react-native-keyboard-controller.",
+    "Drive this from `rt.insets.ime`, which updates per frame on both platforms, or from a `react-native-keyboard-controller` component. `keyboardWill*` events are iOS-only, so on Android the listener registers and never fires.",
   scrollPositionState:
-    "Scroll fires every frame, so setting React state here re-renders the screen every frame. Use useAnimatedScrollHandler with a shared value when it drives an animation, or a ref when nothing renders from it.",
+    "Use `useAnimatedScrollHandler` with a shared value when this drives an animation, or a ref when nothing renders from it. Scroll fires every frame, so a state setter here re-renders the screen every frame.",
 };
 
 const noConditionalStyleArray = {
@@ -88,7 +88,7 @@ const noRnNamespaceImport = {
           context.report({
             node: specifier,
             message:
-              "namespace import of react-native defeats Metro platform shaking (dead `Platform.OS` branches ship in both bundles). Import the specific APIs by name.",
+              'Import the react-native APIs by name instead: `import { View, Platform } from "react-native"`. A namespace import defeats Metro platform shaking, so dead `Platform.OS` branches ship in both bundles.',
           });
         }
       },
@@ -99,7 +99,7 @@ const noRnNamespaceImport = {
           context.report({
             node: specifier,
             message:
-              "re-exporting Platform from react-native defeats Metro platform shaking. Consumers must import Platform directly from react-native.",
+              "Drop this re-export and have each consumer import `Platform` straight from react-native; re-exporting it defeats Metro platform shaking.",
           });
         }
       },
@@ -143,7 +143,7 @@ const noUnlabeledIconPressable = {
         context.report({
           node: opening.name,
           message:
-            "icon-only touchable has no accessible name. Add an accessibilityLabel / accessibilityHint, or include a visible <Text>.",
+            "Add an `accessibilityLabel` (plus an `accessibilityHint` when the outcome is not obvious), or render a visible `<Text>` child, so this icon-only touchable has an accessible name.",
         });
       },
       JSXOpeningElement(node) {
@@ -168,7 +168,7 @@ const noUnlabeledIconPressable = {
         context.report({
           node: node.name,
           message:
-            "icon-only Expo UI <Button> has no accessible name. Add a `label`, or an accessibilityLabel(...) modifier.",
+            "Add a `label`, or an `accessibilityLabel(...)` modifier, so this icon-only Expo UI `<Button>` has an accessible name.",
         });
       },
     };
@@ -217,7 +217,7 @@ const noLeakedRender = {
         context.report({
           node: expression,
           message:
-            'A `&&` guard in JSX leaks its left operand when it is falsy: `0` renders a bare zero - a hard crash in React Native, "Text strings must be rendered within a <Text> component" - and `""` renders nothing silently. Coerce with `!!`, compare explicitly (`list.length > 0 &&`), or use a ternary with `null`.',
+            'Compare explicitly (`list.length > 0 &&`), coerce with `!!`, or use a ternary ending in `null`. A falsy left operand leaks into the tree: `0` renders a bare zero, which crashes React Native with "Text strings must be rendered within a <Text> component".',
         });
       },
     };
@@ -273,7 +273,7 @@ const noRnImageNetworkSource = {
           context.report({
             node: candidate.node,
             message:
-              "react-native <Image> with a network `{ uri }` source. Use TurboImage (react-native-turbo-image) with `resize` and `cachePolicy` for network images; RN Image has no disk cache and no decode sizing, so it re-downloads on every cold start. Keep it for local `require(...)` assets.",
+              "Render this network image with `TurboImage` (react-native-turbo-image), passing `resize` and `cachePolicy`; keep react-native `<Image>` for local `require(...)` assets. RN `<Image>` has no disk cache and no decode sizing, so it re-downloads and decodes at full size on every cold start.",
           });
         }
       },
@@ -319,7 +319,7 @@ const noRedundantViewNesting = {
         if (!onlyLayoutProps(child.openingElement)) return;
         context.report({
           node: node.openingElement.name,
-          message: `This <${tag}> only wraps another <${tag}>, and neither carries anything but a style. Merge the two style objects into one. Every extra host view is a real node in the native tree and costs layout and memory.`,
+          message: `Merge these two <${tag}> style objects into the inner one and delete the outer wrapper — each carries nothing but a style, and every extra host view is a real node in the native tree.`,
         });
       },
     };
@@ -424,7 +424,7 @@ const hoistStatelessFunction = {
 
       context.report({
         node,
-        message: `\`${name}\` reads nothing from the component around it, so move it to module scope. There it is created once instead of on every render, its identity is stable without memoising anything, and a test can call it without rendering. If it was supposed to read a prop or a piece of state, that is the bug this is pointing at.`,
+        message: `Move \`${name}\` to module scope: it reads nothing from the component, so out there it is created once and keeps a stable identity without memoising. If it was meant to read a prop or a piece of state, wire that read up instead.`,
       });
     };
     return {
@@ -511,7 +511,7 @@ const noManualMemo = {
 
           context.report({
             node,
-            message: `The React Compiler already memoises this, so a hand-written \`${name}\` is usually fighting it rather than helping. Two cases earn one, because the compiler cannot see either: something rendered per row in a list, and a computation or component heavy enough that you measured it. Keep it by writing a \`why:\` comment on the line above saying which one this is.`,
+            message: `Drop this \`${name}\` and let the React Compiler memoise it. Keep it only for what the compiler cannot see — something rendered per row in a list, or a computation you measured as heavy — and write a \`why:\` comment on the line above saying which of the two it is.`,
           });
         }
       },

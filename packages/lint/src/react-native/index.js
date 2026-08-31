@@ -21,35 +21,38 @@ const restrictedImports = ({
     {
       name: "react",
       importNames: ["forwardRef"],
-      message: "React 19: ref is a regular prop. Drop forwardRef and accept ref directly.",
+      message:
+        "Accept `ref` as a regular prop and delete the `forwardRef` wrapper — React 19 passes `ref` like any other prop.",
     },
     {
       name: "react",
       importNames: ["useContext"],
-      message: "React 19: use(Context) replaces useContext.",
+      message: "Call `use(Context)` instead of `useContext(Context)`; React 19 replaces the hook with it.",
     },
     ...(unistyles
       ? [
           {
             name: "react-native",
             importNames: ["StyleSheet"],
-            message: "Use StyleSheet from react-native-unistyles instead of react-native.",
+            message: "Import `StyleSheet` from `react-native-unistyles` instead of `react-native`.",
           },
           {
             name: "react-native",
             importNames: ["useWindowDimensions", "Dimensions"],
-            message: "Use rt.screen from react-native-unistyles (UnistylesRuntime) instead of Dimensions APIs.",
+            message:
+              "Read screen size from `rt.screen` inside `StyleSheet.create`, or `UnistylesRuntime.screen` outside it, instead of the `Dimensions` APIs.",
           },
           {
             name: "react-native",
             importNames: ["SafeAreaView"],
             message:
-              'Use contentInsetAdjustmentBehavior="automatic" on the scroll view, or rt.insets from react-native-unistyles.',
+              'Set `contentInsetAdjustmentBehavior="automatic"` on the scroll view, or apply `rt.insets` from `react-native-unistyles`, instead of `SafeAreaView`.',
           },
           {
             name: "react-native-safe-area-context",
             importNames: ["useSafeAreaInsets", "useSafeAreaFrame", "SafeAreaView"],
-            message: "Use rt.insets / UnistylesRuntime.insets from react-native-unistyles.",
+            message:
+              "Read safe-area values from `rt.insets`, or `UnistylesRuntime.insets` outside a stylesheet, in `react-native-unistyles`.",
           },
         ]
       : []),
@@ -65,7 +68,7 @@ const restrictedImports = ({
               "TouchableNativeFeedback",
             ],
             message:
-              "Import Pressable from react-native-gesture-handler (it cooperates with the gesture system instead of competing with it). Exception: inside a SwiftUI/Compose host view touches never reach GestureHandlerRootView - keep RN's Pressable there and suppress this rule with the host named in the reason.",
+              "Import `Pressable` from `react-native-gesture-handler` so it cooperates with the gesture system instead of competing with it. Exception: inside a SwiftUI/Compose host view touches never reach `GestureHandlerRootView` — keep React Native's `Pressable` there and suppress this rule with the host named in the reason.",
           },
         ]
       : []),
@@ -75,11 +78,12 @@ const restrictedImports = ({
             name: "react-native",
             importNames: ["FlatList", "SectionList", "VirtualizedList"],
             message:
-              "Use LegendList from @legendapp/list/react-native. ScrollView plus map is fine for fewer than 20 static items.",
+              "Render this list with `LegendList` from `@legendapp/list/react-native`; a `ScrollView` plus `map` is fine for fewer than 20 static items.",
           },
           {
             name: "@shopify/flash-list",
-            message: "FlashList was replaced by Legend List. Import LegendList from @legendapp/list/react-native.",
+            message:
+              "Import `LegendList` from `@legendapp/list/react-native` — Legend List replaced FlashList in this stack.",
           },
         ]
       : []),
@@ -88,19 +92,19 @@ const restrictedImports = ({
           {
             name: "react-native",
             importNames: ["Animated"],
-            message: "Use react-native-reanimated instead of the React Native Animated API.",
+            message: "Use `react-native-reanimated` instead of React Native's `Animated` API.",
           },
           {
             name: "react-native-reanimated",
             importNames: ["runOnJS", "runOnUI"],
             message:
-              "runOnJS and runOnUI are deprecated. Use scheduleOnRN and scheduleOnUI from react-native-worklets.",
+              "Use `scheduleOnRN` and `scheduleOnUI` from `react-native-worklets`; `runOnJS` and `runOnUI` are deprecated.",
           },
           {
             name: "react-native-worklets",
             importNames: ["runOnJS", "runOnUI"],
             message:
-              "runOnJS and runOnUI are deprecated. Use scheduleOnRN and scheduleOnUI from react-native-worklets.",
+              "Use `scheduleOnRN` and `scheduleOnUI` from `react-native-worklets`; `runOnJS` and `runOnUI` are deprecated.",
           },
         ]
       : []),
@@ -109,7 +113,7 @@ const restrictedImports = ({
           {
             name: "@legendapp/state/react",
             importNames: ["use$", "useSelector"],
-            message: "use$ and useSelector are deprecated. Use useValue from @legendapp/state/react.",
+            message: "Use `useValue` from `@legendapp/state/react`; `use$` and `useSelector` are deprecated.",
           },
         ]
       : []),
@@ -118,7 +122,8 @@ const restrictedImports = ({
           {
             name: "expo-font",
             importNames: ["useFonts", "loadAsync"],
-            message: "Load fonts at build time via the expo-font config plugin, not at runtime.",
+            message:
+              "Declare the fonts in the `expo-font` config plugin so they load at build time, instead of `useFonts`/`loadAsync` at runtime.",
           },
         ]
       : []),
@@ -126,7 +131,8 @@ const restrictedImports = ({
       ? [
           {
             name: "crypto-js",
-            message: "crypto-js is pure JavaScript and slow. Use react-native-quick-crypto instead.",
+            message:
+              "Use `react-native-quick-crypto` instead — `crypto-js` is pure JavaScript and runs orders of magnitude slower.",
           },
         ]
       : []),
@@ -134,13 +140,14 @@ const restrictedImports = ({
   patterns: [
     {
       group: ["expo-linear-gradient", "react-native-linear-gradient"],
-      message: "Use the experimental_backgroundImage style property instead of gradient components.",
+      message:
+        "Apply the gradient through the `experimental_backgroundImage` style property instead of a gradient component.",
     },
     ...(legendList
       ? [
           {
             group: ["@legendapp/list"],
-            message: "Import from the platform entrypoint @legendapp/list/react-native, not the package root.",
+            message: "Import from the platform entrypoint `@legendapp/list/react-native`, not the package root.",
           },
         ]
       : []),
@@ -148,7 +155,7 @@ const restrictedImports = ({
       ? [
           {
             group: ["@react-navigation/stack", "@react-navigation/bottom-tabs"],
-            message: "Use expo-router's Stack / NativeTabs instead of raw react-navigation navigators.",
+            message: "Use expo-router's `Stack` / `NativeTabs` instead of a raw react-navigation navigator.",
           },
         ]
       : []),

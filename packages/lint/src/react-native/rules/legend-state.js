@@ -57,7 +57,7 @@ const noAssignment = {
         const target = context.sourceCode?.getText?.(node.left) ?? "the observable";
         context.report({
           node,
-          message: `Assigning to an observable is a silent no-op — the value will not change. Use \`${target}.set(...)\`, or \`.assign({...})\` to merge several fields.`,
+          message: `Write through \`${target}.set(...)\`, or \`.assign({...})\` to merge several fields. Assigning to an observable with \`=\` is a silent no-op, so the value never changes.`,
         });
       },
       UpdateExpression(node) {
@@ -65,7 +65,7 @@ const noAssignment = {
         const target = context.sourceCode?.getText?.(node.argument) ?? "the observable";
         context.report({
           node,
-          message: `\`${node.operator}\` on an observable is a silent no-op. Use \`${target}.set(v => v ${node.operator[0]} 1)\`.`,
+          message: `Use \`${target}.set(v => v ${node.operator[0]} 1)\` — \`${node.operator}\` on an observable is a silent no-op.`,
         });
       },
     };
@@ -91,7 +91,7 @@ const naming = {
         if (OBS.test(node.id.name)) return;
         context.report({
           node: node.id,
-          message: `Name this \`${node.id.name}$\`. The trailing \`$\` is how a reader tells an observable from a plain value, and every rule about observables keys off it.`,
+          message: `Rename this to \`${node.id.name}$\`. The trailing \`$\` is how a reader tells an observable from a plain value, and every other observable rule keys off it.`,
         });
       },
     };
@@ -118,7 +118,7 @@ const noNestedObservable = {
         if (!argument || !isObservableRef(argument)) return;
         context.report({
           node: argument,
-          message: `Do not pass an observable to \`${factory}()\`. Reuse the existing reference — wrapping it creates a second node whose reads and writes do not reach the original.`,
+          message: `Use the existing observable reference directly instead of passing it to \`${factory}()\`; wrapping it creates a second node whose reads and writes never reach the original.`,
         });
       },
     };
@@ -150,7 +150,7 @@ const noReactMirror = {
         context.report({
           node,
           message:
-            "Do not seed React state from an observable. There must be one owner: read it with `useValue(...)` where it renders, and keep the observable as the only source of truth.",
+            "Drop this `useState` mirror and read the observable with `useValue(...)` where it renders, so the observable stays the single owner of the value.",
         });
       },
     };
@@ -209,7 +209,7 @@ const noUntrackedGetInJsx = {
         const target = context.sourceCode?.getText?.(callee.object) ?? "the observable";
         context.report({
           node,
-          message: `A \`get()\` here is a plain read, not a subscription — this renders the first value and never updates. Read it with \`useValue(${target})\` at the top of the component, or wrap the fragment in \`<Memo>\` so the read happens inside a tracking context.`,
+          message: `Read it with \`useValue(${target})\` at the top of the component, or wrap this fragment in \`<Memo>\` so the read happens inside a tracking context. A \`get()\` here is a plain read, so it renders the first value and never updates.`,
         });
       },
     };
@@ -250,7 +250,7 @@ const noPeekInSelector = {
         const target = context.sourceCode?.getText?.(callee.object) ?? "the observable";
         context.report({
           node,
-          message: `\`peek()\` never subscribes, so this selector will not re-run when the value changes and the component keeps rendering the first one. Use \`${target}.get()\` here, and keep \`peek()\` for handlers and async work.`,
+          message: `Use \`${target}.get()\` inside this selector and keep \`peek()\` for handlers and async work. \`peek()\` never subscribes, so the selector never re-runs and the component keeps rendering the first value.`,
         });
       },
       ArrowFunctionExpression(node) {
@@ -298,7 +298,7 @@ const noObjectSelector = {
 
         context.report({
           node: argument.body,
-          message: `This selector returns a new ${kind} every time it runs, so its identity always differs and the component re-renders on every store change. Return the primitive that decides the render, or call \`useValue\` once per field.`,
+          message: `Return the primitive that decides the render from this selector, or call \`useValue\` once per field. A new ${kind} each run has a new identity, so the component re-renders on every store change.`,
         });
       },
     };
@@ -347,7 +347,7 @@ const noObservableInComponent = {
         context.report({
           node,
           message:
-            "`observable()` here creates a new observable on every render, so nothing that read the previous one is listening to this one. Use `useObservable()` for component-lifetime state, or move the observable to a store in src/stores and import it.",
+            "Use `useObservable()` for component-lifetime state, or move this observable into a store in `src/stores` and import it. `observable()` inside a component makes a new observable every render, so nothing that read the previous one is listening.",
         });
       },
     };

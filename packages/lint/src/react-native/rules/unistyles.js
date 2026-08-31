@@ -59,48 +59,49 @@ const CSS_COLOR_FUNCTION = /^(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/i;
 const CREATE_MARKER = "StyleSheet.create";
 
 const MESSAGES = {
-  logicalSpacing: "Use paddingStart/paddingEnd or marginStart/marginEnd so directional spacing mirrors in RTL.",
+  logicalSpacing:
+    "Use `paddingStart`/`paddingEnd` or `marginStart`/`marginEnd` here so the directional spacing mirrors in RTL.",
   spacingToken:
-    "Use theme.spacing[...] or theme.sizing.scale(...) for spacing of at least one point. The scale is what keeps rhythm consistent across screens and what makes a rhythm change one edit; if no token fits, add one to the theme.",
+    "Use `theme.spacing[...]` or `theme.sizing.scale(...)` for this value, so a rhythm change stays one edit. If no token fits, add one to the theme.",
   rtlInSheet: "Use `rt.rtl` for RTL-dependent styles so Unistyles tracks the dependency natively.",
-  screenDimensions: "Use reactive `rt.screen` inside StyleSheet.create instead of a Dimensions.get snapshot.",
-  pixelRatio: "Use reactive `rt.pixelRatio` inside StyleSheet.create.",
-  fontScale: "Use reactive `rt.fontScale` inside StyleSheet.create.",
-  statusBar: "Use reactive `rt.statusBar.height` inside StyleSheet.create.",
-  colorScheme: "Use the Unistyles theme or reactive `rt.colorScheme` inside StyleSheet.create.",
+  screenDimensions: "Use reactive `rt.screen` inside `StyleSheet.create` instead of a `Dimensions.get` snapshot.",
+  pixelRatio: "Use reactive `rt.pixelRatio` inside `StyleSheet.create`.",
+  fontScale: "Use reactive `rt.fontScale` inside `StyleSheet.create`.",
+  statusBar: "Use reactive `rt.statusBar.height` inside `StyleSheet.create`.",
+  colorScheme: "Use the Unistyles theme or reactive `rt.colorScheme` inside `StyleSheet.create`.",
   fullRuntime:
-    "Use the injected mini runtime (`rt`) instead of UnistylesRuntime inside StyleSheet.create so the style auto-recalculates.",
+    "Use the injected mini runtime (`rt`) inside `StyleSheet.create` instead of `UnistylesRuntime`, so the style recalculates on its own.",
   fullRuntimeDestructure:
-    "Destructure from the injected mini runtime (`rt`) inside StyleSheet.create, not UnistylesRuntime.",
+    "Destructure from the injected mini runtime (`rt`) inside `StyleSheet.create`, not from `UnistylesRuntime`.",
   themeScreen:
-    "Use reactive `rt.screen` (or Unistyles breakpoints) instead of the theme's module-initialization screen snapshot.",
+    "Use reactive `rt.screen`, or Unistyles breakpoints, instead of the theme's module-initialization screen snapshot.",
   borderCurve:
-    "Style objects with borderRadius must also set borderCurve, normally continuous. Without it the corner is a circular arc, not the squircle every native iOS control uses.",
+    'Add `borderCurve` (normally `"continuous"`) alongside `borderRadius`, or the corner renders as a circular arc rather than the squircle native iOS controls use.',
   legacyShadow:
-    'Legacy shadow*/elevation props split behavior across platforms. Use boxShadow (CSS syntax, both platforms on the New Architecture), e.g. boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)".',
+    'Use `boxShadow` with CSS syntax, e.g. `boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)"`, which renders on both platforms on the New Architecture, instead of the legacy `shadow*`/`elevation` props.',
   asConst:
-    "`as const` is redundant inside StyleSheet.create — the typed create already narrows literals. If TS widens the value to string, fix the StyleSheet import instead.",
-  rtlStyleCall: "Read `rt.rtl` inside the dynamic style instead of passing I18nManager.isRTL from JSX.",
+    "Drop `as const` here — the typed `StyleSheet.create` already narrows the literal. If TS still widens the value to `string`, fix the `StyleSheet` import instead.",
+  rtlStyleCall: "Read `rt.rtl` inside the dynamic style instead of passing `I18nManager.isRTL` in from JSX.",
   themeStyleAttr:
-    "Resolve theme-dependent style values inside StyleSheet.create instead of reading theme in a JSX style prop or passing it to a dynamic style function.",
+    "Resolve theme-dependent style values inside `StyleSheet.create` instead of reading `theme` in a JSX `style` prop or passing it into a dynamic style function.",
   themeScreenComponent:
-    "Read current screen values from `useUnistyles().rt.screen` or useWindowDimensions instead of the theme's module-initialization snapshot.",
+    "Read current screen values from `useUnistyles().rt.screen` or `useWindowDimensions()` instead of the theme's module-initialization snapshot.",
   animatedTheme:
     "Use `useAnimatedTheme()` and read its shared value inside the Reanimated worklet so theme changes reach the UI thread.",
   insetsStyleCall:
-    "Read safe-area style values from `rt.insets` inside StyleSheet.create instead of passing useSafeAreaInsets() into a style function.",
+    "Read safe-area values from `rt.insets` inside `StyleSheet.create` instead of passing `useSafeAreaInsets()` into a style function.",
   insetsAttribute:
-    "Resolve inline safe-area style values through `rt.insets` in StyleSheet.create instead of a hook-fed JSX style object.",
+    "Resolve these safe-area values through `rt.insets` in `StyleSheet.create` instead of a hook-fed inline JSX style object.",
   contentContainerRuntime:
-    "A raw component does not subscribe contentContainerStyle to Unistyles updates. Use a hook-fed plain style or wrap the component with withUnistyles.",
+    "Wrap this component with `withUnistyles`, or pass `contentContainerStyle` a plain hook-fed style. On a raw component `contentContainerStyle` never subscribes to Unistyles updates.",
   contentContainerTheme:
-    "A raw component does not subscribe contentContainerStyle to theme changes. Use a hook-fed plain style or wrap the component with withUnistyles.",
+    "Wrap this component with `withUnistyles`, or pass `contentContainerStyle` a plain hook-fed style. On a raw component `contentContainerStyle` never subscribes to theme changes.",
   noMargin:
-    "Use gap on the parent or padding on this element instead of margin. Margin escapes the child's own box, so it leaves stray space behind when the first or last child is removed and it collapses differently from the spacing scale. Negative margins are exempt: overlapping and half-size centering have no gap equivalent.",
+    "Use `gap` on the parent or `padding` on this element instead of `margin`. Margin escapes the child's own box, so it leaves stray space behind when the first or last child is removed; negative margins stay allowed for overlap and half-size centering.",
   hardcodedColor:
-    "Use a theme color token instead of a hardcoded color. A raw value bypasses dark mode and never shifts with the theme; if no token fits, add one to the theme.",
+    "Use a `theme.colors` token for this value — a raw color bypasses dark mode and never shifts with the theme. If no token fits, add one to the theme.",
   styleSpread:
-    "Never spread a style. Compose with an array — `[styles.a, styles.b]` — because spreading reads the object once and breaks the Unistyles C++ proxy, so the style silently stops reacting to the theme.",
+    "Compose styles with an array — `[styles.a, styles.b]` — instead of spreading. A spread reads the object once and breaks the Unistyles C++ proxy, so the style silently stops reacting to the theme.",
 };
 
 const isStyleSheetCreate = node =>
@@ -703,7 +704,7 @@ const noUnusedStyles = {
             if (reads.has(`${sheet}.${name}`)) continue;
             context.report({
               node: keyNode,
-              message: `\`${sheet}.${name}\` is never used. Delete it — an unused style is dead weight the next reader has to rule out, and it keeps a token alive that nothing renders.`,
+              message: `Delete \`${sheet}.${name}\` — nothing reads it, so it is dead weight that keeps a token alive nothing renders.`,
             });
           }
         }

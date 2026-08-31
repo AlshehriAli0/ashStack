@@ -127,42 +127,42 @@ const ANIMATED_STYLE_HOOKS = new Set(["useAnimatedStyle", "useAnimatedProps"]);
 const ANIMATED_COMPONENT_FACTORIES = new Set(["createAnimatedComponent", "withUnistyles", "withAnimated"]);
 
 const MESSAGES = {
-  read: "read of a shared value's `.value`. Use `.get()` so React Compiler can track the read.",
-  write: "write to a shared value's `.value`. Use `.set(...)` so React Compiler can track the mutation.",
+  read: "Read this shared value with `.get()` so the React Compiler can track the read.",
+  write: "Write this shared value with `.set(...)` so the React Compiler can track the mutation.",
   compound:
-    "compound write to a shared value's `.value`. Use `.set((v) => ...)` / `.set(.get() ...)` so React Compiler can track it.",
+    "Write this shared value with `.set(v => ...)`, or `.set(x.get() ...)`, so the React Compiler can track the mutation.",
   renderRead:
-    "Do not call a zero-argument `.get()` while JSX is evaluated. Derive an animated style/prop or mirror non-visual state through an explicit callback.",
-  renderWrite: "Do not mutate state while JSX is evaluated. Render must stay pure.",
+    "Read this inside `useAnimatedStyle`/`useAnimatedProps`, or mirror non-visual state through an explicit callback. A `.get()` while JSX is evaluated is untracked, so the rendered value never updates.",
+  renderWrite: "Move this write into an event handler, an effect, or an animation callback — render must stay pure.",
   destructure:
-    "Do not destructure a shared value; destructuring detaches the value from Reanimated reactivity. Keep the SharedValue object and use get()/set().",
+    "Keep the SharedValue object itself and read or write it with `.get()` / `.set(...)`; destructuring detaches the value from Reanimated reactivity.",
   nestedProperty:
-    "Mutating a property returned by get() bypasses shared-value reactivity. Assign a new value with set(), or use modify() for a large object.",
+    "Assign a new value with `.set(...)`, or use `.modify()` for a large object; mutating a property returned by `.get()` bypasses shared-value reactivity.",
   nestedCollection:
-    "Mutating the collection returned by get() bypasses shared-value reactivity. Assign a new collection with set(), or mutate inside modify().",
+    "Assign a new collection with `.set(...)`, or mutate inside `.modify()`; mutating the collection returned by `.get()` bypasses shared-value reactivity.",
   updaterSideEffect:
-    "Do not schedule RN side effects from useAnimatedStyle/useAnimatedProps. Use an animation completion callback or useAnimatedReaction.",
+    "Schedule this RN side effect from an animation completion callback or `useAnimatedReaction` instead; `useAnimatedStyle`/`useAnimatedProps` updaters must stay pure.",
   hotBridgeUnguarded:
-    "Guard scheduleOnRN by comparing the current and previous prepared results; otherwise high-frequency inputs can bridge to RN every frame.",
+    "Guard this `scheduleOnRN` by comparing the current and previous prepared results, so high-frequency input does not bridge to RN every frame.",
   hotBridgeNoPrevious:
-    "Read the previous prepared result and guard scheduleOnRN by comparing current and previous; otherwise high-frequency inputs can bridge to RN every frame.",
+    "Take the previous prepared result as the callback's second parameter and guard `scheduleOnRN` on it differing from the current one, so high-frequency input does not bridge to RN every frame.",
   inlineCallback:
-    "Pass a function declared in RN Runtime scope to scheduleOnRN. An inline callback has ambiguous runtime ownership and can be created on the wrong runtime.",
+    "Pass a function declared in RN Runtime scope to `scheduleOnRN`; an inline callback has ambiguous runtime ownership and can be created on the wrong runtime.",
   layoutBuilder:
-    "Construct static Reanimated layout builders at module scope, or memoize builders that depend on component values.",
+    "Build this layout animation at module scope when it is static, or memoize it when it depends on component values.",
   eagerInitializer:
-    "Wrap computed shared-value initialization in a lazy function: useSharedValue(() => compute()). The eager call runs on every React render.",
+    "Wrap this in a lazy initializer: `useSharedValue(() => compute())`, since the eager call runs on every React render.",
   continuousWorkletState:
-    "A continuously evaluated worklet schedules a React state update, which can put a Fabric commit or Skia re-recording on an animation frame. Keep the gate in shared/native state or apply it through an imperative ref.",
+    "Keep this gate in shared or native state, or apply it through an imperative ref. A continuously evaluated worklet that schedules React state can land a Fabric commit or a Skia re-recording on an animation frame.",
 };
 
 const NEW_MESSAGES = {
   gpuPropertiesOnly:
-    "Animating this property recalculates layout on every frame. Animate transform and opacity instead: a panel that grows is scaleY with transformOrigin, a thing that slides is translateY.",
+    "Animate `transform` and `opacity` instead: a panel that grows is `scaleY` with `transformOrigin`, a thing that slides is `translateY`. This property recalculates layout on every frame.",
   needsAnimatedComponent:
-    "This is an animated style, so the element has to be an Animated.* component. On a plain one the style is applied once at mount and never updates again - nothing errors, the view simply does not move.",
+    "Render this with the matching `Animated.*` component so the animated style takes effect. On a plain element the style is applied once at mount and never updates, and nothing errors.",
   interpolateNeedsClamp:
-    "Pass Extrapolation.CLAMP as the fourth argument. Without it interpolate keeps extrapolating past the ends of the input range, so a scroll offset of 400 against a [0, 100] range carries the output well past where it was meant to stop.",
+    "Pass `Extrapolation.CLAMP` as the fourth argument to `interpolate`. Without it the output keeps extrapolating past the input range, so a scroll offset of 400 against `[0, 100]` runs well past where it should stop.",
 };
 
 const collectFunctions = (node, report) => {
@@ -314,7 +314,7 @@ const animatedUpdaterPurity = {
           if (node.callee?.type !== "MemberExpression") return;
           context.report({
             node,
-            message: `Do not call \`.${name}()\` inside useAnimatedStyle/useAnimatedProps. Animated updaters must be pure; move the write to an event, effect, derived value, or reaction.`,
+            message: `Move this \`.${name}()\` write out to an event handler, an effect, a derived value, or \`useAnimatedReaction\`; \`useAnimatedStyle\`/\`useAnimatedProps\` updaters must stay pure.`,
           });
           return;
         }
@@ -365,9 +365,9 @@ const animatedReactionSafety = {
           if (!readsShared) return;
           context.report({
             node,
-            message: `A useAnimatedReaction result callback must not ${
+            message: `Have this result callback ${
               name === "set" ? "write" : "modify"
-            } a shared value read by its prepare callback; this creates an infinite loop.`,
+            } a shared value its prepare callback does not read, or gate the call on a comparison; feeding its own input loops forever.`,
           });
           return;
         }
