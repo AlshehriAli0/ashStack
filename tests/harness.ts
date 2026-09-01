@@ -79,16 +79,18 @@ const spanOf = (diagnostic: Diagnostic): Span | undefined => diagnostic.labels?.
 const messageMatches = (actual: string, expected: string | RegExp): boolean =>
   typeof expected === "string" ? actual.includes(expected) : expected.test(actual);
 
-const runOxlint = (dir: string, config: object): Diagnostic[] => {
+const runOxlint = async (dir: string, config: object): Promise<Diagnostic[]> => {
   writeFileSync(join(dir, "oxlint.config.json"), JSON.stringify(config));
-  const run = Bun.spawnSync([OXLINT, "-c", "oxlint.config.json", "--disable-nested-config", "--format", "json", "."], {
+  const run = Bun.spawn([OXLINT, "-c", "oxlint.config.json", "--disable-nested-config", "--format", "json", "."], {
     cwd: dir,
+    stdout: "pipe",
+    stderr: "pipe",
   });
-  const stdout = run.stdout.toString();
+  const [stdout, stderr] = await Promise.all([new Response(run.stdout).text(), new Response(run.stderr).text()]);
   try {
     return JSON.parse(stdout).diagnostics ?? [];
   } catch {
-    throw new Error(`oxlint produced no JSON:\n${stdout.slice(0, 2000)}\n${run.stderr.toString().slice(0, 2000)}`);
+    throw new Error(`oxlint produced no JSON:\n${stdout.slice(0, 2000)}\n${stderr.slice(0, 2000)}`);
   }
 };
 
@@ -132,20 +134,38 @@ export const moduleTests = (module: ModuleManifest, byRule: Record<string, RuleC
     });
   }
 
-  const byPath = new Map<string, Diagnostic[]>();
-  try {
-    for (const [bucket, rules] of bucketRules) {
-      const config = { plugins: [], categories: CATEGORIES_OFF, jsPlugins: [fileURLToPath(module.url)], rules };
-      for (const diagnostic of runOxlint(join(root, bucket), config)) {
-        const path = join(bucket, diagnostic.filename);
-        byPath.set(path, [...(byPath.get(path) ?? []), diagnostic]);
+  const lintEveryBucket = async (): Promise<Map<string, Diagnostic[]>> => {
+    const byPath = new Map<string, Diagnostic[]>();
+    try {
+      const runs = [...bucketRules].map(async ([bucket, rules]) => {
+        const config = { plugins: [], categories: CATEGORIES_OFF, jsPlugins: [fileURLToPath(module.url)], rules };
+        return [bucket, await runOxlint(join(root, bucket), config)] as const;
+      });
+      for (const [bucket, diagnostics] of await Promise.all(runs)) {
+        for (const diagnostic of diagnostics) {
+          const path = join(bucket, diagnostic.filename);
+          byPath.set(path, [...(byPath.get(path) ?? []), diagnostic]);
+        }
       }
+    } finally {
+      rmSync(root, { recursive: true, force: true });
     }
-  } finally {
-    rmSync(root, { recursive: true, force: true });
-  }
+    return byPath;
+  };
 
-  const firedOn = (key: string): Diagnostic[] => {
+  /**
+   * Every bucket lints at once, and the first case to run waits on the lot.
+   * Settled either way so a failure surfaces inside a test rather than as an
+   * unhandled rejection before any test has started.
+   */
+  const linted = lintEveryBucket().then(
+    byPath => ({ byPath, failure: null }),
+    (failure: unknown) => ({ byPath: new Map<string, Diagnostic[]>(), failure })
+  );
+
+  const firedOn = async (key: string): Promise<Diagnostic[]> => {
+    const { byPath, failure } = await linted;
+    if (failure !== null) throw failure;
     const placed = placedByKey.get(key)!;
     return (byPath.get(placed.path) ?? [])
       .filter(diagnostic => diagnostic.code === `${module.meta.name}(${placed.rule})`)
@@ -159,14 +179,14 @@ export const moduleTests = (module: ModuleManifest, byRule: Record<string, RuleC
     for (const [rule, cases] of Object.entries(byRule)) {
       describe(rule, () => {
         cases.valid.forEach((input, index) => {
-          it(`valid: ${label(asCase(input))}`, () => {
-            expect(firedOn(`${rule}::valid::${index}`).map(shown)).toEqual([]);
+          it(`valid: ${label(asCase(input))}`, async () => {
+            expect((await firedOn(`${rule}::valid::${index}`)).map(shown)).toEqual([]);
           });
         });
 
         cases.invalid.forEach((testCase, index) => {
-          it(`invalid: ${label(testCase)}`, () => {
-            const fired = firedOn(`${rule}::invalid::${index}`);
+          it(`invalid: ${label(testCase)}`, async () => {
+            const fired = await firedOn(`${rule}::invalid::${index}`);
             const want = testCase.errors;
             expect(fired.map(shown)).toHaveLength(typeof want === "number" ? want : want.length);
             if (typeof want === "number") return;

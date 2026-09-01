@@ -10,24 +10,33 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  check:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: bun run typecheck
-      - run: bun run test
+      - name: Rules and helpers
+        run: bun run test
+      - name: Mutation sweep
+        run: bun run check:mutants
+
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
       - run: bun run lint
       - run: bun run format:check
       - run: bun run check:fixtures
       - run: bun run check:smoke
       - run: bun run check:pack
-      - run: bun run check:mutants
       - run: bun run docs:rules:check
 
   release:
-    needs: check
+    needs: [test, check]
     if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     permissions:

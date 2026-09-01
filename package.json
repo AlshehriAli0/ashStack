@@ -19,7 +19,7 @@
     "lint": "bun run build && oxlint --disable-nested-config --type-aware .",
     "lint:fix": "bun run build && oxlint --disable-nested-config --type-aware --fix .",
     "release": "changeset publish",
-    "test": "bun run build && bun test tests/",
+    "test": "bun run build && bun test --parallel tests/",
     "typecheck": "bun run build && tsc -p . --noEmit"
   },
   "devDependencies": {
