@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -13,9 +13,20 @@ const run = (command: string[], cwd: string) => {
 
 const failures: string[] = [];
 
+const die = (reason: string): never => {
+  console.error(`PACK FAILURES:\n  - ${reason}`);
+  rmSync(workspace, { recursive: true, force: true });
+  process.exit(1);
+};
+
+/** The tarball npm just wrote, named from the package's own version rather than a version pinned here. */
+const tarballs: Record<string, string> = {};
 for (const pkg of ["lint", "fmt"]) {
-  const packed = run(["npm", "pack", "--pack-destination", workspace], join(repoRoot, "packages", pkg));
-  if (!packed.ok) failures.push(`npm pack failed for @ashstack/${pkg}: ${packed.err.slice(0, 300)}`);
+  const dir = join(repoRoot, "packages", pkg);
+  const packed = run(["npm", "pack", "--pack-destination", workspace], dir);
+  if (!packed.ok) die(`npm pack failed for @ashstack/${pkg}: ${packed.err.slice(0, 300)}`);
+  const { version } = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
+  tarballs[pkg] = join(workspace, `ashstack-${pkg}-${version}.tgz`);
 }
 
 mkdirSync(join(consumer, "src"), { recursive: true });
@@ -26,8 +37,8 @@ writeFileSync(
     private: true,
     type: "module",
     dependencies: {
-      "@ashstack/lint": `file:${join(workspace, "ashstack-lint-0.0.0.tgz")}`,
-      "@ashstack/fmt": `file:${join(workspace, "ashstack-fmt-0.0.0.tgz")}`,
+      "@ashstack/lint": `file:${tarballs.lint}`,
+      "@ashstack/fmt": `file:${tarballs.fmt}`,
       oxfmt: "0.65.0",
       oxlint: "1.80.0",
       zod: "^4.1.5",
@@ -45,7 +56,7 @@ writeFileSync(
 );
 
 const installed = run(["bun", "install", "--no-save"], consumer);
-if (!installed.ok) failures.push(`installing the tarballs failed: ${installed.err.slice(0, 400)}`);
+if (!installed.ok) die(`installing the tarballs failed: ${installed.err.slice(0, 400)}`);
 
 const oxlint = join(consumer, "node_modules", ".bin", "oxlint");
 const linted = run([oxlint, "--format", "json", "src/a.ts"], consumer);

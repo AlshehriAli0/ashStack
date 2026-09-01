@@ -33,9 +33,12 @@ jobs:
       - run: bun run check:pack
       - run: bun run docs:rules:check
 
+  # Opens a "Version Packages" PR collecting the pending changesets. Merging that
+  # PR is what publishes: the same job runs again, finds no changesets, and ships
+  # whatever version is not on the registry yet.
   release:
     needs: [test, check]
-    if: github.event_name == 'workflow_dispatch'
+    if: github.repository == 'AlshehriAli0/ashStack' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -51,9 +54,12 @@ jobs:
       - name: npm new enough to mint an OIDC token
         run: npm install -g npm@latest
       - run: bun install --frozen-lockfile
-      - name: Create release PR or publish
+      - name: Open the version PR, or publish once it is merged
         uses: changesets/action@v1
         with:
+          version: bunx changeset version
           publish: bun run release
+          commit: "chore: version packages"
+          title: "chore: version packages"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
