@@ -1,15 +1,14 @@
 import { findInSubtree, gate, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
-import { attributeNamed, isListElement, LIST, type GateContext } from "./shared.js";
+import { attributeNamed, isListElement, LIST } from "./shared.js";
 
 const buildsFreshArray = (node: AstNode): boolean =>
-  node.type === "ArrayExpression" ||
-  (node.type === "CallExpression" && (node.callee as AstNode | undefined)?.type === "MemberExpression");
+  node.type === "ArrayExpression" || (node.type === "CallExpression" && node.callee.type === "MemberExpression");
 
 export const noInlineData: Rule = problem(
   "Disallow building a Legend List's `data` inline. Each render produces a new array reference, and the list re-diffs, re-keys and drops what it had cached.",
   {
-    createOnce: (context: GateContext) => ({
+    createOnce: context => ({
       before: () => gate(context, LIST),
       JSXElement(node) {
         if (!isListElement(node)) return;

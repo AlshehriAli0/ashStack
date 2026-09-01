@@ -1,20 +1,20 @@
 import { gate, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
-import { factoryCalled, OBS, type GateContext } from "./shared.js";
+import type { Rule } from "../../../lib/types.js";
+import { factoryCalled, OBS } from "./shared.js";
 
 export const naming: Rule = problem(
   "A variable initialized from `observable()` or `useObservable()` needs a trailing `$`. The other rules in this module key off that suffix.",
   {
-    createOnce(context: GateContext) {
+    createOnce(context) {
       return {
         before() {
           return gate(context, "observable(", "useObservable(");
         },
         VariableDeclarator(node) {
-          const factory = factoryCalled(node.init as AstNode | undefined);
-          const id = node.id as AstNode | undefined;
-          if (!factory || id?.type !== "Identifier") return;
-          const name = id.name as string;
+          const { id, init } = node;
+          const factory = factoryCalled(init);
+          if (!factory || id.type !== "Identifier") return;
+          const { name } = id;
           if (OBS.test(name)) return;
           context.report({
             node: id,

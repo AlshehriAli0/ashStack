@@ -163,7 +163,7 @@ const BASE_RULES = {
   "promise/no-multiple-resolved": "off",
   "promise/no-promise-in-callback": "off",
   "oxc/no-async-endpoint-handlers": "off",
-} as const;
+};
 
 /**
  * Base entry — strict TypeScript rules for any project (backend, CLI, library).

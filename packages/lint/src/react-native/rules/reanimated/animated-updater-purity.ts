@@ -1,5 +1,5 @@
 import { calleeName, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
+import type { Rule, RuleContext } from "../../../lib/types.js";
 import { ANIMATED_STYLE_HOOKS } from "./shared.js";
 
 const UPDATER_SIDE_EFFECT =
@@ -15,6 +15,7 @@ export const animatedUpdaterPurity: Rule = problem(
           depth = 0;
         },
         CallExpression(node) {
+          if (node.type !== "CallExpression") return;
           const name = calleeName(node);
           if (ANIMATED_STYLE_HOOKS.has(name)) {
             depth += 1;
@@ -22,7 +23,7 @@ export const animatedUpdaterPurity: Rule = problem(
           }
           if (depth === 0) return;
           if (name === "set" || name === "modify") {
-            if ((node.callee as AstNode | undefined)?.type !== "MemberExpression") return;
+            if (node.callee.type !== "MemberExpression") return;
             context.report({
               node,
               message: `Move this \`.${name}()\` write out to an event handler, an effect, a derived value, or \`useAnimatedReaction\`; \`useAnimatedStyle\`/\`useAnimatedProps\` updaters must stay pure.`,

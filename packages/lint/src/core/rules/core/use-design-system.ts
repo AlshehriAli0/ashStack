@@ -130,26 +130,28 @@ export const useDesignSystem: Rule = {
         const designSystem = designSystemFor(options);
         banned = designSystem.banned;
         if (banned.size === 0) return false;
-        const filename = (context.filename ?? context.physicalFilename) as string | undefined;
+        const filename = context.filename ?? context.physicalFilename;
         if (isExemptFile(filename, designSystem.exempt)) return false;
         return true;
       },
       ImportDeclaration(node: AstNode) {
-        const source = (node.source as AstNode | undefined)?.value as string | undefined;
-        const bySource = source === undefined ? undefined : banned.get(source);
+        if (node.type !== "ImportDeclaration") return;
+        const source = node.source.value;
+        const bySource = banned.get(source);
         if (bySource === undefined) return;
 
-        for (const specifier of (node.specifiers as AstNode[] | undefined) ?? []) {
+        for (const specifier of node.specifiers) {
           if (specifier.type !== "ImportSpecifier") continue;
 
-          const imported = (specifier.imported as AstNode | undefined)?.name as string | undefined;
-          const replacement = imported === undefined ? undefined : bySource.get(imported);
+          const { imported } = specifier;
+          if (imported.type !== "Identifier") continue;
+          const replacement = bySource.get(imported.name);
           if (replacement === undefined) continue;
 
           const reason = replacement.reason ? ` ${replacement.reason}` : "";
           context.report({
             node: specifier,
-            message: `Import \`${replacement.name}\` from "${replacement.from}" instead of \`${imported}\` from ${source}. The wrapper is where the theme tokens and app behavior live.${reason}`,
+            message: `Import \`${replacement.name}\` from "${replacement.from}" instead of \`${imported.name}\` from ${source}. The wrapper is where the theme tokens and app behavior live.${reason}`,
           });
         }
       },

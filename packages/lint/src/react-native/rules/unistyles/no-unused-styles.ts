@@ -1,16 +1,16 @@
 import { gate, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
-import { CREATE_MARKER, isStyleSheetCreate, propertyName, stylesObjectOf, type GateContext } from "./shared.js";
+import { CREATE_MARKER, isStyleSheetCreate, propertyName, stylesObjectOf, type StylesObject } from "./shared.js";
 
 const EVERY_KEY = "*";
 
-const namedStyleKeys = (styles: AstNode): Map<string, AstNode> | null => {
+const namedStyleKeys = (styles: StylesObject): Map<string, AstNode> | null => {
   const keys = new Map<string, AstNode>();
-  for (const property of (styles.properties as AstNode[] | undefined) ?? []) {
+  for (const property of styles.properties) {
     if (property.type !== "Property" || property.computed) return null;
     const name = propertyName(property);
     if (name === "") return null;
-    keys.set(name, property.key as AstNode);
+    keys.set(name, property.key);
   }
   return keys;
 };
@@ -18,7 +18,7 @@ const namedStyleKeys = (styles: AstNode): Map<string, AstNode> | null => {
 export const noUnusedStyles: Rule = problem(
   "Report stylesheet keys that nothing in the file reads. A computed key, a computed read, or a sheet that leaves the module skips the whole file.",
   {
-    createOnce(context: GateContext) {
+    createOnce(context) {
       let declaredStyleKeys = new Map<string, Map<string, AstNode>>();
       let readStyleKeys = new Set<string>();
       let aUseCouldBeHidden = false;
@@ -50,44 +50,43 @@ export const noUnusedStyles: Rule = problem(
         },
         CallExpression(node) {
           if (!isStyleSheetCreate(node)) return;
-          const declarator = node.parent?.type === "VariableDeclarator" ? node.parent : null;
-          const id = declarator?.id as AstNode | undefined;
+          const declarator = node.parent.type === "VariableDeclarator" ? node.parent : null;
+          const id = declarator?.id;
           if (id?.type !== "Identifier") {
             aUseCouldBeHidden = true;
             return;
           }
-          const styles = stylesObjectOf(((node.arguments as AstNode[] | undefined) ?? [])[0]);
+          const styles = stylesObjectOf(node.arguments[0]);
           const keys = styles === null ? null : namedStyleKeys(styles);
           if (keys === null) {
             aUseCouldBeHidden = true;
             return;
           }
-          declaredStyleKeys.set(id.name as string, keys);
+          declaredStyleKeys.set(id.name, keys);
         },
         MemberExpression(node) {
-          const object = node.object as AstNode | undefined;
-          const property = node.property as AstNode | undefined;
-          if (object?.type !== "Identifier") return;
+          const { object, property } = node;
+          if (object.type !== "Identifier") return;
           if (node.computed) {
-            markWholeSheetRead(object.name as string);
+            markWholeSheetRead(object.name);
             return;
           }
-          if (property?.type === "Identifier") markRead(object.name as string, property.name as string);
+          if (property.type === "Identifier") markRead(object.name, property.name);
         },
         ExportNamedDeclaration(node) {
-          const declaration = node.declaration as AstNode | undefined;
-          for (const child of (declaration?.declarations as AstNode[] | undefined) ?? []) {
-            const id = child.id as AstNode | undefined;
-            if (id?.type === "Identifier") markWholeSheetRead(id.name as string);
+          const { declaration } = node;
+          if (declaration?.type === "VariableDeclaration") {
+            for (const child of declaration.declarations) {
+              if (child.id.type === "Identifier") markWholeSheetRead(child.id.name);
+            }
           }
-          for (const specifier of (node.specifiers as AstNode[] | undefined) ?? []) {
-            const local = specifier.local as AstNode | undefined;
-            if (local?.type === "Identifier") markWholeSheetRead(local.name as string);
+          for (const specifier of node.specifiers) {
+            if (specifier.local.type === "Identifier") markWholeSheetRead(specifier.local.name);
           }
         },
         ExportDefaultDeclaration(node) {
-          const declaration = node.declaration as AstNode | undefined;
-          if (declaration?.type === "Identifier") markWholeSheetRead(declaration.name as string);
+          const { declaration } = node;
+          if (declaration.type === "Identifier") markWholeSheetRead(declaration.name);
         },
         "Program:exit": reportUnusedAtEndOfFile,
       };

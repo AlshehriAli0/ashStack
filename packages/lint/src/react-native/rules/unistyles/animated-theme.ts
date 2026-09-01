@@ -19,12 +19,13 @@ export const animatedTheme: Rule = problem(
           candidates.length = 0;
         },
         VariableDeclarator(node) {
-          const id = node.id as AstNode | undefined;
+          const { id, init } = node;
           if (
-            id?.type === "ObjectPattern" &&
-            calleeName(node.init as AstNode | undefined) === "useUnistyles" &&
-            ((id.properties as AstNode[] | undefined) ?? []).some(
-              property => (property.key as AstNode | undefined)?.name === "theme"
+            id.type === "ObjectPattern" &&
+            calleeName(init) === "useUnistyles" &&
+            id.properties.some(
+              property =>
+                property.type === "Property" && property.key.type === "Identifier" && property.key.name === "theme"
             )
           ) {
             declaresTheme = true;

@@ -1,11 +1,11 @@
 import { gate, problem } from "../../../lib/ast.js";
 import type { Rule } from "../../../lib/types.js";
-import { attributeNamed, isListElement, LIST, type GateContext } from "./shared.js";
+import { attributeNamed, isListElement, LIST } from "./shared.js";
 
 export const noRemountKey: Rule = problem(
   "Disallow `key` on a Legend List, which remounts on any key change and loses its measurements and scroll position. Pass `dataKey` instead.",
   {
-    createOnce: (context: GateContext) => ({
+    createOnce: context => ({
       before: () => gate(context, LIST),
       JSXElement(node) {
         if (!isListElement(node)) return;

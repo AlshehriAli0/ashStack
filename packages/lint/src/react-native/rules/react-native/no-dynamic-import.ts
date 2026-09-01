@@ -1,6 +1,5 @@
 import { calleeName, gate, hasAncestor, problem } from "../../../lib/ast.js";
-import type { Rule } from "../../../lib/types.js";
-import type { RnContext } from "./shared.js";
+import type { Rule, RuleContext } from "../../../lib/types.js";
 
 const LAZY_WRAPPERS = new Set(["lazy", "dynamic"]);
 
@@ -10,7 +9,7 @@ const MESSAGE =
 export const noDynamicImport: Rule = problem(
   "Bans dynamic `import()` outside a `React.lazy` or `dynamic` wrapper. Metro inlines it into the same bundle, so nothing is deferred and the module is hidden from the typechecker.",
   {
-    createOnce(context: RnContext) {
+    createOnce(context: RuleContext) {
       return {
         before() {
           return gate(context, "import(");

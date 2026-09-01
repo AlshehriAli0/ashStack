@@ -18,27 +18,24 @@ export const requireDestructuredHooks: Rule = problem(
           candidates.length = 0;
         },
         ImportDeclaration(node: AstNode) {
-          const source = (node.source as AstNode | undefined)?.value;
-          if (typeof source !== "string" || !API_HOOK_MODULE.test(source)) return;
-          for (const specifier of (node.specifiers as AstNode[] | undefined) ?? []) {
-            const local = (specifier.local as AstNode | undefined)?.name as string | undefined;
-            if (specifier.type === "ImportSpecifier" && local) apiHooks.add(local);
+          if (node.type !== "ImportDeclaration" || !API_HOOK_MODULE.test(node.source.value)) return;
+          for (const specifier of node.specifiers) {
+            if (specifier.type === "ImportSpecifier") apiHooks.add(specifier.local.name);
           }
         },
         VariableDeclarator(node: AstNode) {
-          const id = node.id as AstNode | undefined;
-          if (id?.type !== "Identifier") return;
-          const init = node.init as AstNode | undefined;
-          const callee = init?.callee as AstNode | undefined;
-          if (init?.type !== "CallExpression" || callee?.type !== "Identifier") return;
-          const name = callee.name as string;
-          if (!/^use[A-Z]/.test(name)) return;
-          candidates.push({ node, hook: name });
+          if (node.type !== "VariableDeclarator") return;
+          const { id, init } = node;
+          if (id.type !== "Identifier") return;
+          if (init?.type !== "CallExpression") return;
+          const { callee } = init;
+          if (callee.type !== "Identifier" || !/^use[A-Z]/.test(callee.name)) return;
+          candidates.push({ node: id, hook: callee.name });
         },
         "Program:exit"() {
           for (const candidate of candidates) {
             if (!apiHooks.has(candidate.hook)) continue;
-            context.report({ node: candidate.node.id as AstNode, message: DESTRUCTURE_QUERY_HOOK });
+            context.report({ node: candidate.node, message: DESTRUCTURE_QUERY_HOOK });
           }
         },
       };

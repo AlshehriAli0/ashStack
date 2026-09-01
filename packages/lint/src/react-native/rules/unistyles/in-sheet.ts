@@ -34,8 +34,8 @@ export const inSheet: Rule = inCreate(
   (context, inside) => ({
     CallExpression(node) {
       if (!inside() || isStyleSheetCreate(node)) return;
-      const callee = node.callee as AstNode | undefined;
-      const path = callee?.type === "MemberExpression" ? memberPath(callee) : calleeName(node);
+      const { callee } = node;
+      const path = callee.type === "MemberExpression" ? memberPath(callee) : calleeName(node);
       if (path === "Dimensions.get") context.report({ node, message: MESSAGES.screenDimensions });
       else if (path === "PixelRatio.get") context.report({ node, message: MESSAGES.pixelRatio });
       else if (path === "PixelRatio.getFontScale") context.report({ node, message: MESSAGES.fontScale });
@@ -44,8 +44,8 @@ export const inSheet: Rule = inCreate(
     },
     MemberExpression(node) {
       if (!inside()) return;
-      const parent = node.parent;
-      if (parent?.type === "MemberExpression" && parent.object === node) return;
+      const { parent } = node;
+      if (parent.type === "MemberExpression" && parent.object === node) return;
       const path = memberPath(node);
       if (path === "I18nManager.isRTL") {
         context.report({ node, message: MESSAGES.rtlInSheet });
@@ -63,25 +63,25 @@ export const inSheet: Rule = inCreate(
     },
     VariableDeclarator(node) {
       if (!inside()) return;
-      const id = node.id as AstNode | undefined;
-      const init = node.init as AstNode | undefined;
-      if (id?.type !== "ObjectPattern") return;
+      const { id, init } = node;
+      if (id.type !== "ObjectPattern") return;
       if (init?.type === "Identifier" && init.name === "UnistylesRuntime") {
         context.report({ node, message: MESSAGES.fullRuntimeDestructure });
       }
     },
     TSAsExpression(node) {
       if (!inside()) return;
-      const annotation = node.typeAnnotation as AstNode | undefined;
-      if (annotation?.type !== "TSTypeReference") return;
-      if ((annotation.typeName as AstNode | undefined)?.name !== "const") return;
+      const { typeAnnotation } = node;
+      if (typeAnnotation.type !== "TSTypeReference") return;
+      const { typeName } = typeAnnotation;
+      if (typeName.type !== "Identifier" || typeName.name !== "const") return;
       context.report({ node, message: MESSAGES.asConst });
     },
     ObjectExpression(node) {
       if (!inside()) return;
       let borderRadius: AstNode | null = null;
       let hasBorderCurve = false;
-      for (const property of (node.properties as AstNode[] | undefined) ?? []) {
+      for (const property of node.properties) {
         if (property.type !== "Property") continue;
         const name = propertyName(property);
         if (name === "borderRadius") borderRadius = property;

@@ -41,8 +41,8 @@ const isThemeScaleHost = (node: AstNode): boolean =>
       if (path.startsWith("theme.spacing") || path.startsWith("theme.sizing")) return true;
     }
     if (current.type === "CallExpression") {
-      const callee = current.callee as AstNode | undefined;
-      const path = callee?.type === "MemberExpression" ? memberPath(callee) : "";
+      const { callee } = current;
+      const path = callee.type === "MemberExpression" ? memberPath(callee) : "";
       if (path === "theme.spacing.scale" || path === "theme.sizing.scale" || path === "theme.scale") return true;
     }
     return false;
@@ -54,9 +54,8 @@ const isTokenDerived = (node: unknown): boolean =>
       const path = memberPath(current);
       return path.startsWith("theme.spacing") || path.startsWith("theme.sizing");
     }
-    const callee = current.callee as AstNode | undefined;
-    if (current.type === "CallExpression" && callee?.type === "MemberExpression") {
-      const path = memberPath(callee);
+    if (current.type === "CallExpression" && current.callee.type === "MemberExpression") {
+      const path = memberPath(current.callee);
       return path === "theme.spacing.scale" || path === "theme.sizing.scale" || path === "theme.scale";
     }
     return false;
@@ -70,21 +69,20 @@ export const noHardcodedSpacing: Rule = inCreate(
       const name = propertyName(node);
       if (!SPACING_AND_TYPE_SCALE.has(name)) return;
       if (isTokenDerived(node.value)) return;
-      const rawNumber = findInSubtree(node.value, current => {
-        const argument = current.argument as AstNode | undefined;
-        return (
+      const rawNumber = findInSubtree(
+        node.value,
+        current =>
           (current.type === "Literal" &&
             typeof current.value === "number" &&
             SIGNIFICANT_NUMBER.test(String(current.value)) &&
             !isThemeScaleHost(current)) ||
           (current.type === "UnaryExpression" &&
             current.operator === "-" &&
-            argument?.type === "Literal" &&
-            typeof argument.value === "number" &&
-            SIGNIFICANT_NUMBER.test(`-${argument.value}`) &&
+            current.argument.type === "Literal" &&
+            typeof current.argument.value === "number" &&
+            SIGNIFICANT_NUMBER.test(`-${current.argument.value}`) &&
             !isThemeScaleHost(current))
-        );
-      });
+      );
       if (rawNumber) context.report({ node: rawNumber, message: MESSAGE });
     },
   })

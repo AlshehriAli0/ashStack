@@ -12,10 +12,11 @@ export const hoistIntl: Rule = problem(
     createOnce(context: RuleContext) {
       return {
         NewExpression(node: AstNode) {
-          const callee = node.callee as AstNode | undefined;
-          if (callee?.type !== "MemberExpression") return;
-          const object = callee.object as AstNode | undefined;
-          if (object?.type !== "Identifier" || object.name !== "Intl") return;
+          if (node.type !== "NewExpression") return;
+          const { callee } = node;
+          if (callee.type !== "MemberExpression") return;
+          const { object } = callee;
+          if (object.type !== "Identifier" || object.name !== "Intl") return;
           if (hasAncestor(node, current => current.type === "CallExpression" && MEMO_HOOKS.has(calleeName(current)))) {
             return;
           }

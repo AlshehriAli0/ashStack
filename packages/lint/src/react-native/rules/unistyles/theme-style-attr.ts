@@ -1,5 +1,5 @@
 import { closestAncestor, FUNCTION_TYPES, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
+import type { Rule } from "../../../lib/types.js";
 import { declaresUseUnistylesTheme, readsTheme } from "./shared.js";
 
 const MESSAGE =
@@ -11,7 +11,7 @@ export const themeStyleAttr: Rule = problem(
     createOnce(context) {
       return {
         JSXAttribute(node) {
-          if ((node.name as AstNode | undefined)?.name !== "style") return;
+          if (node.name.type !== "JSXIdentifier" || node.name.name !== "style") return;
           if (!readsTheme(node)) return;
           const component = closestAncestor(node, FUNCTION_TYPES);
           if (!component || !declaresUseUnistylesTheme(component)) return;

@@ -1,6 +1,5 @@
 import { gate, problem } from "../../../lib/ast.js";
-import type { Rule } from "../../../lib/types.js";
-import { asNode, asNodes, type RnContext } from "./shared.js";
+import type { Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGES = {
   namespaceImport:
@@ -12,22 +11,25 @@ const MESSAGES = {
 export const noRnNamespaceImport: Rule = problem(
   "Bans a namespace import of react-native and a re-export of its `Platform`. Both defeat Metro's platform shaking, so dead `Platform.OS` branches ship in both bundles.",
   {
-    createOnce(context: RnContext) {
+    createOnce(context: RuleContext) {
       return {
         before() {
           return gate(context, "react-native");
         },
         ImportDeclaration(node) {
-          if (asNode(node.source)?.value !== "react-native") return;
-          for (const specifier of asNodes(node.specifiers)) {
+          if (node.type !== "ImportDeclaration") return;
+          if (node.source.value !== "react-native") return;
+          for (const specifier of node.specifiers) {
             if (specifier.type !== "ImportNamespaceSpecifier") continue;
             context.report({ node: specifier, message: MESSAGES.namespaceImport });
           }
         },
         ExportNamedDeclaration(node) {
-          if (asNode(node.source)?.value !== "react-native") return;
-          for (const specifier of asNodes(node.specifiers)) {
-            if (asNode(specifier.local)?.name !== "Platform") continue;
+          if (node.type !== "ExportNamedDeclaration") return;
+          if (node.source?.value !== "react-native") return;
+          for (const specifier of node.specifiers) {
+            const { local } = specifier;
+            if (local.type !== "Identifier" || local.name !== "Platform") continue;
             context.report({ node: specifier, message: MESSAGES.platformReExport });
           }
         },

@@ -13,16 +13,15 @@ export const noBareText: Rule = problem(
     createOnce(context: RuleContext) {
       return {
         JSXElement(node: AstNode) {
-          const opening = node.openingElement as AstNode | undefined;
-          if (((opening?.attributes as AstNode[] | undefined) ?? []).length > 0) return;
-          const children = ((node.children as AstNode[] | undefined) ?? []).filter(
-            child => child.type !== "JSXText" || ((child.value as string | undefined) ?? "").trim() !== ""
-          );
+          if (node.type !== "JSXElement") return;
+          const opening = node.openingElement;
+          if (opening.attributes.length > 0) return;
+          const children = node.children.filter(child => child.type !== "JSXText" || child.value.trim() !== "");
           if (children.length !== 1) return;
-          const only = children[0] as AstNode;
+          const [only] = children;
           if (only.type !== "JSXText") return;
-          if (!BARE_TEXT.test(((only.value as string | undefined) ?? "").trim())) return;
-          if (I18N_COMPONENTS.has(tagIdentifier(opening?.name as AstNode | undefined))) return;
+          if (!BARE_TEXT.test(only.value.trim())) return;
+          if (I18N_COMPONENTS.has(tagIdentifier(opening.name))) return;
           context.report({ node: only, message: BARE_JSX_TEXT });
         },
       };

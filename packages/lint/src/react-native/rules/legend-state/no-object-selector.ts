@@ -1,6 +1,5 @@
-import { gate, isFunction, problem } from "../../../lib/ast.js";
+import { gate, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
-import type { GateContext } from "./shared.js";
 
 const literalKind = (node: AstNode): "object" | "array" | null => {
   if (node.type === "ObjectExpression") return "object";
@@ -11,18 +10,19 @@ const literalKind = (node: AstNode): "object" | "array" | null => {
 export const noObjectSelector: Rule = problem(
   "A `useValue` selector that builds a new object or array returns a fresh identity every run. The component then re-renders on every store change.",
   {
-    createOnce(context: GateContext) {
+    createOnce(context) {
       return {
         before() {
           return gate(context, "useValue");
         },
         CallExpression(node) {
-          if ((node.callee as AstNode | undefined)?.name !== "useValue") return;
+          const { callee } = node;
+          if (callee.type !== "Identifier" || callee.name !== "useValue") return;
 
-          const argument = ((node.arguments as AstNode[] | undefined) ?? [])[0];
-          if (!isFunction(argument)) return;
+          const argument = node.arguments[0];
+          if (argument?.type !== "ArrowFunctionExpression" && argument?.type !== "FunctionExpression") return;
 
-          const body = argument.body as AstNode | undefined;
+          const { body } = argument;
           if (!body) return;
           const kind = literalKind(body);
           if (kind === null) return;

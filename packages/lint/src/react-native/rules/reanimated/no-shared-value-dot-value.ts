@@ -1,4 +1,4 @@
-import type { AstNode, Rule, RuleContext, RuleMeta } from "../../../lib/types.js";
+import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 import { isProducerCall } from "./shared.js";
 
 const MESSAGES = {
@@ -17,31 +17,17 @@ const COMPOUND_OPERATORS = new Map([
 
 /** The identifier a plain `x.value` reads from, or null when the node is not one. */
 const dotValueOwner = (node: AstNode | null | undefined): string | null => {
-  if (node?.type !== "MemberExpression") return null;
-  if (node.optional === true || node.computed === true) return null;
-  const object = node.object as AstNode | undefined;
-  const property = node.property as AstNode | undefined;
-  if (object?.type !== "Identifier") return null;
-  if (property?.type !== "Identifier" || property.name !== "value") return null;
-  return object.name as string;
+  if (node?.type !== "MemberExpression" || node.optional || node.computed) return null;
+  const { object, property } = node;
+  if (object.type !== "Identifier") return null;
+  if (property.type !== "Identifier" || property.name !== "value") return null;
+  return object.name;
 };
 
-interface Candidate {
-  node: AstNode;
-  kind: "read" | "write" | "compound";
-  operator?: string;
-  name: string;
-}
-
-interface Fixer {
-  replaceText(node: AstNode, text: string): unknown;
-}
-
-interface SourceCode {
-  getText(node: AstNode): string;
-}
-
-type DotValueContext = RuleContext & { sourceCode?: SourceCode; getSourceCode(): SourceCode };
+type Candidate =
+  | { kind: "read"; node: AstNode; name: string }
+  | { kind: "write"; node: AstNode; name: string; right: AstNode }
+  | { kind: "compound"; node: AstNode; name: string; operator: string; right: AstNode };
 
 export const noSharedValueDotValue: Rule = {
   meta: {
@@ -51,58 +37,60 @@ export const noSharedValueDotValue: Rule = {
         "Shared values are read with `.get()` and written with `.set(...)`, never through `.value`. React Compiler cannot track a `.value` access.",
     },
     hasSuggestions: true,
-  } as RuleMeta,
-  createOnce(context: DotValueContext) {
+  },
+  createOnce(context: RuleContext) {
     const names = new Set<string>();
     const candidates: Candidate[] = [];
-    const source = (): SourceCode => context.sourceCode ?? context.getSourceCode();
     return {
       before() {
         names.clear();
         candidates.length = 0;
       },
       VariableDeclarator(node) {
-        const id = node.id as AstNode | undefined;
-        if (id?.type === "Identifier" && isProducerCall(node.init as AstNode | undefined)) {
-          names.add(id.name as string);
+        if (node.type !== "VariableDeclarator") return;
+        if (node.id.type === "Identifier" && isProducerCall(node.init)) {
+          names.add(node.id.name);
         }
       },
       AssignmentExpression(node) {
-        const name = dotValueOwner(node.left as AstNode | undefined);
+        if (node.type !== "AssignmentExpression") return;
+        const name = dotValueOwner(node.left);
         if (name === null) return;
-        const operator = COMPOUND_OPERATORS.get(node.operator as string);
-        if (!operator && node.operator !== "=") return;
-        candidates.push({ node, kind: operator ? "compound" : "write", operator, name });
+        const operator = COMPOUND_OPERATORS.get(node.operator);
+        if (operator) {
+          candidates.push({ kind: "compound", node, name, operator, right: node.right });
+          return;
+        }
+        if (node.operator !== "=") return;
+        candidates.push({ kind: "write", node, name, right: node.right });
       },
       MemberExpression(node) {
         const name = dotValueOwner(node);
         if (name === null) return;
         if (node.parent?.type === "AssignmentExpression" && node.parent.left === node) return;
-        candidates.push({ node, kind: "read", name });
+        candidates.push({ kind: "read", node, name });
       },
       "Program:exit"() {
         for (const candidate of candidates) {
-          if (!names.has(candidate.name)) continue;
-          const { node, name, kind, operator } = candidate;
-          if (kind === "read") {
+          const { node, name } = candidate;
+          if (!names.has(name)) continue;
+          if (candidate.kind === "read") {
             context.report({
               node,
               message: MESSAGES.read,
-              suggest: [
-                { desc: `Rewrite as ${name}.get()`, fix: (fixer: Fixer) => fixer.replaceText(node, `${name}.get()`) },
-              ],
+              suggest: [{ desc: `Rewrite as ${name}.get()`, fix: fixer => fixer.replaceText(node, `${name}.get()`) }],
             });
             continue;
           }
-          const right = source().getText(node.right as AstNode);
+          const right = context.sourceCode.getText(candidate.right);
           const replacement =
-            kind === "compound" ? `${name}.set(${name}.get() ${operator} (${right}))` : `${name}.set(${right})`;
+            candidate.kind === "compound"
+              ? `${name}.set(${name}.get() ${candidate.operator} (${right}))`
+              : `${name}.set(${right})`;
           context.report({
             node,
-            message: kind === "compound" ? MESSAGES.compound : MESSAGES.write,
-            suggest: [
-              { desc: `Rewrite as ${name}.set(...)`, fix: (fixer: Fixer) => fixer.replaceText(node, replacement) },
-            ],
+            message: candidate.kind === "compound" ? MESSAGES.compound : MESSAGES.write,
+            suggest: [{ desc: `Rewrite as ${name}.set(...)`, fix: fixer => fixer.replaceText(node, replacement) }],
           });
         }
       },

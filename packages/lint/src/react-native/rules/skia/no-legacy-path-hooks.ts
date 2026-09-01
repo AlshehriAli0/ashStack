@@ -1,6 +1,5 @@
 import { gate, importedSpecifiers, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
-import type { SkiaContext } from "./shared.js";
+import type { Rule, RuleContext } from "../../../lib/types.js";
 
 const PATH_HOOKS = new Set(["usePathValue", "usePathInterpolation"]);
 
@@ -10,7 +9,7 @@ const MESSAGE =
 export const noLegacyPathHooks: Rule = problem(
   "Bans the `usePathValue` and `usePathInterpolation` imports. Both self-dirty Reanimated mappers and re-record idle canvases.",
   {
-    createOnce(context: SkiaContext) {
+    createOnce(context: RuleContext) {
       return {
         before() {
           return gate(context, "react-native-skia");
@@ -18,8 +17,8 @@ export const noLegacyPathHooks: Rule = problem(
         ImportDeclaration(node) {
           for (const specifier of importedSpecifiers(node, "@shopify/react-native-skia")) {
             if (specifier.type !== "ImportSpecifier") continue;
-            const imported = (specifier.imported as AstNode | undefined)?.name as string | undefined;
-            if (imported !== undefined && PATH_HOOKS.has(imported)) {
+            const { imported } = specifier;
+            if (imported.type === "Identifier" && PATH_HOOKS.has(imported.name)) {
               context.report({ node: specifier, message: MESSAGE });
             }
           }

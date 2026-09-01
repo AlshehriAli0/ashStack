@@ -1,20 +1,20 @@
 import { gate, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
-import { isStyleSheetCreate, type GateContext } from "./shared.js";
+import { isStyleSheetCreate } from "./shared.js";
 
 const MESSAGE =
   "Compose styles with an array — `[styles.a, styles.b]` — instead of spreading. A spread reads the object once and breaks the Unistyles C++ proxy, so the style silently stops reacting to the theme.";
 
 const spreadBase = (node: AstNode | null | undefined): string => {
-  let current: AstNode | undefined = node ?? undefined;
-  while (current?.type === "MemberExpression") current = current.object as AstNode | undefined;
-  return current?.type === "Identifier" ? (current.name as string) : "";
+  let current: AstNode | null | undefined = node;
+  while (current?.type === "MemberExpression") current = current.object;
+  return current?.type === "Identifier" ? current.name : "";
 };
 
 export const noStyleSpread: Rule = problem(
   "Disallow spreading a stylesheet style into another object. The spread reads through the Unistyles C++ proxy once, so the result stops reacting to the theme.",
   {
-    createOnce(context: GateContext) {
+    createOnce(context) {
       const sheets = new Set<string>();
       const candidates: { node: AstNode; base: string }[] = [];
       return {
@@ -24,13 +24,11 @@ export const noStyleSpread: Rule = problem(
           return gate(context, "...");
         },
         VariableDeclarator(node) {
-          const id = node.id as AstNode | undefined;
-          if (id?.type === "Identifier" && isStyleSheetCreate(node.init as AstNode | undefined)) {
-            sheets.add(id.name as string);
-          }
+          const { id, init } = node;
+          if (id.type === "Identifier" && isStyleSheetCreate(init)) sheets.add(id.name);
         },
         SpreadElement(node) {
-          const base = spreadBase(node.argument as AstNode | undefined);
+          const base = spreadBase(node.argument);
           if (base !== "") candidates.push({ node, base });
         },
         "Program:exit"() {

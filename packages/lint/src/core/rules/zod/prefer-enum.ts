@@ -10,19 +10,19 @@ const MESSAGES = {
 
 const isZodCall = (node: AstNode | null | undefined, method: string): boolean => {
   if (node?.type !== "CallExpression") return false;
-  const callee = node.callee as AstNode | undefined;
-  if (callee?.type !== "MemberExpression") return false;
-  const object = callee.object as AstNode | undefined;
-  if (object?.type !== "Identifier" || object.name !== "z") return false;
-  return (callee.property as AstNode | undefined)?.name === method;
+  const { callee } = node;
+  if (callee.type !== "MemberExpression") return false;
+  const { object, property } = callee;
+  if (object.type !== "Identifier" || object.name !== "z") return false;
+  return property.type === "Identifier" && property.name === method;
 };
 
 const isStringLiteralCall = (node: AstNode | null | undefined): boolean => {
-  if (!isZodCall(node, "literal")) return false;
-  const args = node?.arguments as AstNode[] | undefined;
-  if (args?.length !== 1) return false;
-  const first = args[0] as AstNode | undefined;
-  return first?.type === "Literal" && typeof first.value === "string";
+  if (node?.type !== "CallExpression" || !isZodCall(node, "literal")) return false;
+  const args = node.arguments;
+  if (args.length !== 1) return false;
+  const [first] = args;
+  return first.type === "Literal" && typeof first.value === "string";
 };
 
 export const preferEnum: Rule = problem(
@@ -31,14 +31,15 @@ export const preferEnum: Rule = problem(
     createOnce(context: RuleContext) {
       return {
         CallExpression(node: AstNode) {
+          if (node.type !== "CallExpression") return;
           if (isZodCall(node, "nativeEnum")) {
             context.report({ node, message: MESSAGES.nativeEnum });
             return;
           }
           if (!isZodCall(node, "union")) return;
-          const members = (node.arguments as AstNode[] | undefined)?.[0];
+          const [members] = node.arguments;
           if (members?.type !== "ArrayExpression") return;
-          const elements = (members.elements as (AstNode | null)[] | undefined) ?? [];
+          const { elements } = members;
           if (elements.length === 0 || !elements.every(element => isStringLiteralCall(element))) return;
           context.report({ node, message: MESSAGES.literalUnion });
         },

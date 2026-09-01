@@ -64,10 +64,10 @@ const matchesFormat = (format: string, name: string): boolean => FORMAT_TESTS[fo
 
 const memberName = (key: AstNode | null | undefined): string | null => {
   if (!key) return null;
-  if (key.type === "Identifier") return key.name as string;
+  if (key.type === "Identifier") return key.name;
   if (key.type !== "Literal") return null;
   if (typeof key.value === "string") return IDENTIFIER_NAME.test(key.value) ? key.value : null;
-  if (typeof key.value === "number") return (key.raw as string | undefined) ?? String(key.value);
+  if (typeof key.value === "number") return key.raw ?? String(key.value);
   return null;
 };
 
@@ -99,60 +99,53 @@ export const noNamingConvention: Rule = problem(
       const checkBinding = (node: AstNode | null | undefined, shorthand: boolean): void => {
         if (!node) return;
         switch (node.type) {
-          case "Identifier":
-            checkIdentifier(node, shorthand);
+          case "Identifier": {
+            if (shorthand || PLACEHOLDER_NAME.test(node.name)) return;
+            check(node, node.name, "variable");
             return;
+          }
           case "AssignmentPattern":
-            checkBinding(node.left as AstNode, shorthand);
+            checkBinding(node.left, shorthand);
             return;
           case "RestElement":
-            checkBinding(node.argument as AstNode, false);
+            checkBinding(node.argument, false);
             return;
-          case "ArrayPattern":
-            checkArrayElements(node);
+          case "ArrayPattern": {
+            for (const element of node.elements) checkBinding(element, false);
             return;
-          case "ObjectPattern":
-            checkObjectProperties(node);
+          }
+          case "ObjectPattern": {
+            for (const property of node.properties) {
+              if (property.type === "RestElement") checkBinding(property.argument, false);
+              else checkBinding(property.value, property.shorthand === true);
+            }
             return;
+          }
           default:
-        }
-      };
-
-      const checkIdentifier = (node: AstNode, shorthand: boolean): void => {
-        const name = node.name as string;
-        if (shorthand || PLACEHOLDER_NAME.test(name)) return;
-        check(node, name, "variable");
-      };
-
-      const checkArrayElements = (node: AstNode): void => {
-        for (const element of (node.elements as AstNode[] | undefined) ?? []) checkBinding(element, false);
-      };
-
-      const checkObjectProperties = (node: AstNode): void => {
-        for (const property of (node.properties as AstNode[] | undefined) ?? []) {
-          if (property.type === "RestElement") checkBinding(property.argument as AstNode, false);
-          else checkBinding(property.value as AstNode, property.shorthand === true);
         }
       };
 
       return {
         VariableDeclarator(node: AstNode) {
-          checkBinding(node.id as AstNode, false);
+          if (node.type !== "VariableDeclarator") return;
+          checkBinding(node.id, false);
         },
         Property(node: AstNode) {
-          if (node.computed === true || node.parent?.type === "ObjectPattern") return;
-          check(node.key as AstNode, memberName(node.key as AstNode), "objectLiteralMember");
+          if (node.type !== "Property") return;
+          if (node.computed === true || node.parent.type === "ObjectPattern") return;
+          check(node.key, memberName(node.key), "objectLiteralMember");
         },
         TSPropertySignature(node: AstNode) {
-          if (node.computed === true) return;
-          check(node.key as AstNode, memberName(node.key as AstNode), "typeMember");
+          if (node.type !== "TSPropertySignature" || node.computed === true) return;
+          check(node.key, memberName(node.key), "typeMember");
         },
         TSMethodSignature(node: AstNode) {
-          if (node.computed === true) return;
-          check(node.key as AstNode, memberName(node.key as AstNode), "typeMember");
+          if (node.type !== "TSMethodSignature" || node.computed === true) return;
+          check(node.key, memberName(node.key), "typeMember");
         },
         TSEnumMember(node: AstNode) {
-          check(node.id as AstNode, memberName(node.id as AstNode), "enumMember");
+          if (node.type !== "TSEnumMember") return;
+          check(node.id, memberName(node.id), "enumMember");
         },
       };
     },

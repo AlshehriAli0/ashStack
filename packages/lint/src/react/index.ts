@@ -13,7 +13,7 @@ export const reactModules = [queryModule, zustandModule, i18nModule];
 const ALLOW_EMPTY_NOOP_HANDLERS = {
   "eslint/no-empty": "off",
   "eslint/no-empty-function": "off",
-} as const;
+};
 
 const REACT_COMPILER_RULES = {
   "react/error-boundaries": "error",
@@ -38,7 +38,7 @@ const REACT_COMPILER_RULES = {
   "react/syntax": "error",
   "react/todo": "error",
   "react/unsupported-syntax": "error",
-} as const;
+};
 
 const FILE_BASED_ROUTER_FILES = ["**/routes/**", "**/src/app/**", "**/app/**/_layout.tsx", "**/app/**/+*.tsx"];
 
@@ -104,7 +104,7 @@ const REACT_RULES = {
   "react-effect/no-external-store-subscription": "error",
   "react-effect/no-initialize-state": "error",
   "unicorn/filename-case": ["error", { cases: { kebabCase: true, pascalCase: true } }],
-} as const;
+};
 
 /**
  * React (web) entry — everything in core plus react, jsx-a11y, React Compiler

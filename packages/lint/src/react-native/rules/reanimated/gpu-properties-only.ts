@@ -1,6 +1,6 @@
 import { calleeName, gate, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
-import { ANIMATED_STYLE_HOOKS, type GateContext } from "./shared.js";
+import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
+import { ANIMATED_STYLE_HOOKS } from "./shared.js";
 
 const GPU_PROPERTIES_ONLY =
   "Animate `transform` and `opacity` instead: a panel that grows is `scaleY` with `transformOrigin`, a thing that slides is `translateY`. This property recalculates layout on every frame.";
@@ -45,16 +45,17 @@ const LAYOUT_PROPS = new Set([
 ]);
 
 const styleKeyName = (property: AstNode): string | null => {
-  const key = property.key as AstNode | undefined;
-  if (key?.type === "Identifier") return key.name as string;
-  if (key?.type === "Literal") return String(key.value);
+  if (property.type !== "Property") return null;
+  const { key } = property;
+  if (key.type === "Identifier") return key.name;
+  if (key.type === "Literal") return String(key.value);
   return null;
 };
 
 export const gpuPropertiesOnly: Rule = problem(
   "Animate `transform` and `opacity` in `useAnimatedStyle` and `useAnimatedProps`. Layout properties such as `width` or `margin` recalculate layout every frame.",
   {
-    createOnce(context: GateContext) {
+    createOnce(context: RuleContext) {
       let depth = 0;
       return {
         before() {

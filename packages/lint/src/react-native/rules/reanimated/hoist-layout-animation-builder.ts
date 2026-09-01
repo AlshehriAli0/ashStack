@@ -1,4 +1,4 @@
-import { FUNCTION_TYPES, hasAncestor, problem, subtreeHas } from "../../../lib/ast.js";
+import { findInSubtree, FUNCTION_TYPES, hasAncestor, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const LAYOUT_BUILDER =
@@ -20,24 +20,12 @@ const LAYOUT_BUILDER_METHODS = new Set([
 ]);
 
 /** The builder call inside a layout-animation prop value, if there is one. */
-const findBuilderCall = (value: unknown): AstNode | null => {
-  let found: AstNode | null = null;
-  subtreeHas(value, current => {
-    const callee = current.callee as AstNode | undefined;
-    const property = callee?.property as AstNode | undefined;
-    if (
-      current.type === "CallExpression" &&
-      callee?.type === "MemberExpression" &&
-      property?.type === "Identifier" &&
-      LAYOUT_BUILDER_METHODS.has(property.name as string)
-    ) {
-      found = current;
-      return true;
-    }
-    return false;
+const findBuilderCall = (value: unknown): AstNode | null =>
+  findInSubtree(value, current => {
+    if (current.type !== "CallExpression" || current.callee.type !== "MemberExpression") return false;
+    const { property } = current.callee;
+    return property.type === "Identifier" && LAYOUT_BUILDER_METHODS.has(property.name);
   });
-  return found;
-};
 
 export const hoistLayoutAnimationBuilder: Rule = problem(
   "A layout animation belongs at module scope, or inside a memo when it depends on component values. The `entering`/`exiting`/`layout` props otherwise rebuild it on every render.",
@@ -45,7 +33,8 @@ export const hoistLayoutAnimationBuilder: Rule = problem(
     createOnce(context: RuleContext) {
       return {
         JSXAttribute(node) {
-          if (!LAYOUT_ATTRIBUTES.has((node.name as AstNode | undefined)?.name as string)) return;
+          if (node.type !== "JSXAttribute" || node.name.type !== "JSXIdentifier") return;
+          if (!LAYOUT_ATTRIBUTES.has(node.name.name)) return;
           if (!hasAncestor(node, current => FUNCTION_TYPES.has(current.type))) return;
           const builderCall = findBuilderCall(node.value);
           if (!builderCall) return;

@@ -1,20 +1,7 @@
 import type { AstNode, Rule, RuleContext, Visitor } from "../../../lib/types.js";
 
 /** oxlint's comment token — not an AST node, but reportable as one. */
-interface Comment {
-  type: string;
-  value: string;
-  start: number;
-  end: number;
-}
-
-type CommentContext = RuleContext & {
-  sourceCode?: {
-    text?: string;
-    getText?: (node?: AstNode) => string;
-    getAllComments?: () => Comment[];
-  };
-};
+type Comment = ReturnType<RuleContext["sourceCode"]["getAllComments"]>[number];
 
 const COMMENT_DIRECTIVES = [
   "@ts-expect-error",
@@ -105,14 +92,12 @@ const commentBody = (comment: Comment): string =>
 
 const isDirective = (body: string): boolean => COMMENT_DIRECTIVES.some(prefix => body.startsWith(prefix));
 
-const commentNode = (comment: Comment): AstNode => comment as unknown as AstNode;
-
 const isJsdoc = (comment: Comment): boolean => BLOCK_COMMENT_TYPES.has(comment.type) && comment.value.startsWith("*");
 
 /** Comments this rule judges: shebangs and tooling directives are none of its business. */
-const reviewedComments = (context: CommentContext): { comment: Comment; body: string }[] => {
+const reviewedComments = (context: RuleContext): { comment: Comment; body: string }[] => {
   const reviewed: { comment: Comment; body: string }[] = [];
-  for (const comment of context.sourceCode?.getAllComments?.() ?? []) {
+  for (const comment of context.sourceCode.getAllComments()) {
     if (IGNORED_COMMENT_TYPES.has(comment.type)) continue;
     const body = commentBody(comment);
     if (isDirective(body)) continue;
@@ -124,7 +109,7 @@ const reviewedComments = (context: CommentContext): { comment: Comment; body: st
 /** offset of the first non-whitespace character at or after `from` */
 const nextTokenStart = (text: string, from: number): number => {
   let index = from;
-  while (index < text.length && /\s/.test(text[index] as string)) index += 1;
+  while (index < text.length && /\s/.test(text[index])) index += 1;
   return index;
 };
 
@@ -167,21 +152,21 @@ export const noComments: Rule = {
     ],
     defaultOff: true,
   },
-  createOnce(context: CommentContext) {
+  createOnce(context: RuleContext) {
     const declarationStarts = new Set<number>();
     const recordDeclaration = (node: AstNode) => {
-      declarationStarts.add(node.start as number);
+      declarationStarts.add(node.start);
     };
 
     const declarationVisitors: Visitor = {};
     for (const type of DECLARATION_TYPES) declarationVisitors[type] = recordDeclaration;
 
     const report = (comment: Comment, message: string) => {
-      context.report({ node: commentNode(comment), message });
+      context.report({ node: comment, message });
     };
 
     const reportProse = (reviewed: { comment: Comment; body: string }[], options: Options) => {
-      const text = context.sourceCode?.text ?? "";
+      const { text } = context.sourceCode;
       const escapeHatch = hatchAllowed(options);
       for (const { comment, body } of reviewed) {
         if (escapeHatch && ESCAPE_HATCH.test(body)) continue;
@@ -203,7 +188,7 @@ export const noComments: Rule = {
     };
 
     const reportStacked = (accepted: Comment[]) => {
-      const source = context.sourceCode?.getText?.() ?? "";
+      const source = context.sourceCode.getText();
       for (const [index, comment] of accepted.entries()) {
         const previous = accepted[index - 1];
         if (previous && isStackedOn(source, previous, comment)) report(comment, HATCH_MESSAGES.stacked);
@@ -213,7 +198,7 @@ export const noComments: Rule = {
     const reportOverBudget = (accepted: Comment[], options: Options) => {
       const budget = options.budget ?? HATCH_DEFAULT_BUDGET;
       if (accepted.length <= budget) return;
-      report(accepted[budget] as Comment, overBudget(budget, accepted.length));
+      report(accepted[budget], overBudget(budget, accepted.length));
     };
 
     return {

@@ -11,15 +11,10 @@ const MESSAGES = {
 const STORE_MODULE = /^(?:@\/stores\/|(?:\.\.?\/)+stores\/)[^"']*-store$/;
 const STORE_HOOK = /^use[A-Za-z0-9_$]*Store$/;
 
-const importSource = (node: AstNode): string | null => {
-  const value = (node.source as AstNode | undefined)?.value;
-  return typeof value === "string" ? value : null;
-};
-
 const storeHookLocalName = (specifier: AstNode): string | null => {
   if (specifier.type !== "ImportSpecifier") return null;
-  const imported = ((specifier.imported as AstNode | undefined)?.name as string | undefined) ?? "";
-  const local = ((specifier.local as AstNode | undefined)?.name as string | undefined) ?? "";
+  const imported = specifier.imported.type === "Identifier" ? specifier.imported.name : "";
+  const local = specifier.local.name;
   return STORE_HOOK.test(imported) || STORE_HOOK.test(local) ? local : null;
 };
 
@@ -35,25 +30,25 @@ export const requireSelector: Rule = problem(
           calls.length = 0;
         },
         ImportDeclaration(node: AstNode) {
-          const source = importSource(node);
-          if (source === null || !STORE_MODULE.test(source)) return;
-          for (const specifier of (node.specifiers as AstNode[] | undefined) ?? []) {
+          if (node.type !== "ImportDeclaration" || !STORE_MODULE.test(node.source.value)) return;
+          for (const specifier of node.specifiers) {
             const local = storeHookLocalName(specifier);
             if (local !== null) hooks.add(local);
           }
         },
         CallExpression(node: AstNode) {
-          const callee = node.callee as AstNode | undefined;
-          if (callee?.type !== "Identifier") return;
-          const name = callee.name as string;
+          if (node.type !== "CallExpression") return;
+          const { callee } = node;
+          if (callee.type !== "Identifier") return;
+          const { name } = callee;
           if (!hooks.has(name) && !STORE_HOOK.test(name)) return;
-          const args = (node.arguments as AstNode[] | undefined) ?? [];
+          const args = node.arguments;
           if (args.length === 0) {
             calls.push({ node, name, bare: true });
             return;
           }
-          const first = args[0] as AstNode | undefined;
-          if (args.length === 1 && first?.type === "Identifier" && first.name === "undefined") {
+          const [first] = args;
+          if (args.length === 1 && first.type === "Identifier" && first.name === "undefined") {
             calls.push({ node, name, bare: false });
           }
         },

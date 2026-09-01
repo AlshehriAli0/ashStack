@@ -1,6 +1,5 @@
 import { gate, importedSpecifiers, problem, tagIdentifier } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
-import type { SkiaContext } from "./shared.js";
+import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGE =
   "Add an explicit `opaque` prop to this `<Canvas>`: `opaque={Platform.OS === 'android'}` for a fullscreen animated canvas, or `opaque={false}` when it needs transparency, view transforms, or ordinary stacking.";
@@ -8,7 +7,7 @@ const MESSAGE =
 export const canvasOpaque: Rule = problem(
   "Requires an explicit `opaque` prop on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.",
   {
-    createOnce(context: SkiaContext) {
+    createOnce(context: RuleContext) {
       const canvasLocals = new Set<string>();
       const elements: { node: AstNode; name: string }[] = [];
       return {
@@ -20,16 +19,20 @@ export const canvasOpaque: Rule = problem(
         ImportDeclaration(node) {
           for (const specifier of importedSpecifiers(node, "@shopify/react-native-skia")) {
             if (specifier.type !== "ImportSpecifier") continue;
-            const imported = (specifier.imported as AstNode | undefined)?.name;
-            const local = (specifier.local as AstNode | undefined)?.name as string | undefined;
-            if (imported === "Canvas" && (local ?? "").endsWith("Canvas")) canvasLocals.add(local as string);
+            const { imported, local } = specifier;
+            if (imported.type !== "Identifier" || imported.name !== "Canvas") continue;
+            if (local.name.endsWith("Canvas")) canvasLocals.add(local.name);
           }
         },
         JSXOpeningElement(node) {
-          const name = tagIdentifier(node.name as AstNode | undefined);
+          if (node.type !== "JSXOpeningElement") return;
+          const name = tagIdentifier(node.name);
           if (!name.endsWith("Canvas")) return;
-          const hasOpaque = ((node.attributes as AstNode[] | undefined) ?? []).some(
-            attribute => attribute.type === "JSXAttribute" && (attribute.name as AstNode | undefined)?.name === "opaque"
+          const hasOpaque = node.attributes.some(
+            attribute =>
+              attribute.type === "JSXAttribute" &&
+              attribute.name.type === "JSXIdentifier" &&
+              attribute.name.name === "opaque"
           );
           if (hasOpaque) return;
           elements.push({ node, name });

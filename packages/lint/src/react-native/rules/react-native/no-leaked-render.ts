@@ -1,6 +1,5 @@
 import { problem } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
-import { asNode } from "./shared.js";
 
 const BOOLEAN_OPERATORS = new Set(["===", "!==", "==", "!=", "<", ">", "<=", ">=", "in", "instanceof"]);
 
@@ -9,31 +8,31 @@ const MESSAGE =
 
 const isNegation = (node: AstNode): boolean => node.type === "UnaryExpression" && node.operator === "!";
 
-const isBooleanCast = (node: AstNode): boolean => {
-  const callee = asNode(node.callee);
-  return node.type === "CallExpression" && callee?.type === "Identifier" && callee.name === "Boolean";
-};
+const isBooleanCast = (node: AstNode): boolean =>
+  node.type === "CallExpression" && node.callee.type === "Identifier" && node.callee.name === "Boolean";
 
-const isTypeOnlyWrapper = (node: AstNode): boolean =>
+type TypeOnlyWrapper = Extract<AstNode, { type: "TSAsExpression" | "TSNonNullExpression" }>;
+
+const isTypeOnlyWrapper = (node: AstNode): node is TypeOnlyWrapper =>
   node.type === "TSAsExpression" || node.type === "TSNonNullExpression";
 
 const isBooleanCombination = (node: AstNode): boolean =>
   node.type === "LogicalExpression" &&
   (node.operator === "&&" || node.operator === "||") &&
-  isDefinitelyBoolean(asNode(node.left)) &&
-  isDefinitelyBoolean(asNode(node.right));
+  isDefinitelyBoolean(node.left) &&
+  isDefinitelyBoolean(node.right);
 
 const isDefinitelyBoolean = (node: AstNode | undefined): boolean => {
   if (!node) return false;
-  if (isTypeOnlyWrapper(node)) return isDefinitelyBoolean(asNode(node.expression));
-  if (node.type === "BinaryExpression") return BOOLEAN_OPERATORS.has(node.operator as string);
+  if (isTypeOnlyWrapper(node)) return isDefinitelyBoolean(node.expression);
+  if (node.type === "BinaryExpression") return BOOLEAN_OPERATORS.has(node.operator);
   if (node.type === "Literal") return typeof node.value === "boolean";
   return isNegation(node) || isBooleanCast(node) || isBooleanCombination(node);
 };
 
 const isLengthGuard = (node: AstNode | undefined): boolean => {
-  if (node?.type === "MemberExpression") return asNode(node.property)?.name === "length";
-  if (node?.type === "LogicalExpression" && node.operator === "&&") return isLengthGuard(asNode(node.right));
+  if (node?.type === "MemberExpression") return "name" in node.property && node.property.name === "length";
+  if (node?.type === "LogicalExpression" && node.operator === "&&") return isLengthGuard(node.right);
   return false;
 };
 
@@ -43,12 +42,13 @@ export const noLeakedRender: Rule = problem(
     createOnce(context: RuleContext) {
       return {
         JSXExpressionContainer(node) {
-          const parentType = node.parent?.type;
+          if (node.type !== "JSXExpressionContainer") return;
+          const parentType = node.parent.type;
           if (parentType !== "JSXElement" && parentType !== "JSXFragment") return;
-          const expression = asNode(node.expression);
-          if (expression?.type !== "LogicalExpression" || expression.operator !== "&&") return;
-          if (!isLengthGuard(asNode(expression.left))) return;
-          if (isDefinitelyBoolean(asNode(expression.left))) return;
+          const expression = node.expression;
+          if (expression.type !== "LogicalExpression" || expression.operator !== "&&") return;
+          if (!isLengthGuard(expression.left)) return;
+          if (isDefinitelyBoolean(expression.left)) return;
           context.report({ node: expression, message: MESSAGE });
         },
       };

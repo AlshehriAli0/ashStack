@@ -1,16 +1,19 @@
-import { COMPONENT_OR_HOOK, isFunction, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
-import { asNode, type RnContext, type Scope } from "./shared.js";
+import { ancestors, COMPONENT_OR_HOOK, isFunction, problem } from "../../../lib/ast.js";
+import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const COMPONENT_NAME = /^[A-Z]/;
 
-const boundFunctionName = (node: AstNode): string | null =>
-  node.type === "FunctionDeclaration"
-    ? ((asNode(node.id)?.name as string | undefined) ?? null)
-    : ((asNode(node.parent?.id)?.name as string | undefined) ?? null);
+type Scope = ReturnType<RuleContext["sourceCode"]["getScope"]>;
+
+const boundFunctionName = (node: AstNode): string | null => {
+  if (node.type === "FunctionDeclaration") return node.id?.name ?? null;
+  const { parent } = node;
+  if (parent === null || parent.type !== "VariableDeclarator" || parent.id.type !== "Identifier") return null;
+  return parent.id.name;
+};
 
 const enclosingReactFunction = (node: AstNode): AstNode | null => {
-  for (let current = node.parent; current; current = current.parent) {
+  for (const current of ancestors(node)) {
     if (!isFunction(current)) continue;
     const name = boundFunctionName(current);
     if (name !== null && COMPONENT_OR_HOOK.test(name)) return current;
@@ -25,10 +28,8 @@ const scopeContains = (scope: Scope | null | undefined, ancestor: Scope): boolea
   return false;
 };
 
-const scopeOf = (context: RnContext, node: AstNode): Scope | null => context.sourceCode?.getScope?.(node) ?? null;
-
 const readsComponentScope = (scope: Scope, componentScope: Scope): boolean => {
-  for (const reference of scope.through ?? []) {
+  for (const reference of scope.through) {
     if (scopeContains(reference.resolved?.scope, componentScope)) return true;
   }
   return false;
@@ -37,7 +38,7 @@ const readsComponentScope = (scope: Scope, componentScope: Scope): boolean => {
 export const hoistStatelessFunction: Rule = problem(
   "Requires module scope for a non-component function that reads nothing from the component around it. Out there it is created once, keeps a stable identity, and can be tested without rendering.",
   {
-    createOnce(context: RnContext) {
+    createOnce(context: RuleContext) {
       const check = (node: AstNode) => {
         const name = boundFunctionName(node);
         if (name === null || COMPONENT_NAME.test(name)) return;
@@ -45,9 +46,8 @@ export const hoistStatelessFunction: Rule = problem(
         const component = enclosingReactFunction(node);
         if (component === null) return;
 
-        const scope = scopeOf(context, node);
-        const componentScope = scopeOf(context, component);
-        if (scope === null || componentScope === null) return;
+        const scope = context.sourceCode.getScope(node);
+        const componentScope = context.sourceCode.getScope(component);
         if (readsComponentScope(scope, componentScope)) return;
 
         context.report({

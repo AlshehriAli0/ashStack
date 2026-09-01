@@ -1,40 +1,35 @@
+import type { RuleTester } from "oxlint/plugins-dev";
+
+type OxRule = Parameters<RuleTester["run"]>[1];
+type CreateRule = Extract<OxRule, { create: unknown }>;
+type CreateOnceRule = Extract<OxRule, { createOnce: unknown }>;
+type OxVisitor = ReturnType<CreateRule["create"]>;
+
+/** A node in the AST oxlint hands JS plugins: a discriminated union on ESTree `type` names. */
+export type AstNode = Parameters<NonNullable<OxVisitor[string]>>[0];
+
+/** What a rule receives: `options`, `sourceCode`, `report`, `filename`. */
+export type RuleContext = Parameters<CreateRule["create"]>[0];
+
+export type Visitor = OxVisitor;
+
 /**
- * A node in oxlint's AST: estree-shaped, with a `parent` link. Typed loosely
- * on purpose — rules poke at many node shapes, and a full estree typing would
- * fight every visitor.
+ * oxlint's rule metadata plus the two fields this package reads: `defaultOff`
+ * for rules a consumer opts into, `packages` for a rule gated on a dependency
+ * of its own. Rule docs are required here — RULES.md is generated from them.
  */
-export interface AstNode {
-  type: string;
-  parent?: AstNode | null;
-  [key: string]: unknown;
-}
-
-export interface RuleContext {
-  options?: unknown[];
-  sourceCode?: { text?: unknown; [key: string]: unknown };
-  report(descriptor: { node: AstNode; message: string; [key: string]: unknown }): void;
-  [key: string]: unknown;
-}
-
-export type Visitor = Record<string, (node: AstNode) => void>;
-
-export interface RuleMeta {
-  type?: "problem" | "suggestion" | "layout";
+export type RuleMeta = NonNullable<CreateRule["meta"]> & {
   docs: { description: string };
-  schema?: unknown[];
-  /** rule reports carry `suggest` fixes */
-  hasSuggestions?: boolean;
-  /** rule ships disabled; consumers opt in per project */
   defaultOff?: boolean;
-  /** rule (not just its module) is gated on one of these packages being a dependency */
   packages?: string[];
-}
+};
 
-export interface Rule {
-  meta: RuleMeta;
-  create?(context: RuleContext): Visitor;
-  createOnce?(context: RuleContext): Visitor & { before?(): boolean | void; after?(): void };
-}
+export type Rule = OxRule & { meta: RuleMeta };
+
+/** A rule without its docs: what `problem()` takes before it adds the description. */
+export type RuleBody = (Pick<CreateRule, "create"> | { createOnce: CreateOnceRule["createOnce"] }) & {
+  meta?: Partial<RuleMeta>;
+};
 
 export interface RestrictedPath {
   name: string;
@@ -115,5 +110,5 @@ export type ReactNativeOptions = ReactOptions & {
   keyboard?: boolean;
 };
 
-/** The oxlint config object an entry returns (schema owned by oxlint). */
+/** The config object an entry returns; oxlint validates it at `extends`. */
 export type OxlintConfig = Record<string, unknown>;

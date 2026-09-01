@@ -1,6 +1,5 @@
 import {
   calleeName,
-  FUNCTION_TYPES,
   gate,
   hasAncestor,
   isMemberCall,
@@ -9,8 +8,7 @@ import {
   receiverName,
   subtreeHas,
 } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
-import type { GateContext } from "./shared.js";
+import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGES = {
   hotBridgeUnguarded:
@@ -23,22 +21,23 @@ const REACTION_HOOKS = new Set(["useAnimatedReaction"]);
 
 const NOT_EQUAL_OPERATORS = new Set(["!==", "!="]);
 
-const identifierName = (node: AstNode | undefined): string | null =>
-  node?.type === "Identifier" ? (node.name as string) : null;
+const identifierName = (node: AstNode | undefined): string | null => (node?.type === "Identifier" ? node.name : null);
 
 const comparesWithNotEqual = (test: AstNode, first: string, second: string): boolean => {
-  if (test.type !== "BinaryExpression" || !NOT_EQUAL_OPERATORS.has(test.operator as string)) return false;
-  const left = (test.left as AstNode | undefined)?.name;
-  const right = (test.right as AstNode | undefined)?.name;
+  if (test.type !== "BinaryExpression" || !NOT_EQUAL_OPERATORS.has(test.operator)) return false;
+  const left = identifierName(test.left);
+  const right = identifierName(test.right);
   return (left === first && right === second) || (left === second && right === first);
 };
 
 const comparesWithNegatedIs = (test: AstNode, first: string, second: string): boolean => {
   if (test.type !== "UnaryExpression" || test.operator !== "!") return false;
-  const argument = test.argument as AstNode | undefined;
-  if (calleeName(argument) !== "is") return false;
-  const compared = (argument?.arguments as AstNode[] | undefined) ?? [];
-  return compared.some(entry => entry.name === first) && compared.some(entry => entry.name === second);
+  const { argument } = test;
+  if (argument.type !== "CallExpression" || calleeName(argument) !== "is") return false;
+  const compared = argument.arguments;
+  return (
+    compared.some(entry => identifierName(entry) === first) && compared.some(entry => identifierName(entry) === second)
+  );
 };
 
 /** True when an enclosing `if` tests the two callback parameters against each other. */
@@ -46,29 +45,40 @@ const guardsComparison = (node: AstNode, first: string | null, second: string | 
   if (!first || !second) return false;
   return hasAncestor(node, current => {
     if (current.type !== "IfStatement") return false;
-    const test = current.test as AstNode | undefined;
-    if (!test) return false;
+    const { test } = current;
     return comparesWithNotEqual(test, first, second) || comparesWithNegatedIs(test, first, second);
   });
 };
 
 /** True when a `.set()`/`.modify()` in the result callback writes what the prepare callback reads. */
 const feedsOwnInput = (node: AstNode, reaction: AstNode): boolean => {
-  if ((node.callee as AstNode | undefined)?.type !== "MemberExpression") return false;
+  if (node.type !== "CallExpression" || node.callee.type !== "MemberExpression") return false;
   const shared = receiverName(node);
   if (!shared) return false;
-  const args = (reaction.arguments as AstNode[] | undefined) ?? [];
-  const prepare = args[0];
-  const react = args[1];
+  if (reaction.type !== "CallExpression") return false;
+  const [prepare, react] = reaction.arguments;
   if (!prepare || !react || !isWithin(node, react)) return false;
   return subtreeHas(prepare, current => isMemberCall(current, "get") && receiverName(current) === shared);
 };
 
+/** The parameters of the reaction's result callback, or null when the second argument is not a function. */
+const resultCallbackParams = (reaction: AstNode): AstNode[] | null => {
+  if (reaction.type !== "CallExpression") return null;
+  const callback = reaction.arguments[1];
+  if (
+    callback?.type !== "FunctionDeclaration" &&
+    callback?.type !== "FunctionExpression" &&
+    callback?.type !== "ArrowFunctionExpression"
+  ) {
+    return null;
+  }
+  return callback.params;
+};
+
 /** What is wrong with a `scheduleOnRN` inside a reaction, or null when it is guarded. */
 const hotBridgeProblem = (node: AstNode, reaction: AstNode): string | null => {
-  const callback = ((reaction.arguments as AstNode[] | undefined) ?? [])[1];
-  if (!callback || !FUNCTION_TYPES.has(callback.type)) return null;
-  const params = (callback.params as AstNode[] | undefined) ?? [];
+  const params = resultCallbackParams(reaction);
+  if (!params) return null;
   const previous = identifierName(params[1]);
   if (!previous) return MESSAGES.hotBridgeNoPrevious;
   return guardsComparison(node, identifierName(params[0]), previous) ? null : MESSAGES.hotBridgeUnguarded;
@@ -77,7 +87,7 @@ const hotBridgeProblem = (node: AstNode, reaction: AstNode): string | null => {
 export const animatedReactionSafety: Rule = problem(
   "A `useAnimatedReaction` result callback loops forever if it writes a shared value the prepare callback reads. Guard `scheduleOnRN` there on the current result differing from the previous one.",
   {
-    createOnce(context: GateContext) {
+    createOnce(context: RuleContext) {
       let stack: AstNode[] = [];
       return {
         before() {

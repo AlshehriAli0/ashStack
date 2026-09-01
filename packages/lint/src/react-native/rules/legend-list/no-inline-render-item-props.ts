@@ -1,11 +1,11 @@
 import { attributeName, gate, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
-import { literalKind, type GateContext } from "./shared.js";
+import type { Rule } from "../../../lib/types.js";
+import { literalKind } from "./shared.js";
 
 export const noInlineRenderItemProps: Rule = problem(
   "Disallow inline object and array literals on props nested inside `renderItem`. A row whose props take a new identity every render can never be skipped.",
   {
-    createOnce(context: GateContext) {
+    createOnce(context) {
       let depth = 0;
       return {
         before() {
@@ -19,9 +19,9 @@ export const noInlineRenderItemProps: Rule = problem(
           }
           if (depth === 0) return;
 
-          const value = node.value as AstNode | undefined;
+          const { value } = node;
           if (value?.type !== "JSXExpressionContainer") return;
-          const kind = literalKind(value.expression as AstNode | undefined);
+          const kind = literalKind(value.expression);
           if (kind === null) return;
 
           context.report({

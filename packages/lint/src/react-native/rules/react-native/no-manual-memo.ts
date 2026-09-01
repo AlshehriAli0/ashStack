@@ -1,6 +1,5 @@
 import { gate, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
-import { asNode, type Comment, type RnContext } from "./shared.js";
+import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MEMO_APIS = new Set(["useMemo", "useCallback", "memo"]);
 
@@ -10,22 +9,23 @@ const WHY_COMMENT = /^why:/i;
 
 const NEWLINE = 10;
 
-const bareMemoName = (callee: AstNode): string | null => {
-  const name = callee.name as string;
-  return MEMO_APIS.has(name) ? name : null;
-};
+type Comments = ReturnType<RuleContext["sourceCode"]["getAllComments"]>;
+
+const bareMemoName = (callee: AstNode): string | null =>
+  callee.type === "Identifier" && MEMO_APIS.has(callee.name) ? callee.name : null;
 
 const reactNamespacedMemoName = (callee: AstNode): string | null => {
-  if (callee.computed === true) return null;
-  if (asNode(callee.object)?.name !== "React") return null;
-  const property = asNode(callee.property)?.name as string | undefined;
-  return property !== undefined && MEMO_APIS.has(property) ? property : null;
+  if (callee.type !== "MemberExpression" || callee.computed === true) return null;
+  if (callee.object.type !== "Identifier" || callee.object.name !== "React") return null;
+  const property = callee.property.name;
+  return MEMO_APIS.has(property) ? property : null;
 };
 
 const memoCalleeName = (node: AstNode): string | null => {
-  const callee = asNode(node.callee);
-  if (callee?.type === "Identifier") return bareMemoName(callee);
-  if (callee?.type === "MemberExpression") return reactNamespacedMemoName(callee);
+  if (node.type !== "CallExpression") return null;
+  const { callee } = node;
+  if (callee.type === "Identifier") return bareMemoName(callee);
+  if (callee.type === "MemberExpression") return reactNamespacedMemoName(callee);
   return null;
 };
 
@@ -48,10 +48,10 @@ const lineContaining = (starts: number[], offset: number): number => {
   return low;
 };
 
-const linesCoveredByWhyComments = (comments: Comment[], lineOf: (offset: number) => number): Set<number> => {
+const linesCoveredByWhyComments = (comments: Comments, lineOf: (offset: number) => number): Set<number> => {
   const covered = new Set<number>();
   for (const comment of comments) {
-    if (!WHY_COMMENT.test((comment.value ?? "").trim())) continue;
+    if (!WHY_COMMENT.test(comment.value.trim())) continue;
     for (let line = lineOf(comment.start); line <= lineOf(comment.end); line++) covered.add(line);
   }
   return covered;
@@ -61,7 +61,7 @@ export const noManualMemo: Rule = problem(
   "Bans `useMemo`, `useCallback` and `memo` unless a `why:` comment on the line above states the case the React Compiler cannot see: something rendered per list row, or a cost that was measured.",
   {
     meta: { packages: REACT_COMPILER_PACKAGES },
-    createOnce(context: RnContext) {
+    createOnce(context: RuleContext) {
       let calls: { node: AstNode; name: string }[] = [];
       return {
         before() {
@@ -75,12 +75,12 @@ export const noManualMemo: Rule = problem(
         "Program:exit"() {
           if (calls.length === 0) return;
 
-          const lineStarts = lineStartOffsets(context.sourceCode?.getText?.() ?? "");
+          const lineStarts = lineStartOffsets(context.sourceCode.getText());
           const lineOf = (offset: number) => lineContaining(lineStarts, offset);
-          const justified = linesCoveredByWhyComments(context.sourceCode?.getAllComments?.() ?? [], lineOf);
+          const justified = linesCoveredByWhyComments(context.sourceCode.getAllComments(), lineOf);
 
           for (const { node, name } of calls) {
-            const line = lineOf(node.start as number);
+            const line = lineOf(node.start);
             if (justified.has(line) || justified.has(line - 1)) continue;
 
             context.report({

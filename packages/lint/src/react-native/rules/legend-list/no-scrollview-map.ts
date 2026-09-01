@@ -1,23 +1,21 @@
 import { gate, problem, tagIdentifier } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
-import type { GateContext } from "./shared.js";
+import type { Rule } from "../../../lib/types.js";
 
 export const noScrollviewMap: Rule = problem(
   "A `ScrollView` mounts every child up front, so a mapped collection does not belong in its children.",
   {
-    createOnce: (context: GateContext) => ({
+    createOnce: context => ({
       before: () => gate(context, "ScrollView"),
       JSXElement(node) {
-        if (tagIdentifier((node.openingElement as AstNode | undefined)?.name as AstNode | undefined) !== "ScrollView") {
-          return;
-        }
+        if (tagIdentifier(node.openingElement.name) !== "ScrollView") return;
 
-        for (const child of (node.children as AstNode[] | undefined) ?? []) {
+        for (const child of node.children) {
           if (child.type !== "JSXExpressionContainer") continue;
-          const call = child.expression as AstNode | undefined;
-          if (call?.type !== "CallExpression") continue;
-          const callee = call.callee as AstNode | undefined;
-          if (callee?.type !== "MemberExpression" || (callee.property as AstNode | undefined)?.name !== "map") continue;
+          const call = child.expression;
+          if (call.type !== "CallExpression") continue;
+          const { callee } = call;
+          if (callee.type !== "MemberExpression") continue;
+          if (callee.property.type !== "Identifier" || callee.property.name !== "map") continue;
 
           context.report({
             node: child,

@@ -1,74 +1,73 @@
 import { calleeName, findInSubtree, gate, problem, subtreeHas } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext, Visitor } from "../../../lib/types.js";
 
-/** oxlint's context, narrowed to the source text the `gate` helper reads. */
-export type GateContext = RuleContext & { sourceCode?: { text?: string } };
+/** The object literal a stylesheet is built from. */
+export type StylesObject = Extract<AstNode, { type: "ObjectExpression" }>;
 
 export const CREATE_MARKER = "StyleSheet.create";
 
 export const isStyleSheetCreate = (node: AstNode | null | undefined): boolean => {
-  if (node === null || node === undefined || node.type !== "CallExpression") return false;
-  const callee = node.callee as AstNode | undefined;
-  if (callee?.type !== "MemberExpression") return false;
-  const object = callee.object as AstNode | undefined;
+  if (node?.type !== "CallExpression") return false;
+  const { callee } = node;
+  if (callee.type !== "MemberExpression") return false;
+  const { object, property } = callee;
   return (
-    object?.type === "Identifier" &&
+    object.type === "Identifier" &&
     object.name === "StyleSheet" &&
-    (callee.property as AstNode | undefined)?.name === "create"
+    property.type === "Identifier" &&
+    property.name === "create"
   );
 };
 
 export const propertyName = (node: AstNode): string => {
-  const key = node.key as AstNode | undefined;
-  if (!key) return "";
-  if (key.type === "Identifier") return key.name as string;
+  if (node.type !== "Property") return "";
+  const { key } = node;
+  if (key.type === "Identifier") return key.name;
   if (key.type === "Literal") return String(key.value);
   return "";
 };
 
 export const memberPath = (node: AstNode | null | undefined): string => {
   const parts: string[] = [];
-  let current: AstNode | undefined = node ?? undefined;
+  let current: AstNode | null | undefined = node;
   while (current?.type === "MemberExpression") {
-    const property = current.property as AstNode | undefined;
-    if (property?.type === "Identifier") parts.unshift(property.name as string);
-    else if (property?.type === "Literal") parts.unshift(String(property.value));
+    const { property } = current;
+    if (property.type === "Identifier") parts.unshift(property.name);
+    else if (property.type === "Literal") parts.unshift(String(property.value));
     else parts.unshift("*");
-    current = current.object as AstNode | undefined;
+    current = current.object;
   }
-  if (current?.type === "Identifier") parts.unshift(current.name as string);
+  if (current?.type === "Identifier") parts.unshift(current.name);
   return parts.join(".");
 };
 
-const themeFunctionBody = (factory: AstNode): AstNode | undefined =>
-  factory.type === "ArrowFunctionExpression" || factory.type === "FunctionExpression"
-    ? (factory.body as AstNode | undefined)
-    : undefined;
+const themeFunctionBody = (factory: AstNode): AstNode | null =>
+  factory.type === "ArrowFunctionExpression" || factory.type === "FunctionExpression" ? factory.body : null;
 
-const objectReturnedFrom = (body: AstNode | undefined): AstNode | null => {
-  if (body?.type === "ObjectExpression") return body;
-  const expression = body?.expression as AstNode | undefined;
-  if (body?.type === "ParenthesizedExpression" && expression?.type === "ObjectExpression") return expression;
-  return findInSubtree(body, current => current.type === "ObjectExpression");
+const objectReturnedFrom = (body: AstNode): StylesObject | null => {
+  if (body.type === "ObjectExpression") return body;
+  if (body.type === "ParenthesizedExpression" && body.expression.type === "ObjectExpression") return body.expression;
+  const found = findInSubtree(body, current => current.type === "ObjectExpression");
+  return found?.type === "ObjectExpression" ? found : null;
 };
 
 /** The styles object a `StyleSheet.create` argument holds: a literal, or the one its theme function returns. */
-export const stylesObjectOf = (factory: AstNode | null | undefined): AstNode | null => {
+export const stylesObjectOf = (factory: AstNode | null | undefined): StylesObject | null => {
   if (!factory) return null;
   if (factory.type === "ObjectExpression") return factory;
   const body = themeFunctionBody(factory);
-  return body === undefined ? null : objectReturnedFrom(body);
+  return body === null ? null : objectReturnedFrom(body);
 };
 
 export const declaresUseUnistylesTheme = (scope: AstNode): boolean =>
   subtreeHas(scope, current => {
     if (current.type !== "VariableDeclarator") return false;
-    const id = current.id as AstNode | undefined;
+    const { id, init } = current;
     return (
-      id?.type === "ObjectPattern" &&
-      calleeName(current.init as AstNode | undefined) === "useUnistyles" &&
-      ((id.properties as AstNode[] | undefined) ?? []).some(
-        property => (property.key as AstNode | undefined)?.name === "theme"
+      id.type === "ObjectPattern" &&
+      calleeName(init) === "useUnistyles" &&
+      id.properties.some(
+        property => property.type === "Property" && property.key.type === "Identifier" && property.key.name === "theme"
       )
     );
   });
@@ -81,14 +80,13 @@ export const readsTheme = (node: AstNode): boolean =>
  * nested the traversal currently is in such a call. The depth resets per file in `before()`, which
  * also runs the text gate.
  */
-export const inCreate = (description: string, visit: (context: GateContext, inside: () => boolean) => Visitor): Rule =>
+export const inCreate = (description: string, visit: (context: RuleContext, inside: () => boolean) => Visitor): Rule =>
   problem(description, {
-    createOnce(context: GateContext) {
+    createOnce(context) {
       let createDepth = 0;
       const inside = () => createDepth > 0;
       const visitors = visit(context, inside);
-      const enter: ((node: AstNode) => void) | undefined = visitors.CallExpression;
-      const exit: ((node: AstNode) => void) | undefined = visitors["CallExpression:exit"];
+      const { CallExpression: enter, "CallExpression:exit": exit } = visitors;
       return {
         ...visitors,
         before() {

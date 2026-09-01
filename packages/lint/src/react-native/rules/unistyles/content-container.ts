@@ -1,6 +1,6 @@
 import { calleeName, findInSubtree, gate, problem, subtreeHas, tagIdentifier } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
-import { isStyleSheetCreate, memberPath, propertyName, stylesObjectOf, type GateContext } from "./shared.js";
+import { isStyleSheetCreate, memberPath, propertyName, stylesObjectOf } from "./shared.js";
 
 const MESSAGES = {
   contentContainerRuntime:
@@ -12,10 +12,10 @@ const MESSAGES = {
 export const contentContainer: Rule = problem(
   "A raw component never subscribes its `contentContainerStyle` to theme or `rt` updates. Wrap the component with `withUnistyles` when the style depends on either.",
   {
-    createOnce(context: GateContext) {
+    createOnce(context) {
       const sheetStyles = new Map<string, Map<string, AstNode>>();
       const wrapped = new Set<string>();
-      const attributes: AstNode[] = [];
+      const attributes: Extract<AstNode, { type: "JSXAttribute" }>[] = [];
       return {
         before() {
           sheetStyles.clear();
@@ -24,44 +24,41 @@ export const contentContainer: Rule = problem(
           return gate(context, "contentContainerStyle");
         },
         VariableDeclarator(node) {
-          const id = node.id as AstNode | undefined;
-          const init = node.init as AstNode | undefined;
-          if (id?.type !== "Identifier") return;
+          const { id, init } = node;
+          if (id.type !== "Identifier") return;
           if (calleeName(init) === "withUnistyles") {
-            wrapped.add(id.name as string);
+            wrapped.add(id.name);
             return;
           }
-          if (!isStyleSheetCreate(init)) return;
-          const styles = stylesObjectOf(((init?.arguments as AstNode[] | undefined) ?? [])[0]);
+          if (init?.type !== "CallExpression" || !isStyleSheetCreate(init)) return;
+          const styles = stylesObjectOf(init.arguments[0]);
           if (!styles) return;
           const map = new Map<string, AstNode>();
-          for (const property of (styles.properties as AstNode[] | undefined) ?? []) {
+          for (const property of styles.properties) {
             if (property.type !== "Property") continue;
-            map.set(propertyName(property), property.value as AstNode);
+            map.set(propertyName(property), property.value);
           }
-          sheetStyles.set(id.name as string, map);
+          sheetStyles.set(id.name, map);
         },
         JSXAttribute(node) {
-          if ((node.name as AstNode | undefined)?.name !== "contentContainerStyle") return;
+          if (node.name.type !== "JSXIdentifier" || node.name.name !== "contentContainerStyle") return;
           attributes.push(node);
         },
         "Program:exit"() {
           for (const attribute of attributes) {
-            const reference = findInSubtree(attribute.value, current => {
-              const object = current.object as AstNode | undefined;
-              return (
+            const reference = findInSubtree(
+              attribute.value,
+              current =>
                 current.type === "MemberExpression" &&
-                object?.type === "Identifier" &&
-                sheetStyles.has(object.name as string)
-              );
-            });
-            if (!reference) continue;
+                current.object.type === "Identifier" &&
+                sheetStyles.has(current.object.name)
+            );
+            if (reference?.type !== "MemberExpression") continue;
             const owner = attribute.parent;
-            if (owner?.type === "JSXOpeningElement" && wrapped.has(tagIdentifier(owner.name as AstNode))) continue;
-            const property = reference.property as AstNode | undefined;
-            const definition = sheetStyles
-              .get((reference.object as AstNode).name as string)
-              ?.get(property?.type === "Identifier" ? (property.name as string) : "");
+            if (owner.type === "JSXOpeningElement" && wrapped.has(tagIdentifier(owner.name))) continue;
+            const { object, property } = reference;
+            if (object.type !== "Identifier") continue;
+            const definition = sheetStyles.get(object.name)?.get(property.type === "Identifier" ? property.name : "");
             if (!definition) continue;
             const usesRuntime = subtreeHas(
               definition,

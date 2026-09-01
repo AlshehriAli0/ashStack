@@ -1,4 +1,4 @@
-import type { AstNode, Rule, Visitor } from "./types.js";
+import type { AstNode, Rule, RuleBody, Visitor } from "./types.js";
 
 const SKIPPED_KEYS = new Set(["parent", "loc", "range", "start", "end", "type"]);
 
@@ -14,9 +14,8 @@ const findInEach = (values: Iterable<unknown>, predicate: Predicate): AstNode | 
 
 const childValues = (node: AstNode): unknown[] => {
   const values: unknown[] = [];
-  for (const key in node) {
+  for (const [key, value] of Object.entries(node)) {
     if (SKIPPED_KEYS.has(key)) continue;
-    const value = node[key];
     if (value !== null && typeof value === "object") values.push(value);
   }
   return values;
@@ -33,91 +32,95 @@ export const findInSubtree = (node: unknown, predicate: Predicate): AstNode | nu
 
 export const subtreeHas = (node: unknown, predicate: Predicate): boolean => findInSubtree(node, predicate) !== null;
 
+/** The called name: `foo()` and `a.b.foo()` both read as `foo`; anything else is `""`. */
 export const calleeName = (node: AstNode | null | undefined): string => {
-  if (!node || node.type !== "CallExpression") return "";
-  const callee = node.callee as AstNode | null | undefined;
-  if (!callee) return "";
-  if (callee.type === "Identifier") return callee.name as string;
-  if (callee.type === "MemberExpression" && (callee.property as AstNode | undefined)?.type === "Identifier") {
-    return (callee.property as AstNode).name as string;
-  }
+  if (node?.type !== "CallExpression") return "";
+  const { callee } = node;
+  if (callee.type === "Identifier") return callee.name;
+  if (callee.type === "MemberExpression" && callee.property.type === "Identifier") return callee.property.name;
   return "";
 };
 
-export const enclosingCall = (node: AstNode, names: Set<string>): AstNode | null => {
-  let current = node.parent;
+/** Every ancestor of `node`, innermost first. */
+export const ancestors = function* (node: AstNode): Generator<AstNode> {
+  let current: AstNode | null | undefined = node.parent;
   while (current) {
-    if (current.type === "CallExpression" && names.has(calleeName(current))) return current;
+    yield current;
     current = current.parent;
+  }
+};
+
+export const enclosingCall = (node: AstNode, names: ReadonlySet<string>): AstNode | null => {
+  for (const current of ancestors(node)) {
+    if (current.type === "CallExpression" && names.has(calleeName(current))) return current;
   }
   return null;
 };
 
-export const closestAncestor = (node: AstNode, types: Set<string>): AstNode | null => {
-  let current = node.parent;
-  while (current) {
+export const closestAncestor = (node: AstNode, types: ReadonlySet<string>): AstNode | null => {
+  for (const current of ancestors(node)) {
     if (types.has(current.type)) return current;
-    current = current.parent;
   }
   return null;
 };
 
 export const hasAncestor = (node: AstNode, predicate: Predicate): boolean => {
-  let current = node.parent;
-  while (current) {
+  for (const current of ancestors(node)) {
     if (predicate(current)) return true;
-    current = current.parent;
   }
   return false;
 };
 
 export const isWithin = (node: AstNode, container: AstNode): boolean => {
-  let current = node.parent;
-  while (current) {
+  for (const current of ancestors(node)) {
     if (current === container) return true;
-    current = current.parent;
   }
   return false;
 };
 
-export const crossesFunctionBefore = (node: AstNode, container: AstNode, functionTypes: Set<string>): boolean => {
-  let current = node.parent;
-  while (current && current !== container) {
+export const crossesFunctionBefore = (
+  node: AstNode,
+  container: AstNode,
+  functionTypes: ReadonlySet<string>
+): boolean => {
+  for (const current of ancestors(node)) {
+    if (current === container) return false;
     if (functionTypes.has(current.type)) return true;
-    current = current.parent;
   }
   return false;
 };
 
 export const isMemberCall = (node: AstNode | null | undefined, method: string): boolean =>
-  !!node &&
-  node.type === "CallExpression" &&
-  (node.callee as AstNode | undefined)?.type === "MemberExpression" &&
-  (node.callee as AstNode).computed !== true &&
-  ((node.callee as AstNode).property as AstNode | undefined)?.type === "Identifier" &&
-  (((node.callee as AstNode).property as AstNode).name as string) === method;
+  node?.type === "CallExpression" &&
+  node.callee.type === "MemberExpression" &&
+  !node.callee.computed &&
+  node.callee.property.type === "Identifier" &&
+  node.callee.property.name === method;
 
+/** The object a method call hangs off: `store.get()` reads as `store`. */
 export const receiverName = (node: AstNode | null | undefined): string | null => {
-  const object = ((node?.callee as AstNode | undefined)?.object ?? null) as AstNode | null;
-  return object?.type === "Identifier" ? (object.name as string) : null;
+  if (node?.type !== "CallExpression" || node.callee.type !== "MemberExpression") return null;
+  const { object } = node.callee;
+  return object.type === "Identifier" ? object.name : null;
 };
 
+/** The last segment of a JSX tag name: `Animated.View` reads as `View`. */
 export const tagIdentifier = (node: AstNode | null | undefined): string => {
   let current = node;
-  while (current?.type === "JSXMemberExpression") current = current.property as AstNode;
-  return (current?.name as string) ?? "";
+  while (current?.type === "JSXMemberExpression") current = current.property;
+  if (current?.type === "JSXIdentifier" || current?.type === "Identifier") return current.name;
+  return "";
 };
 
 export const attributeName = (attribute: AstNode): string => {
   if (attribute.type !== "JSXAttribute") return "";
-  const name = attribute.name as AstNode | undefined;
-  return (name?.name as string) ?? ((name?.property as AstNode | undefined)?.name as string) ?? "";
+  const { name } = attribute;
+  if (name.type === "JSXIdentifier") return name.name;
+  return name.type === "JSXNamespacedName" ? name.name.name : "";
 };
 
 export const importedSpecifiers = (node: AstNode, source: string): AstNode[] =>
-  node.type === "ImportDeclaration" && (node.source as AstNode | undefined)?.value === source
-    ? ((node.specifiers as AstNode[]) ?? [])
-    : [];
+  node.type === "ImportDeclaration" && node.source.value === source ? [...(node.specifiers ?? [])] : [];
 
 /** Function-ish node types, for ancestor walks. */
 export const FUNCTION_TYPES = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"]);
@@ -128,19 +131,17 @@ export const COMPONENT_OR_HOOK = /^(?:[A-Z]|use[A-Z])/;
 export const isFunction = (node: AstNode | null | undefined): boolean => !!node && FUNCTION_TYPES.has(node.type);
 
 /**
- * Source-text gate for createOnce rules: skip whole files that can't contain
+ * Source-text gate for createOnce rules: skip whole files that cannot contain
  * the pattern. Fails open (lints) when the source text is unavailable.
  */
-export const gate = (context: { sourceCode?: { text?: unknown } | undefined }, ...markers: string[]): boolean => {
+export const gate = (context: { sourceCode?: { text?: unknown } }, ...markers: string[]): boolean => {
   const text = context.sourceCode?.text;
   if (typeof text !== "string") return true;
   return markers.some(marker => text.includes(marker));
 };
 
 /** Shorthand for a problem rule with a description. */
-export const problem = (description: string, rule: Omit<Rule, "meta"> & { meta?: Partial<Rule["meta"]> }): Rule => ({
-  ...rule,
-  meta: { type: "problem", ...rule.meta, docs: { description } },
-});
+export const problem = (description: string, rule: RuleBody): Rule =>
+  ({ ...rule, meta: { type: "problem", ...rule.meta, docs: { description } } }) as Rule;
 
 export type { AstNode, Rule, Visitor };

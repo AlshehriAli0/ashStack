@@ -31,8 +31,8 @@ export const noBareAttrs: Rule = {
         }
       },
       JSXAttribute(node: AstNode) {
-        if (!attributes.has(attributeName(node))) return;
-        const value = node.value as AstNode | undefined;
+        if (node.type !== "JSXAttribute" || !attributes.has(attributeName(node))) return;
+        const { value } = node;
         if (value?.type !== "Literal" || typeof value.value !== "string" || value.value.length === 0) return;
         context.report({ node, message: BARE_JSX_ATTRIBUTE });
       },

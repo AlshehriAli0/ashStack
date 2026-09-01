@@ -1,6 +1,5 @@
 import { attributeName, gate, problem, tagIdentifier } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
-import type { TurboImageContext } from "./shared.js";
+import type { Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGE =
   'Add `cachePolicy` to this TurboImage (normally `cachePolicy="dataCache"`), or it re-fetches over the network on every cold start.';
@@ -8,17 +7,18 @@ const MESSAGE =
 export const requireCachePolicy: Rule = problem(
   "Requires `cachePolicy` on a TurboImage. Without one the image is re-fetched over the network on every cold start, so an already-scrolled feed costs its bandwidth again.",
   {
-    createOnce(context: TurboImageContext) {
+    createOnce(context: RuleContext) {
       return {
         before() {
           return gate(context, "TurboImage");
         },
         JSXOpeningElement(node) {
-          if (!tagIdentifier(node.name as AstNode | undefined).endsWith("TurboImage")) return;
-          const attributes = (node.attributes as AstNode[] | undefined) ?? [];
+          if (node.type !== "JSXOpeningElement") return;
+          if (!tagIdentifier(node.name).endsWith("TurboImage")) return;
+          const { attributes } = node;
           if (attributes.some(attribute => attribute.type === "JSXSpreadAttribute")) return;
           if (attributes.some(attribute => attributeName(attribute) === "cachePolicy")) return;
-          context.report({ node: node.name as AstNode, message: MESSAGE });
+          context.report({ node: node.name, message: MESSAGE });
         },
       };
     },

@@ -6,19 +6,18 @@ const BARE_TOAST = 'Pass `t("<key>")` to this toast instead of the literal, and 
 const TOAST_METHODS = new Set(["success", "error", "info", "warning", "loading", "message"]);
 
 const isToastCall = (node: AstNode): boolean => {
-  const callee = node.callee as AstNode | undefined;
-  if (callee?.type !== "MemberExpression") return false;
-  const object = callee.object as AstNode | undefined;
-  if (object?.type !== "Identifier" || object.name !== "toast") return false;
-  const method = ((callee.property as AstNode | undefined)?.name as string | undefined) ?? "";
-  return TOAST_METHODS.has(method);
+  if (node.type !== "CallExpression") return false;
+  const { callee } = node;
+  if (callee.type !== "MemberExpression") return false;
+  const { object, property } = callee;
+  if (object.type !== "Identifier" || object.name !== "toast") return false;
+  return property.type === "Identifier" && TOAST_METHODS.has(property.name);
 };
 
 const onlyStringArgument = (node: AstNode): AstNode | undefined => {
-  const args = (node.arguments as AstNode[] | undefined) ?? [];
-  if (args.length !== 1) return undefined;
-  const argument = args[0] as AstNode | undefined;
-  if (argument?.type !== "Literal" || typeof argument.value !== "string") return undefined;
+  if (node.type !== "CallExpression" || node.arguments.length !== 1) return undefined;
+  const [argument] = node.arguments;
+  if (argument.type !== "Literal" || typeof argument.value !== "string") return undefined;
   return argument;
 };
 

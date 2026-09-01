@@ -1,6 +1,5 @@
-import { attributeName, gate, isFunction, problem, subtreeHas } from "../../../lib/ast.js";
-import type { Rule } from "../../../lib/types.js";
-import { asNode, type RnContext } from "./shared.js";
+import { attributeName, gate, problem, subtreeHas } from "../../../lib/ast.js";
+import type { Rule, RuleContext } from "../../../lib/types.js";
 
 const SCROLL_HANDLERS = new Set(["onScroll", "onScrollBeginDrag", "onScrollEndDrag", "onMomentumScrollEnd"]);
 
@@ -12,24 +11,24 @@ const MESSAGE =
 export const noScrollPositionState: Rule = problem(
   "Bans a React state setter inside a scroll handler prop. Scroll fires every frame, and so would the re-render.",
   {
-    createOnce(context: RnContext) {
+    createOnce(context: RuleContext) {
       return {
         before() {
           return gate(context, "onScroll");
         },
         JSXAttribute(node) {
+          if (node.type !== "JSXAttribute") return;
           if (!SCROLL_HANDLERS.has(attributeName(node))) return;
-          const value = asNode(node.value);
-          const expression = value?.type === "JSXExpressionContainer" ? asNode(value.expression) : undefined;
-          if (!isFunction(expression)) return;
-          const setsState = subtreeHas(expression?.body, current => {
-            const callee = asNode(current.callee);
-            return (
+          const { value } = node;
+          const expression = value?.type === "JSXExpressionContainer" ? value.expression : undefined;
+          if (expression?.type !== "ArrowFunctionExpression" && expression?.type !== "FunctionExpression") return;
+          const setsState = subtreeHas(
+            expression.body,
+            current =>
               current.type === "CallExpression" &&
-              callee?.type === "Identifier" &&
-              STATE_SETTER.test(callee.name as string)
-            );
-          });
+              current.callee.type === "Identifier" &&
+              STATE_SETTER.test(current.callee.name)
+          );
           if (setsState) context.report({ node, message: MESSAGE });
         },
       };

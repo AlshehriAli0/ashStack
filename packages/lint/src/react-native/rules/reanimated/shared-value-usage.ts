@@ -42,14 +42,9 @@ const JSX_HOSTS = new Set(["JSXExpressionContainer", "JSXAttribute"]);
 
 /** True for `sv.get().push(...)` and friends — a mutation of the collection `get()` handed back. */
 const mutatesWhatGetReturned = (node: AstNode): boolean => {
-  const callee = node.callee as AstNode | undefined;
-  const property = callee?.property as AstNode | undefined;
-  return (
-    callee?.type === "MemberExpression" &&
-    property?.type === "Identifier" &&
-    MUTATING_METHODS.has(property.name as string) &&
-    isMemberCall(callee.object as AstNode | undefined, "get")
-  );
+  if (node.type !== "CallExpression" || node.callee.type !== "MemberExpression") return false;
+  const { object, property } = node.callee;
+  return property.type === "Identifier" && MUTATING_METHODS.has(property.name) && isMemberCall(object, "get");
 };
 
 /** True when the call is evaluated as JSX is built, rather than inside a callback JSX only passes along. */
@@ -78,34 +73,34 @@ export const sharedValueUsage: Rule = problem(
           candidates.length = 0;
         },
         VariableDeclarator(node) {
-          const id = node.id as AstNode | undefined;
-          const init = node.init as AstNode | undefined;
-          if (id?.type === "Identifier" && isProducerCall(init)) {
-            names.add(id.name as string);
+          if (node.type !== "VariableDeclarator") return;
+          const { id, init } = node;
+          if (id.type === "Identifier" && isProducerCall(init)) {
+            names.add(id.name);
             return;
           }
-          if (id?.type !== "ObjectPattern") return;
-          if (init?.type !== "CallExpression" || (init.callee as AstNode | undefined)?.name !== "useSharedValue") {
-            return;
-          }
-          const destructuresValue = ((id.properties as AstNode[] | undefined) ?? []).some(property => {
-            const key = property.key as AstNode | undefined;
-            return key?.type === "Identifier" && key.name === "value";
+          if (id.type !== "ObjectPattern") return;
+          if (init?.type !== "CallExpression") return;
+          if (init.callee.type !== "Identifier" || init.callee.name !== "useSharedValue") return;
+          const destructuresValue = id.properties.some(property => {
+            if (property.type !== "Property") return false;
+            const { key } = property;
+            return key.type === "Identifier" && key.name === "value";
           });
           if (destructuresValue) context.report({ node, message: MESSAGES.destructure });
         },
         AssignmentExpression(node) {
-          const left = node.left as AstNode | undefined;
-          if (left?.type !== "MemberExpression") return;
-          if (!isMemberCall(left.object as AstNode | undefined, "get")) return;
+          if (node.type !== "AssignmentExpression" || node.left.type !== "MemberExpression") return;
+          if (!isMemberCall(node.left.object, "get")) return;
           context.report({ node, message: MESSAGES.nestedProperty });
         },
         CallExpression(node) {
+          if (node.type !== "CallExpression") return;
           if (mutatesWhatGetReturned(node)) {
             context.report({ node, message: MESSAGES.nestedCollection });
             return;
           }
-          const isGet = isMemberCall(node, "get") && ((node.arguments as AstNode[] | undefined) ?? []).length === 0;
+          const isGet = isMemberCall(node, "get") && node.arguments.length === 0;
           if (!isGet && !isMemberCall(node, "set")) return;
           const shared = receiverName(node);
           if (!shared) return;

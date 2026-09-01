@@ -1,5 +1,4 @@
-import type { AstNode, Rule } from "../../../lib/types.js";
-import type { SourceContext } from "./shared.js";
+import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const DEPRECATED_FILTERS =
   "Pass a filter object here: `.invalidateQueries({ queryKey: someKeys.scope(...) })`. TanStack Query v5 removed the positional `(queryKey)` form.";
@@ -12,35 +11,24 @@ const FILTER_METHODS = new Set([
   "resetQueries",
 ]);
 
-interface Fixer {
-  replaceText(node: AstNode, text: string): unknown;
-}
-
-type FilterContext = SourceContext & { getSourceCode?: () => SourceContext["sourceCode"] };
-
 const isFilterMethodCall = (node: AstNode): boolean => {
-  const callee = node.callee as AstNode | undefined;
-  if (callee?.type !== "MemberExpression") return false;
-  const method = ((callee.property as AstNode | undefined)?.name as string | undefined) ?? "";
-  return FILTER_METHODS.has(method);
+  if (node.type !== "CallExpression") return false;
+  const { callee } = node;
+  if (callee.type !== "MemberExpression") return false;
+  const { property } = callee;
+  return property.type === "Identifier" && FILTER_METHODS.has(property.name);
 };
 
 const onlyArgument = (node: AstNode): AstNode | undefined => {
-  const args = (node.arguments as AstNode[] | undefined) ?? [];
-  if (args.length !== 1) return undefined;
-  return args[0] as AstNode | undefined;
+  if (node.type !== "CallExpression" || node.arguments.length !== 1) return undefined;
+  return node.arguments[0];
 };
 
 const isStringLiteral = (node: AstNode): boolean => node.type === "Literal" && typeof node.value === "string";
 
-const textOf = (context: FilterContext, node: AstNode): string => {
-  const source = context.sourceCode ?? context.getSourceCode?.();
-  return source?.getText?.(node) ?? "";
-};
-
-const filterObjectFor = (context: FilterContext, argument: AstNode): string | null => {
-  if (argument.type === "ArrayExpression") return `{ queryKey: ${textOf(context, argument)} }`;
-  if (isStringLiteral(argument)) return `{ queryKey: [${textOf(context, argument)}] }`;
+const filterObjectFor = (context: RuleContext, argument: AstNode): string | null => {
+  if (argument.type === "ArrayExpression") return `{ queryKey: ${context.sourceCode.getText(argument)} }`;
+  if (isStringLiteral(argument)) return `{ queryKey: [${context.sourceCode.getText(argument)}] }`;
   return null;
 };
 
@@ -53,7 +41,7 @@ export const noDeprecatedFilters: Rule = {
     },
     hasSuggestions: true,
   },
-  createOnce(context: FilterContext) {
+  createOnce(context: RuleContext) {
     return {
       CallExpression(node: AstNode) {
         if (!isFilterMethodCall(node)) return;
@@ -67,7 +55,7 @@ export const noDeprecatedFilters: Rule = {
           suggest: [
             {
               desc: "Wrap in a filter object",
-              fix: (fixer: Fixer) => fixer.replaceText(argument, filterObject),
+              fix: fixer => fixer.replaceText(argument, filterObject),
             },
           ],
         });

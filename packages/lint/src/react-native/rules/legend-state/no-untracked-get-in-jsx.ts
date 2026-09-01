@@ -1,11 +1,11 @@
 import { gate, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
-import { isObservableRef, textOf, type GateContext } from "./shared.js";
+import type { Rule } from "../../../lib/types.js";
+import { isObservableRef, textOf } from "./shared.js";
 
 export const noUntrackedGetInJsx: Rule = problem(
   "A `get()` placed directly in a JSX expression container is a plain read. The value renders once and never updates.",
   {
-    createOnce(context: GateContext) {
+    createOnce(context) {
       let functionDepth = 0;
       let functionDepthAtContainerStart: number[] = [];
       const enterFunction = (): void => {
@@ -41,12 +41,13 @@ export const noUntrackedGetInJsx: Rule = problem(
         CallExpression(node) {
           if (!directlyInJsxContainer()) return;
 
-          const callee = node.callee as AstNode | undefined;
-          if (callee?.type !== "MemberExpression" || (callee.property as AstNode | undefined)?.name !== "get") return;
-          const object = callee.object as AstNode | undefined;
+          const { callee } = node;
+          if (callee.type !== "MemberExpression") return;
+          if (callee.property.type !== "Identifier" || callee.property.name !== "get") return;
+          const { object } = callee;
           if (!isObservableRef(object)) return;
 
-          const target = textOf(context, object) ?? "the observable";
+          const target = textOf(context, object);
           context.report({
             node,
             message: `Read it with \`useValue(${target})\` at the top of the component, or wrap this fragment in \`<Memo>\` so the read happens inside a tracking context. A \`get()\` here is a plain read, so it renders the first value and never updates.`,

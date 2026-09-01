@@ -1,31 +1,36 @@
 import { attributeName, calleeName, gate, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
-import { ANIMATED_STYLE_HOOKS, type GateContext } from "./shared.js";
+import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
+import { ANIMATED_STYLE_HOOKS } from "./shared.js";
 
 const NEEDS_ANIMATED_COMPONENT =
   "Render this with the matching `Animated.*` component so the animated style takes effect. On a plain element the style is applied once at mount and never updates, and nothing errors.";
 
 const ANIMATED_COMPONENT_FACTORIES = new Set(["createAnimatedComponent", "withUnistyles", "withAnimated"]);
 
-const jsxTagName = (node: AstNode | undefined): string | null => {
-  const name = ((node?.openingElement as AstNode | undefined)?.name ?? node?.name) as AstNode | undefined;
-  if (name?.type === "JSXIdentifier") return name.name as string;
+/** The tag name node of an element, whether handed the element or its opening tag. */
+const elementName = (node: AstNode): AstNode | null => {
+  if (node.type === "JSXElement") return node.openingElement.name;
+  if (node.type === "JSXOpeningElement") return node.name;
+  return null;
+};
+
+const jsxTagName = (node: AstNode): string | null => {
+  const name = elementName(node);
+  if (name?.type === "JSXIdentifier") return name.name;
   if (name?.type === "JSXMemberExpression") {
-    const object = name.object as AstNode | undefined;
-    const property = name.property as AstNode | undefined;
-    return `${object?.name as string}.${property?.name as string}`;
+    const { object, property } = name;
+    return `${object.type === "JSXIdentifier" ? object.name : undefined}.${property.name}`;
   }
   return null;
 };
 
 /** The identifiers a `style` prop value names, whether it holds one style or an array of them. */
-const referencedStyleNames = (value: AstNode | undefined): string[] => {
-  const expression = value?.type === "JSXExpressionContainer" ? (value.expression as AstNode | undefined) : undefined;
-  if (expression?.type === "Identifier") return [expression.name as string];
-  if (expression?.type !== "ArrayExpression") return [];
-  return ((expression.elements as AstNode[] | undefined) ?? [])
-    .filter(element => element?.type === "Identifier")
-    .map(element => element.name as string);
+const referencedStyleNames = (value: AstNode | null | undefined): string[] => {
+  if (value?.type !== "JSXExpressionContainer") return [];
+  const { expression } = value;
+  if (expression.type === "Identifier") return [expression.name];
+  if (expression.type !== "ArrayExpression") return [];
+  return expression.elements.flatMap(element => (element?.type === "Identifier" ? [element.name] : []));
 };
 
 interface Candidate {
@@ -37,7 +42,7 @@ interface Candidate {
 export const animatedStyleNeedsAnimatedComponent: Rule = problem(
   "An animated style only takes effect on an `Animated.*` component. A plain element applies it once at mount and then never updates.",
   {
-    createOnce(context: GateContext) {
+    createOnce(context: RuleContext) {
       let animatedStyles = new Set<string>();
       let animatedComponents = new Set<string>();
       let candidates: Candidate[] = [];
@@ -49,18 +54,19 @@ export const animatedStyleNeedsAnimatedComponent: Rule = problem(
           return gate(context, "useAnimatedStyle", "useAnimatedProps");
         },
         VariableDeclarator(node) {
-          const id = node.id as AstNode | undefined;
-          const init = node.init as AstNode | undefined;
-          if (id?.type !== "Identifier") return;
+          if (node.type !== "VariableDeclarator") return;
+          const { id, init } = node;
+          if (id.type !== "Identifier") return;
           if (init?.type !== "CallExpression") return;
           const callee = calleeName(init);
-          if (ANIMATED_STYLE_HOOKS.has(callee)) animatedStyles.add(id.name as string);
-          else if (ANIMATED_COMPONENT_FACTORIES.has(callee)) animatedComponents.add(id.name as string);
+          if (ANIMATED_STYLE_HOOKS.has(callee)) animatedStyles.add(id.name);
+          else if (ANIMATED_COMPONENT_FACTORIES.has(callee)) animatedComponents.add(id.name);
         },
         ImportDeclaration(node) {
-          for (const specifier of (node.specifiers as AstNode[] | undefined) ?? []) {
-            const local = (specifier.local as AstNode | undefined)?.name as string | undefined;
-            if (local !== undefined && local.startsWith("Animated")) animatedComponents.add(local);
+          if (node.type !== "ImportDeclaration") return;
+          for (const specifier of node.specifiers) {
+            const local = specifier.local.name;
+            if (local.startsWith("Animated")) animatedComponents.add(local);
           }
         },
         "Program:exit"() {
@@ -72,12 +78,12 @@ export const animatedStyleNeedsAnimatedComponent: Rule = problem(
           }
         },
         JSXAttribute(node) {
-          if (attributeName(node) !== "style") return;
+          if (node.type !== "JSXAttribute" || attributeName(node) !== "style") return;
 
-          const tag = jsxTagName(node.parent ?? undefined);
+          const tag = jsxTagName(node.parent);
           if (tag === null || tag.startsWith("Animated")) return;
 
-          const referenced = referencedStyleNames(node.value as AstNode | undefined);
+          const referenced = referencedStyleNames(node.value);
           if (referenced.length === 0) return;
           candidates.push({ node, tag, referenced });
         },

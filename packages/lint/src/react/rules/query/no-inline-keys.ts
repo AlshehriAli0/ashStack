@@ -29,36 +29,41 @@ const QUERY_KEY_METHODS = new Set([
 ]);
 
 const methodName = (node: AstNode): string => {
-  const callee = node.callee as AstNode | undefined;
-  if (callee?.type !== "MemberExpression") return "";
-  return ((callee.property as AstNode | undefined)?.name as string | undefined) ?? "";
+  if (node.type !== "CallExpression") return "";
+  const { callee } = node;
+  if (callee.type !== "MemberExpression") return "";
+  const { property } = callee;
+  return property.type === "Identifier" ? property.name : "";
 };
 
 const firstArgumentArray = (node: AstNode): AstNode | undefined => {
-  const first = (node.arguments as AstNode[] | undefined)?.[0];
+  if (node.type !== "CallExpression") return undefined;
+  const [first] = node.arguments;
   return first?.type === "ArrayExpression" ? first : undefined;
 };
 
 const takesQueryKeyOptions = (node: AstNode, method: string): boolean => {
-  const callee = node.callee as AstNode | undefined;
-  const isHook = callee?.type === "Identifier" && QUERY_KEY_HOOKS.has(callee.name as string);
+  const callee = node.type === "CallExpression" ? node.callee : undefined;
+  const isHook = callee?.type === "Identifier" && QUERY_KEY_HOOKS.has(callee.name);
   return isHook || (method !== "" && QUERY_KEY_METHODS.has(method));
 };
 
 const isQueryKeyProperty = (property: AstNode): boolean => {
   if (property.type !== "Property") return false;
-  const key = property.key as AstNode | undefined;
-  return ((key?.name as string | undefined) ?? (key?.value as string | undefined)) === "queryKey";
+  const { key } = property;
+  if (key.type === "Identifier") return key.name === "queryKey";
+  return key.type === "Literal" && key.value === "queryKey";
 };
 
 const inlineQueryKeys = (node: AstNode): AstNode[] => {
-  const options = (node.arguments as AstNode[] | undefined)?.[0];
+  if (node.type !== "CallExpression") return [];
+  const [options] = node.arguments;
   if (options?.type !== "ObjectExpression") return [];
   const inline: AstNode[] = [];
-  for (const property of (options.properties as AstNode[] | undefined) ?? []) {
-    if (!isQueryKeyProperty(property)) continue;
-    const value = property.value as AstNode | undefined;
-    if (value?.type === "ArrayExpression") inline.push(value);
+  for (const property of options.properties) {
+    if (property.type !== "Property" || !isQueryKeyProperty(property)) continue;
+    const { value } = property;
+    if (value.type === "ArrayExpression") inline.push(value);
   }
   return inline;
 };

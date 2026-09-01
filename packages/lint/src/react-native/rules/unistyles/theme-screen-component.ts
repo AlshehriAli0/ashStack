@@ -14,8 +14,8 @@ export const themeScreenComponent: Rule = problem(
       return {
         MemberExpression(node) {
           if (!memberPath(node).startsWith(THEME_SCREEN_PREFIX)) return;
-          const parent = node.parent;
-          if (parent?.type === "MemberExpression" && parent.object === node) return;
+          const { parent } = node;
+          if (parent.type === "MemberExpression" && parent.object === node) return;
           if (hasAncestor(node, isStyleSheetCreate)) return;
           const component = closestAncestor(node, new Set(["FunctionDeclaration"]));
           if (!component || !declaresUseUnistylesTheme(component)) return;

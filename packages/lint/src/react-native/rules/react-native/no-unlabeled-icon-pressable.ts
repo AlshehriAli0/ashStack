@@ -1,6 +1,5 @@
 import { problem, tagIdentifier } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
-import { asNode, asNodes } from "./shared.js";
 
 const TOUCHABLES = new Set(["Pressable", "PressableScale", "TouchableOpacity", "TouchableHighlight"]);
 
@@ -11,10 +10,14 @@ const MESSAGES = {
     "Add a `label`, or an `accessibilityLabel(...)` modifier, so this icon-only Expo UI `<Button>` has an accessible name.",
 };
 
-const hasAccessibleName = (attributes: AstNode[]): boolean =>
+/** A plain (non-namespaced) attribute's name; anything else reads as `undefined`. */
+const plainAttributeName = (attribute: AstNode): string | undefined =>
+  attribute.type === "JSXAttribute" && attribute.name.type === "JSXIdentifier" ? attribute.name.name : undefined;
+
+const hasAccessibleName = (attributes: readonly AstNode[]): boolean =>
   attributes.some(attribute => {
-    const name = asNode(attribute.name)?.name;
-    return attribute.type === "JSXAttribute" && (name === "accessibilityLabel" || name === "accessibilityHint");
+    const name = plainAttributeName(attribute);
+    return name === "accessibilityLabel" || name === "accessibilityHint";
   });
 
 interface ChildKinds {
@@ -23,12 +26,12 @@ interface ChildKinds {
   hasExpression: boolean;
 }
 
-const childKinds = (children: AstNode[]): ChildKinds => {
+const childKinds = (children: readonly AstNode[]): ChildKinds => {
   const kinds: ChildKinds = { hasIcon: false, hasText: false, hasExpression: false };
   for (const child of children) {
     if (child.type === "JSXExpressionContainer") kinds.hasExpression = true;
     if (child.type !== "JSXElement") continue;
-    const childTag = tagIdentifier(asNode(asNode(child.openingElement)?.name));
+    const childTag = tagIdentifier(child.openingElement.name);
     if (childTag === "Text") kinds.hasText = true;
     if (childTag.endsWith("Icon")) kinds.hasIcon = true;
   }
@@ -41,23 +44,20 @@ export const noUnlabeledIconPressable: Rule = problem(
     createOnce(context: RuleContext) {
       return {
         JSXElement(node) {
-          const opening = asNode(node.openingElement);
-          const tag = tagIdentifier(asNode(opening?.name));
+          if (node.type !== "JSXElement") return;
+          const opening = node.openingElement;
+          const tag = tagIdentifier(opening.name);
           if (!TOUCHABLES.has(tag)) return;
-          if (hasAccessibleName(asNodes(opening?.attributes))) return;
-          const { hasIcon, hasText, hasExpression } = childKinds(asNodes(node.children));
+          if (hasAccessibleName(opening.attributes)) return;
+          const { hasIcon, hasText, hasExpression } = childKinds(node.children);
           if (!hasIcon || hasText || hasExpression) return;
-          context.report({ node: asNode(opening?.name) as AstNode, message: MESSAGES.touchable });
+          context.report({ node: opening.name, message: MESSAGES.touchable });
         },
         JSXOpeningElement(node) {
+          if (node.type !== "JSXOpeningElement") return;
           if (node.selfClosing !== true) return;
-          if (tagIdentifier(asNode(node.name)) !== "Button") return;
-          const names = new Set(
-            asNodes(node.attributes)
-              .filter(attribute => attribute.type === "JSXAttribute")
-              .map(attribute => asNode(attribute.name)?.name as string | undefined)
-              .filter(Boolean)
-          );
+          if (tagIdentifier(node.name) !== "Button") return;
+          const names = new Set(node.attributes.map(plainAttributeName).filter(Boolean));
           if (!names.has("systemImage")) return;
           if (
             names.has("label") ||
@@ -67,7 +67,7 @@ export const noUnlabeledIconPressable: Rule = problem(
           ) {
             return;
           }
-          context.report({ node: asNode(node.name) as AstNode, message: MESSAGES.expoButton });
+          context.report({ node: node.name, message: MESSAGES.expoButton });
         },
       };
     },

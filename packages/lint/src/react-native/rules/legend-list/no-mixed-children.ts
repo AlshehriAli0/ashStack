@@ -1,21 +1,21 @@
 import { gate, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
-import { attributeNamed, isListElement, LIST, type GateContext } from "./shared.js";
+import { attributeNamed, isListElement, LIST } from "./shared.js";
 
 const rendersRealChild = (node: AstNode): boolean =>
-  ((node.children as AstNode[] | undefined) ?? []).some(
+  node.type === "JSXElement" &&
+  node.children.some(
     child =>
       child.type === "JSXElement" ||
       child.type === "JSXFragment" ||
-      (child.type === "JSXText" && (child.value as string).trim() !== "") ||
-      (child.type === "JSXExpressionContainer" &&
-        (child.expression as AstNode | undefined)?.type !== "JSXEmptyExpression")
+      (child.type === "JSXText" && child.value.trim() !== "") ||
+      (child.type === "JSXExpressionContainer" && child.expression.type !== "JSXEmptyExpression")
   );
 
 export const noMixedChildren: Rule = problem(
   "Disallow passing both `data` and real children to a Legend List. The combination is unsupported and one of the two is dropped without a warning.",
   {
-    createOnce: (context: GateContext) => ({
+    createOnce: context => ({
       before: () => gate(context, LIST),
       JSXElement(node) {
         if (!isListElement(node)) return;
@@ -23,7 +23,7 @@ export const noMixedChildren: Rule = problem(
         if (!rendersRealChild(node)) return;
 
         context.report({
-          node: node.openingElement as AstNode,
+          node: node.openingElement,
           message:
             "Keep either `data` with `renderItem` or children mode here, and remove the other. Passing both fails silently, with no guarantee about which one is ignored.",
         });

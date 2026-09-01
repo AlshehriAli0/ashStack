@@ -3,8 +3,8 @@ import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 const COMPONENTS_TSX_ONLY =
   "Move this file to `src/utils` (helpers, pure logic), `src/hooks` (a hook), or `src/api/<feature>/` (data access). `components/` holds only files that render JSX, plus a barrel.";
 
-const isBarrel = (program: AstNode): boolean =>
-  ((program.body as AstNode[] | undefined) ?? []).every(
+const isBarrel = (body: AstNode[]): boolean =>
+  body.every(
     statement =>
       statement.type === "ImportDeclaration" ||
       statement.type === "ExportAllDeclaration" ||
@@ -32,7 +32,8 @@ export const componentsTsxOnly: Rule = {
         rendersJsx = true;
       },
       "Program:exit"(node: AstNode) {
-        if (rendersJsx || isBarrel(node)) return;
+        if (node.type !== "Program") return;
+        if (rendersJsx || isBarrel(node.body)) return;
         context.report({ node, message: COMPONENTS_TSX_ONLY });
       },
     };

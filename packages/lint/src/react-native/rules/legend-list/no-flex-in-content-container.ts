@@ -1,39 +1,53 @@
 import { attributeName, gate, isFunction, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
-import { expressionOf, type GateContext } from "./shared.js";
+import { expressionOf } from "./shared.js";
+
+type StyleObject = Extract<AstNode, { type: "ObjectExpression" }>;
 
 const keyName = (property: AstNode): string | null => {
-  const key = property.key as AstNode | undefined;
-  if (key?.type === "Identifier") return key.name as string;
-  if (key?.type === "Literal") return String(key.value);
+  if (property.type !== "Property") return null;
+  const { key } = property;
+  if (key.type === "Identifier") return key.name;
+  if (key.type === "Literal") return String(key.value);
   return null;
 };
 
 const objectHasFlex = (node: AstNode | null | undefined): boolean =>
   node?.type === "ObjectExpression" &&
-  (node.properties as AstNode[]).some(property => property.type === "Property" && keyName(property) === "flex");
+  node.properties.some(property => property.type === "Property" && keyName(property) === "flex");
 
 const isStyleSheetCreate = (node: AstNode): boolean => {
-  const callee = node.callee as AstNode | undefined;
+  if (node.type !== "CallExpression") return false;
+  const { callee } = node;
+  if (callee.type !== "MemberExpression") return false;
+  const { object, property } = callee;
   return (
-    callee?.type === "MemberExpression" &&
-    (callee.object as AstNode | undefined)?.name === "StyleSheet" &&
-    (callee.property as AstNode | undefined)?.name === "create"
+    object.type === "Identifier" &&
+    object.name === "StyleSheet" &&
+    property.type === "Identifier" &&
+    property.name === "create"
   );
 };
 
-const objectReturnedBy = (themeFunction: AstNode): AstNode | null => {
-  const body = themeFunction.body as AstNode | undefined;
+const bodyOf = (node: AstNode): AstNode | null =>
+  node.type === "ArrowFunctionExpression" || node.type === "FunctionExpression" || node.type === "FunctionDeclaration"
+    ? node.body
+    : null;
+
+const objectReturnedBy = (themeFunction: AstNode): StyleObject | null => {
+  const body = bodyOf(themeFunction);
   if (body?.type === "ObjectExpression") return body;
   if (body?.type !== "BlockStatement") return null;
-  const returned = ((body.body as AstNode[] | undefined) ?? []).find(statement => statement.type === "ReturnStatement");
-  const returnArgument = returned?.argument as AstNode | undefined;
-  return returnArgument?.type === "ObjectExpression" ? returnArgument : null;
+  const returned = body.body.find(statement => statement.type === "ReturnStatement");
+  if (returned?.type !== "ReturnStatement") return null;
+  const { argument } = returned;
+  return argument?.type === "ObjectExpression" ? argument : null;
 };
 
 /** The styles object given to `StyleSheet.create`: a literal, or the one a (unistyles) theme function returns. */
-const createdStyleObject = (node: AstNode): AstNode | null => {
-  const argument = ((node.arguments as AstNode[] | undefined) ?? [])[0];
+const createdStyleObject = (node: AstNode): StyleObject | null => {
+  if (node.type !== "CallExpression") return null;
+  const argument = node.arguments[0];
   if (argument?.type === "ObjectExpression") return argument;
   return isFunction(argument) ? objectReturnedBy(argument) : null;
 };
@@ -41,7 +55,7 @@ const createdStyleObject = (node: AstNode): AstNode | null => {
 export const noFlexInContentContainer: Rule = problem(
   "Disallow `flex` in a Legend List's `contentContainerStyle`, where it sizes the scrolled content to the viewport and the list ends up measuring zero height.",
   {
-    createOnce(context: GateContext) {
+    createOnce(context) {
       let styleKeysWithFlex: Set<string>;
       let contentContainerAttributes: { node: AstNode; named: string | null }[];
 
@@ -68,10 +82,10 @@ export const noFlexInContentContainer: Rule = problem(
           const object = createdStyleObject(node);
           if (!object) return;
 
-          for (const property of object.properties as AstNode[]) {
+          for (const property of object.properties) {
             if (property.type !== "Property" || property.computed) continue;
             const name = keyName(property);
-            if (name !== null && objectHasFlex(property.value as AstNode | undefined)) styleKeysWithFlex.add(name);
+            if (name !== null && objectHasFlex(property.value)) styleKeysWithFlex.add(name);
           }
         },
         JSXAttribute(node) {
@@ -82,10 +96,14 @@ export const noFlexInContentContainer: Rule = problem(
             contentContainerAttributes.push({ node, named: null });
             return;
           }
-          if (value?.type === "MemberExpression" && (value.object as AstNode | undefined)?.name === "styles") {
+          if (
+            value?.type === "MemberExpression" &&
+            value.object.type === "Identifier" &&
+            value.object.name === "styles"
+          ) {
             contentContainerAttributes.push({
               node,
-              named: ((value.property as AstNode | undefined)?.name as string) ?? null,
+              named: value.property.type === "Identifier" ? value.property.name : null,
             });
           }
         },

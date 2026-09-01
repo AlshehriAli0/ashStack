@@ -1,6 +1,5 @@
 import { gate, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
-import type { RnContext } from "./shared.js";
+import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const IOS_ONLY_EVENT_NAMES = new Set(["keyboardWillShow", "keyboardWillHide", "keyboardWillChangeFrame"]);
 
@@ -8,12 +7,12 @@ const MESSAGE =
   "Drive this from `rt.insets.ime`, which updates per frame on both platforms, or from a `react-native-keyboard-controller` component. `keyboardWill*` events are iOS-only, so on Android the listener registers and never fires.";
 
 const isIosOnlyEventName = (node: AstNode): boolean =>
-  typeof node.value === "string" && IOS_ONLY_EVENT_NAMES.has(node.value);
+  node.type === "Literal" && typeof node.value === "string" && IOS_ONLY_EVENT_NAMES.has(node.value);
 
 export const noKeyboardWillEvents: Rule = problem(
   "Bans the `keyboardWill*` event names. They are iOS-only, so on Android the listener registers and never fires.",
   {
-    createOnce(context: RnContext) {
+    createOnce(context: RuleContext) {
       return {
         before() {
           return gate(context, "keyboardWill");

@@ -1,6 +1,6 @@
 import { attributeName, gate, problem } from "../../../lib/ast.js";
 import type { Rule } from "../../../lib/types.js";
-import { attributesOf, isListElement, LIST, type GateContext } from "./shared.js";
+import { attributesOf, isListElement, LIST } from "./shared.js";
 
 const UNSUPPORTED_PROPS = new Set([
   "masonry",
@@ -14,7 +14,7 @@ const UNSUPPORTED_PROPS = new Set([
 export const noUnsupportedProps: Rule = problem(
   "Disallow FlashList and FlatList props that Legend List v3 does not have. It ignores them rather than rejecting them, so the feature looks broken.",
   {
-    createOnce: (context: GateContext) => ({
+    createOnce: context => ({
       before: () => gate(context, LIST),
       JSXElement(node) {
         if (!isListElement(node)) return;
