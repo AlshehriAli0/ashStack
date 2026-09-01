@@ -1,0 +1,73 @@
+name: Release
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: How far to bump
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+      packages:
+        description: What to publish
+        type: choice
+        options: [both, lint, fmt]
+        default: both
+      summary:
+        description: One line for the changelog
+        type: string
+        required: true
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+      - name: npm new enough to mint an OIDC token
+        run: npm install -g npm@latest
+      - run: bun install --frozen-lockfile
+
+      - run: bun run typecheck
+      - run: bun run test
+      - run: bun run lint
+      - run: bun run format:check
+      - run: bun run docs:rules:check
+
+      - name: Write the changeset this release is asking for
+        env:
+          BUMP: ${{ inputs.bump }}
+          PACKAGES: ${{ inputs.packages }}
+          SUMMARY: ${{ inputs.summary }}
+        run: |
+          {
+            echo '---'
+            [ "$PACKAGES" != fmt ] && echo "\"@ashstack/lint\": $BUMP"
+            [ "$PACKAGES" != lint ] && echo "\"@ashstack/fmt\": $BUMP"
+            echo '---'
+            echo
+            echo "$SUMMARY"
+          } > .changeset/release.md
+          cat .changeset/release.md
+
+      - name: Version, commit, publish
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          bunx changeset version
+          git add -A
+          git commit -m "chore: release ${{ inputs.summary }}"
+          git push
+          bun run release
+        env:
+          NPM_CONFIG_PROVENANCE: "true"
