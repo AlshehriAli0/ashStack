@@ -1,7 +1,5 @@
-<h1 align="center">ashStack</h1>
-
 <p align="center">
-  One strict <a href="https://oxc.rs">oxc</a> setup for linting and formatting, shared across projects.
+  <img src="assets/header-dark.svg" alt="ashStack: strict oxlint + oxfmt, shared across projects" width="880">
 </p>
 
 <p align="center">
