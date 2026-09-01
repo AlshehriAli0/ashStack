@@ -16,7 +16,7 @@ Two packages: [`@ashstack/lint`](packages/lint) and [`@ashstack/fmt`](packages/f
 
 - `react-native()` turns on **238 rules**, 71 of them written here
 - library rules ship only when you depend on that library: 13 self-detecting modules
-- every rule is in [RULES.md](packages/lint/RULES.md) with a passing and a failing example
+- every rule is in [RULES.md](packages/lint/RULES.md), with options and examples, generated and CI-checked
 - your `rules` block always wins
 
 ## Install
@@ -54,7 +54,7 @@ Every message names the fix, so an agent can act on it without a second prompt.
 
 ## Three entries
 
-Each entry is a function that returns one flat config object. `react()` already contains all of `core()`, and `react-native()` contains both.
+Each returns one flat config. `react()` contains `core()`; `react-native()` contains both.
 
 | Entry            | For                    | Adds                                                                                             |
 | ---------------- | ---------------------- | ------------------------------------------------------------------------------------------------ |
@@ -64,7 +64,7 @@ Each entry is a function that returns one flat config object. `react()` already 
 
 ## Library rules, auto-detected
 
-Each library gets a **module**: one rule namespace, one toggle. A module turns on when the library is in your `package.json`. Detection walks up to the repo root, so monorepos work.
+One module per library: one rule namespace, one toggle. A module turns on when its library is in your `package.json`, searched up to the repo root.
 
 | Module                   | Detected from                                                                            |
 | ------------------------ | ---------------------------------------------------------------------------------------- |
@@ -88,8 +88,6 @@ reactNative({ unistyles: false, i18n: true });
 
 ## Overriding
 
-Your `rules` block always wins:
-
 ```ts
 export default defineConfig({
   extends: [reactNative()],
@@ -100,13 +98,9 @@ export default defineConfig({
 });
 ```
 
-The size caps go first for most people: `max-lines` (300), `max-lines-per-function` (120) and `complexity` (12).
+Usual first cuts: `max-lines` (300), `max-lines-per-function` (120), `complexity` (12).
 
-Three rules ship **off** because they only make sense once a team has agreed to them: `@ashstack/core/no-comments`, `use-design-system`, `components-tsx-only`.
-
-## Rule reference
-
-**[RULES.md](packages/lint/RULES.md)** lists every rule in every entry, with its options and a passing and failing example. It is generated from the rules themselves and checked in CI, so it can't drift.
+Off by default, since they need a team decision first: `@ashstack/core/no-comments`, `use-design-system`, `components-tsx-only`.
 
 ## Contributing
 
