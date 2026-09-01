@@ -1,5 +1,11 @@
 # @ashstack/lint
 
+## 0.1.1
+
+### Patch Changes
+
+- update Readme
+
 ## 0.1.0
 
 ### Minor Changes
