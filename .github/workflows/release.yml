@@ -60,14 +60,32 @@ jobs:
           } > .changeset/release.md
           cat .changeset/release.md
 
-      - name: Version, commit, publish
+      - name: Version and commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           bunx changeset version
           git add -A
           git commit -m "chore: release ${{ inputs.summary }}"
-          git push
-          bun run release
+
+      # changeset publish tags what it actually shipped, so the tags only exist
+      # once the publish succeeded. Push them together with the version commit.
+      - name: Publish to npm
+        run: bun run release
         env:
           NPM_CONFIG_PROVENANCE: "true"
+
+      - name: Push the version commit and its tags
+        run: git push --follow-tags
+
+      - name: Cut a GitHub release per package, from its changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          for tag in $(git tag --points-at HEAD); do
+            pkg=${tag%@*}
+            version=${tag##*@}
+            dir=packages/${pkg#@ashstack/}
+            awk -v v="$version" '/^## /{ inside = ($2 == v); next } inside' "$dir/CHANGELOG.md" > notes.md
+            gh release create "$tag" --title "$tag" --notes-file notes.md
+          done
