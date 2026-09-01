@@ -31,16 +31,15 @@ const DESIGN_SYSTEM_RULE = "use-design-system";
 
 const lint = Bun.spawnSync([oxlint, "--type-aware", "--format", "json", "."], { cwd: smokeDir });
 
-const diagnostics: { filename?: string; code?: string }[] = (() => {
-  try {
-    return JSON.parse(lint.stdout.toString()).diagnostics ?? [];
-  } catch {
-    const output = lint.stdout.toString().slice(0, 1000);
-    const error = lint.stderr.toString().slice(0, 1000);
-    console.error(`could not parse oxlint output:\n${output}\n${error}`);
-    process.exit(1);
-  }
-})();
+let diagnostics: { filename?: string; code?: string }[] = [];
+try {
+  diagnostics = JSON.parse(lint.stdout.toString()).diagnostics ?? [];
+} catch {
+  const output = lint.stdout.toString().slice(0, 1000);
+  const error = lint.stderr.toString().slice(0, 1000);
+  console.error(`could not parse oxlint output:\n${output}\n${error}`);
+  process.exit(1);
+}
 
 const codes = diagnostics.map(d => `${d.filename}::${d.code}`).join("\n");
 const failures: string[] = [];

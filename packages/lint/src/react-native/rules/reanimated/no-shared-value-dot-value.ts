@@ -47,13 +47,11 @@ export const noSharedValueDotValue: Rule = {
         candidates.length = 0;
       },
       VariableDeclarator(node) {
-        if (node.type !== "VariableDeclarator") return;
         if (node.id.type === "Identifier" && isProducerCall(node.init)) {
           names.add(node.id.name);
         }
       },
       AssignmentExpression(node) {
-        if (node.type !== "AssignmentExpression") return;
         const name = dotValueOwner(node.left);
         if (name === null) return;
         const operator = COMPOUND_OPERATORS.get(node.operator);
@@ -67,7 +65,7 @@ export const noSharedValueDotValue: Rule = {
       MemberExpression(node) {
         const name = dotValueOwner(node);
         if (name === null) return;
-        if (node.parent?.type === "AssignmentExpression" && node.parent.left === node) return;
+        if (node.parent.type === "AssignmentExpression" && node.parent.left === node) return;
         candidates.push({ kind: "read", node, name });
       },
       "Program:exit"() {

@@ -13,7 +13,7 @@ const shortName = (module: ModuleManifest): string => module.meta.name.slice("@a
 
 export interface Composed {
   jsPlugins: string[];
-  rules: Record<string, string>;
+  rules: Record<string, "error">;
   restricted: Required<RestrictedImports>;
 }
 

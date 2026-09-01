@@ -15,9 +15,10 @@
     "docs:rules:check": "bun run build && bun scripts/generate-rule-docs.ts --check",
     "format": "oxfmt .",
     "format:check": "oxfmt --check .",
-    "lint": "bun run build && oxlint --disable-nested-config .",
-    "lint:fix": "bun run build && oxlint --disable-nested-config --fix .",
-    "release": "changeset publish"
+    "lint": "bun run build && oxlint --disable-nested-config --type-aware .",
+    "lint:fix": "bun run build && oxlint --disable-nested-config --type-aware --fix .",
+    "release": "changeset publish",
+    "typecheck": "bun run build && tsc -p . --noEmit"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.0",

@@ -43,7 +43,6 @@ export const noReactStateFromContinuousWorklet: Rule = problem(
           }
         },
         VariableDeclarator(node) {
-          if (node.type !== "VariableDeclarator") return;
           const { id, init } = node;
           if (id.type !== "ArrayPattern") return;
           if (init?.type !== "CallExpression") return;
@@ -52,7 +51,7 @@ export const noReactStateFromContinuousWorklet: Rule = problem(
           if (setter?.type === "Identifier") setters.add(setter.name);
         },
         CallExpression(node) {
-          if (node.type !== "CallExpression" || calleeName(node) !== "scheduleOnRN") return;
+          if (calleeName(node) !== "scheduleOnRN") return;
           const target = node.arguments[0];
           if (target?.type !== "Identifier") return;
           if (!enclosingCall(node, CONTINUOUS_HOOKS)) return;

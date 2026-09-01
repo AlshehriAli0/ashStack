@@ -43,7 +43,7 @@ export const noDeprecatedFilters: Rule = {
   },
   createOnce(context: RuleContext) {
     return {
-      CallExpression(node: AstNode) {
+      CallExpression(node) {
         if (!isFilterMethodCall(node)) return;
         const argument = onlyArgument(node);
         if (argument === undefined) return;

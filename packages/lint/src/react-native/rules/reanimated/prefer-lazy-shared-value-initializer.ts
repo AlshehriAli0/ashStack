@@ -13,7 +13,6 @@ export const preferLazySharedValueInitializer: Rule = problem(
           return gate(context, "useSharedValue");
         },
         CallExpression(node) {
-          if (node.type !== "CallExpression") return;
           const { callee } = node;
           if (callee.type !== "Identifier" || callee.name !== "useSharedValue") return;
           const argument = node.arguments[0];

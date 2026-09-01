@@ -40,7 +40,6 @@ export const noRnImageNetworkSource: Rule = problem(
           }
         },
         JSXOpeningElement(node) {
-          if (node.type !== "JSXOpeningElement") return;
           const tag = tagIdentifier(node.name);
           if (tag === "") return;
           const source = node.attributes.find(

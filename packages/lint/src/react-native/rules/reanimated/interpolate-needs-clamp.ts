@@ -13,7 +13,6 @@ export const interpolateNeedsClamp: Rule = problem(
           return gate(context, "interpolate");
         },
         CallExpression(node) {
-          if (node.type !== "CallExpression") return;
           const { callee, arguments: args } = node;
           if (callee.type !== "Identifier" || callee.name !== "interpolate") return;
           if (args.length !== 3) return;

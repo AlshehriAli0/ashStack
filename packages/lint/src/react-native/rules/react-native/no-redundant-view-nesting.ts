@@ -31,7 +31,6 @@ export const noRedundantViewNesting: Rule = problem(
     createOnce(context: RuleContext) {
       return {
         JSXElement(node) {
-          if (node.type !== "JSXElement") return;
           const opening = node.openingElement;
           const tag = fullTagName(opening.name);
           if (!MERGEABLE_WRAPPERS.has(tag)) return;

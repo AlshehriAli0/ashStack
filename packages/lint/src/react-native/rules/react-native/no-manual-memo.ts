@@ -15,7 +15,7 @@ const bareMemoName = (callee: AstNode): string | null =>
   callee.type === "Identifier" && MEMO_APIS.has(callee.name) ? callee.name : null;
 
 const reactNamespacedMemoName = (callee: AstNode): string | null => {
-  if (callee.type !== "MemberExpression" || callee.computed === true) return null;
+  if (callee.type !== "MemberExpression" || callee.computed) return null;
   if (callee.object.type !== "Identifier" || callee.object.name !== "React") return null;
   const property = callee.property.name;
   return MEMO_APIS.has(property) ? property : null;

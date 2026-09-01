@@ -33,7 +33,7 @@ export const hoistLayoutAnimationBuilder: Rule = problem(
     createOnce(context: RuleContext) {
       return {
         JSXAttribute(node) {
-          if (node.type !== "JSXAttribute" || node.name.type !== "JSXIdentifier") return;
+          if (node.name.type !== "JSXIdentifier") return;
           if (!LAYOUT_ATTRIBUTES.has(node.name.name)) return;
           if (!hasAncestor(node, current => FUNCTION_TYPES.has(current.type))) return;
           const builderCall = findBuilderCall(node.value);

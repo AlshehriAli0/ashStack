@@ -1,3 +1,4 @@
+import type { OxlintConfig as OxlintNativeConfig } from "oxlint";
 import type { RuleTester } from "oxlint/plugins-dev";
 
 type OxRule = Parameters<RuleTester["run"]>[1];
@@ -110,5 +111,8 @@ export type ReactNativeOptions = ReactOptions & {
   keyboard?: boolean;
 };
 
-/** The config object an entry returns; oxlint validates it at `extends`. */
-export type OxlintConfig = Record<string, unknown>;
+/** The config object an entry returns: oxlint's own shape, so `defineConfig({ extends: [core()] })` typechecks. */
+export type OxlintConfig = OxlintNativeConfig;
+
+/** The `rules` block of a config: oxlint's own map, so a built-in rule's options are checked. */
+export type RuleMap = NonNullable<OxlintConfig["rules"]>;

@@ -3,19 +3,19 @@ import { fileURLToPath } from "node:url";
 import core, { coreModules } from "../core/index.js";
 import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
-import type { OxlintConfig, ReactOptions } from "../lib/types.js";
+import type { OxlintConfig, ReactOptions, RuleMap } from "../lib/types.js";
 import i18nModule from "./rules/i18n/index.js";
 import queryModule from "./rules/query/index.js";
 import zustandModule from "./rules/zustand/index.js";
 
 export const reactModules = [queryModule, zustandModule, i18nModule];
 
-const ALLOW_EMPTY_NOOP_HANDLERS = {
+const ALLOW_EMPTY_NOOP_HANDLERS: RuleMap = {
   "eslint/no-empty": "off",
   "eslint/no-empty-function": "off",
 };
 
-const REACT_COMPILER_RULES = {
+const REACT_COMPILER_RULES: RuleMap = {
   "react/error-boundaries": "error",
   "react/globals": "error",
   "react/immutability": "error",
@@ -42,7 +42,7 @@ const REACT_COMPILER_RULES = {
 
 const FILE_BASED_ROUTER_FILES = ["**/routes/**", "**/src/app/**", "**/app/**/_layout.tsx", "**/app/**/+*.tsx"];
 
-const REACT_RULES = {
+const REACT_RULES: RuleMap = {
   ...ALLOW_EMPTY_NOOP_HANDLERS,
   "max-lines-per-function": ["error", { max: 120, skipBlankLines: true, skipComments: true }],
   "react/react-in-jsx-scope": "off",

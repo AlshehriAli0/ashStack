@@ -21,7 +21,7 @@ export const scheduleOnRnScope: Rule = problem(
           return gate(context, "scheduleOnRN");
         },
         CallExpression(node) {
-          if (node.type !== "CallExpression" || calleeName(node) !== "scheduleOnRN") return;
+          if (calleeName(node) !== "scheduleOnRN") return;
           for (const argument of node.arguments) {
             collectFunctions(argument, found => {
               context.report({ node: found, message: INLINE_CALLBACK });

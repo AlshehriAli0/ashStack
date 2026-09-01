@@ -10,7 +10,6 @@ export const noConditionalStyleArray: Rule = problem(
     createOnce(context: RuleContext) {
       return {
         JSXAttribute(node) {
-          if (node.type !== "JSXAttribute") return;
           if (node.name.type !== "JSXIdentifier" || node.name.name !== "style") return;
           const { value } = node;
           if (value?.type !== "JSXExpressionContainer") return;

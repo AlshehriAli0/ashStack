@@ -1,3 +1,4 @@
+import { optionsOf } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext, Visitor } from "../../../lib/types.js";
 
 /** oxlint's comment token — not an AST node, but reportable as one. */
@@ -109,7 +110,7 @@ const reviewedComments = (context: RuleContext): { comment: Comment; body: strin
 /** offset of the first non-whitespace character at or after `from` */
 const nextTokenStart = (text: string, from: number): number => {
   let index = from;
-  while (index < text.length && /\s/.test(text[index])) index += 1;
+  while (/\s/.test(text.charAt(index))) index += 1;
   return index;
 };
 
@@ -197,8 +198,8 @@ export const noComments: Rule = {
 
     const reportOverBudget = (accepted: Comment[], options: Options) => {
       const budget = options.budget ?? HATCH_DEFAULT_BUDGET;
-      if (accepted.length <= budget) return;
-      report(accepted[budget], overBudget(budget, accepted.length));
+      const overflow = accepted[budget];
+      if (overflow) report(overflow, overBudget(budget, accepted.length));
     };
 
     return {
@@ -208,7 +209,7 @@ export const noComments: Rule = {
         return true;
       },
       "Program:exit"() {
-        const options = (context.options?.[0] as Options | undefined) ?? {};
+        const options = optionsOf<Options>(context, {});
         const reviewed = reviewedComments(context);
         reportProse(reviewed, options);
         if (!hatchAllowed(options)) return;

@@ -73,7 +73,6 @@ export const sharedValueUsage: Rule = problem(
           candidates.length = 0;
         },
         VariableDeclarator(node) {
-          if (node.type !== "VariableDeclarator") return;
           const { id, init } = node;
           if (id.type === "Identifier" && isProducerCall(init)) {
             names.add(id.name);
@@ -90,12 +89,11 @@ export const sharedValueUsage: Rule = problem(
           if (destructuresValue) context.report({ node, message: MESSAGES.destructure });
         },
         AssignmentExpression(node) {
-          if (node.type !== "AssignmentExpression" || node.left.type !== "MemberExpression") return;
+          if (node.left.type !== "MemberExpression") return;
           if (!isMemberCall(node.left.object, "get")) return;
           context.report({ node, message: MESSAGES.nestedProperty });
         },
         CallExpression(node) {
-          if (node.type !== "CallExpression") return;
           if (mutatesWhatGetReturned(node)) {
             context.report({ node, message: MESSAGES.nestedCollection });
             return;

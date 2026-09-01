@@ -22,7 +22,7 @@ const isStringLiteralCall = (node: AstNode | null | undefined): boolean => {
   const args = node.arguments;
   if (args.length !== 1) return false;
   const [first] = args;
-  return first.type === "Literal" && typeof first.value === "string";
+  return first?.type === "Literal" && typeof first.value === "string";
 };
 
 export const preferEnum: Rule = problem(
@@ -30,8 +30,7 @@ export const preferEnum: Rule = problem(
   {
     createOnce(context: RuleContext) {
       return {
-        CallExpression(node: AstNode) {
-          if (node.type !== "CallExpression") return;
+        CallExpression(node) {
           if (isZodCall(node, "nativeEnum")) {
             context.report({ node, message: MESSAGES.nativeEnum });
             return;

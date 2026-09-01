@@ -42,7 +42,6 @@ export const noLeakedRender: Rule = problem(
     createOnce(context: RuleContext) {
       return {
         JSXExpressionContainer(node) {
-          if (node.type !== "JSXExpressionContainer") return;
           const parentType = node.parent.type;
           if (parentType !== "JSXElement" && parentType !== "JSXFragment") return;
           const expression = node.expression;

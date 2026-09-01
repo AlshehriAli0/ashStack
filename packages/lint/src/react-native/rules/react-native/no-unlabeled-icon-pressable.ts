@@ -44,7 +44,6 @@ export const noUnlabeledIconPressable: Rule = problem(
     createOnce(context: RuleContext) {
       return {
         JSXElement(node) {
-          if (node.type !== "JSXElement") return;
           const opening = node.openingElement;
           const tag = tagIdentifier(opening.name);
           if (!TOUCHABLES.has(tag)) return;
@@ -54,8 +53,7 @@ export const noUnlabeledIconPressable: Rule = problem(
           context.report({ node: opening.name, message: MESSAGES.touchable });
         },
         JSXOpeningElement(node) {
-          if (node.type !== "JSXOpeningElement") return;
-          if (node.selfClosing !== true) return;
+          if (!node.selfClosing) return;
           if (tagIdentifier(node.name) !== "Button") return;
           const names = new Set(node.attributes.map(plainAttributeName).filter(Boolean));
           if (!names.has("systemImage")) return;

@@ -1,5 +1,5 @@
 import { gate, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
+import type { Rule, RuleContext } from "../../../lib/types.js";
 import { propertyKeyName } from "./shared.js";
 
 const NEXT_PAGE_PARAM_NULL =
@@ -15,8 +15,8 @@ export const nextPageParamUndefined: Rule = problem(
         before() {
           return gate(context, "getNextPageParam");
         },
-        Property(node: AstNode) {
-          if (node.type !== "Property" || propertyKeyName(node) !== "getNextPageParam") return;
+        Property(node) {
+          if (propertyKeyName(node) !== "getNextPageParam") return;
           const body = context.sourceCode.getText(node.value);
           if (!RETURNS_NULL.test(body)) return;
           context.report({ node: node.value, message: NEXT_PAGE_PARAM_NULL });

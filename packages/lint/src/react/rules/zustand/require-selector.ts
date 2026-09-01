@@ -29,15 +29,14 @@ export const requireSelector: Rule = problem(
           hooks.clear();
           calls.length = 0;
         },
-        ImportDeclaration(node: AstNode) {
-          if (node.type !== "ImportDeclaration" || !STORE_MODULE.test(node.source.value)) return;
+        ImportDeclaration(node) {
+          if (!STORE_MODULE.test(node.source.value)) return;
           for (const specifier of node.specifiers) {
             const local = storeHookLocalName(specifier);
             if (local !== null) hooks.add(local);
           }
         },
-        CallExpression(node: AstNode) {
-          if (node.type !== "CallExpression") return;
+        CallExpression(node) {
           const { callee } = node;
           if (callee.type !== "Identifier") return;
           const { name } = callee;
@@ -48,7 +47,7 @@ export const requireSelector: Rule = problem(
             return;
           }
           const [first] = args;
-          if (args.length === 1 && first.type === "Identifier" && first.name === "undefined") {
+          if (args.length === 1 && first?.type === "Identifier" && first.name === "undefined") {
             calls.push({ node, name, bare: false });
           }
         },

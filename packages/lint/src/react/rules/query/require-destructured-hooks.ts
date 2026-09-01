@@ -17,14 +17,13 @@ export const requireDestructuredHooks: Rule = problem(
           apiHooks.clear();
           candidates.length = 0;
         },
-        ImportDeclaration(node: AstNode) {
-          if (node.type !== "ImportDeclaration" || !API_HOOK_MODULE.test(node.source.value)) return;
+        ImportDeclaration(node) {
+          if (!API_HOOK_MODULE.test(node.source.value)) return;
           for (const specifier of node.specifiers) {
             if (specifier.type === "ImportSpecifier") apiHooks.add(specifier.local.name);
           }
         },
-        VariableDeclarator(node: AstNode) {
-          if (node.type !== "VariableDeclarator") return;
+        VariableDeclarator(node) {
           const { id, init } = node;
           if (id.type !== "Identifier") return;
           if (init?.type !== "CallExpression") return;

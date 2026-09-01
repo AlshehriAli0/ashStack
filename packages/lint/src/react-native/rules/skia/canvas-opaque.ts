@@ -25,7 +25,6 @@ export const canvasOpaque: Rule = problem(
           }
         },
         JSXOpeningElement(node) {
-          if (node.type !== "JSXOpeningElement") return;
           const name = tagIdentifier(node.name);
           if (!name.endsWith("Canvas")) return;
           const hasOpaque = node.attributes.some(

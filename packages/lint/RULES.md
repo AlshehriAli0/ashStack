@@ -150,7 +150,7 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`.
 | [`typescript/prefer-namespace-keyword`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/prefer-namespace-keyword.html) | `"error"` |
 | [`typescript/prefer-nullish-coalescing`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/prefer-nullish-coalescing.html) | `"error"` |
 | [`typescript/require-await`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/require-await.html) | `"error"` |
-| [`typescript/switch-exhaustiveness-check`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/switch-exhaustiveness-check.html) | `"error"` |
+| [`typescript/switch-exhaustiveness-check`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/switch-exhaustiveness-check.html) | `["error",{"considerDefaultExhaustiveForUnions":true}]` |
 | [`import/no-commonjs`](https://oxc.rs/docs/guide/usage/linter/rules/import/no-commonjs.html) | `"off"` |
 | [`import/no-cycle`](https://oxc.rs/docs/guide/usage/linter/rules/import/no-cycle.html) | `"error"` |
 | [`import/no-duplicates`](https://oxc.rs/docs/guide/usage/linter/rules/import/no-duplicates.html) | `"error"` |

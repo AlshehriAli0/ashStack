@@ -1,5 +1,5 @@
 import { calleeName, closestAncestor, FUNCTION_TYPES, hasAncestor, problem, subtreeHas } from "../../../lib/ast.js";
-import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
+import type { Rule, RuleContext } from "../../../lib/types.js";
 
 const HOIST_INTL =
   "Move this `Intl` formatter to module scope when the locale and options are static, or wrap it in `useMemo` keyed on the locale — constructing one per render is expensive.";
@@ -11,8 +11,7 @@ export const hoistIntl: Rule = problem(
   {
     createOnce(context: RuleContext) {
       return {
-        NewExpression(node: AstNode) {
-          if (node.type !== "NewExpression") return;
+        NewExpression(node) {
           const { callee } = node;
           if (callee.type !== "MemberExpression") return;
           const { object } = callee;

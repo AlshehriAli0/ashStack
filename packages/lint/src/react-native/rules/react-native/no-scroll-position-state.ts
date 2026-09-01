@@ -17,7 +17,6 @@ export const noScrollPositionState: Rule = problem(
           return gate(context, "onScroll");
         },
         JSXAttribute(node) {
-          if (node.type !== "JSXAttribute") return;
           if (!SCROLL_HANDLERS.has(attributeName(node))) return;
           const { value } = node;
           const expression = value?.type === "JSXExpressionContainer" ? value.expression : undefined;

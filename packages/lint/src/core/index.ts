@@ -1,11 +1,11 @@
 import { composeModules } from "../lib/module.js";
-import type { CoreOptions, OxlintConfig } from "../lib/types.js";
+import type { CoreOptions, OxlintConfig, RuleMap } from "../lib/types.js";
 import coreModule from "./rules/core/index.js";
 import zodModule from "./rules/zod/index.js";
 
 export const coreModules = [coreModule, zodModule];
 
-const BASE_RULES = {
+const BASE_RULES: RuleMap = {
   "array-callback-return": "error",
   "constructor-super": "error",
   "default-param-last": "error",
@@ -135,7 +135,7 @@ const BASE_RULES = {
   "typescript/prefer-namespace-keyword": "error",
   "typescript/prefer-nullish-coalescing": "error",
   "typescript/require-await": "error",
-  "typescript/switch-exhaustiveness-check": "error",
+  "typescript/switch-exhaustiveness-check": ["error", { considerDefaultExhaustiveForUnions: true }],
   "import/no-commonjs": "off",
   "import/no-cycle": "error",
   "import/no-duplicates": "error",

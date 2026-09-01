@@ -54,7 +54,6 @@ export const animatedStyleNeedsAnimatedComponent: Rule = problem(
           return gate(context, "useAnimatedStyle", "useAnimatedProps");
         },
         VariableDeclarator(node) {
-          if (node.type !== "VariableDeclarator") return;
           const { id, init } = node;
           if (id.type !== "Identifier") return;
           if (init?.type !== "CallExpression") return;
@@ -63,7 +62,6 @@ export const animatedStyleNeedsAnimatedComponent: Rule = problem(
           else if (ANIMATED_COMPONENT_FACTORIES.has(callee)) animatedComponents.add(id.name);
         },
         ImportDeclaration(node) {
-          if (node.type !== "ImportDeclaration") return;
           for (const specifier of node.specifiers) {
             const local = specifier.local.name;
             if (local.startsWith("Animated")) animatedComponents.add(local);
@@ -78,7 +76,7 @@ export const animatedStyleNeedsAnimatedComponent: Rule = problem(
           }
         },
         JSXAttribute(node) {
-          if (node.type !== "JSXAttribute" || attributeName(node) !== "style") return;
+          if (attributeName(node) !== "style") return;
 
           const tag = jsxTagName(node.parent);
           if (tag === null || tag.startsWith("Animated")) return;

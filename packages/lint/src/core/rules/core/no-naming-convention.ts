@@ -37,7 +37,7 @@ interface Convention {
   label: string;
 }
 
-const CONVENTIONS: Record<string, Convention> = {
+const CONVENTIONS = {
   objectLiteralMember: {
     match: spelledExactly(...LIBRARY_PROPERTY_NAMES, NUMERIC_KEY, AFFIXED_NAME),
     formats: ANY_CASE,
@@ -58,7 +58,9 @@ const CONVENTIONS: Record<string, Convention> = {
     formats: ["CONSTANT_CASE", "PascalCase"],
     label: "enum member",
   },
-};
+} satisfies Record<string, Convention>;
+
+type Kind = keyof typeof CONVENTIONS;
 
 const matchesFormat = (format: string, name: string): boolean => FORMAT_TESTS[format]?.(name) === true;
 
@@ -71,8 +73,8 @@ const memberName = (key: AstNode | null | undefined): string | null => {
   return null;
 };
 
-const namingViolation = (name: string, kind: string): string | null => {
-  const convention = CONVENTIONS[kind] as Convention;
+const namingViolation = (name: string, kind: Kind): string | null => {
+  const convention: Convention = CONVENTIONS[kind];
   const wrongFormat = `Rename this ${convention.label} \`${name}\` to ${convention.formats.join(", ")}.`;
   if (convention.match === null) {
     return convention.formats.some(format => matchesFormat(format, name)) ? null : wrongFormat;
@@ -90,7 +92,7 @@ export const noNamingConvention: Rule = problem(
   "Flags a variable, object property, type member or enum member whose name misses the casings allowed for its kind.",
   {
     createOnce(context: RuleContext) {
-      const check = (node: AstNode, name: string | null, kind: string): void => {
+      const check = (node: AstNode, name: string | null, kind: Kind): void => {
         if (name === null) return;
         const message = namingViolation(name, kind);
         if (message !== null) context.report({ node, message });
@@ -117,34 +119,32 @@ export const noNamingConvention: Rule = problem(
           case "ObjectPattern": {
             for (const property of node.properties) {
               if (property.type === "RestElement") checkBinding(property.argument, false);
-              else checkBinding(property.value, property.shorthand === true);
+              else checkBinding(property.value, property.shorthand);
             }
             return;
           }
           default:
+            return;
         }
       };
 
       return {
-        VariableDeclarator(node: AstNode) {
-          if (node.type !== "VariableDeclarator") return;
+        VariableDeclarator(node) {
           checkBinding(node.id, false);
         },
-        Property(node: AstNode) {
-          if (node.type !== "Property") return;
-          if (node.computed === true || node.parent.type === "ObjectPattern") return;
+        Property(node) {
+          if (node.computed || node.parent.type === "ObjectPattern") return;
           check(node.key, memberName(node.key), "objectLiteralMember");
         },
-        TSPropertySignature(node: AstNode) {
-          if (node.type !== "TSPropertySignature" || node.computed === true) return;
+        TSPropertySignature(node) {
+          if (node.computed) return;
           check(node.key, memberName(node.key), "typeMember");
         },
-        TSMethodSignature(node: AstNode) {
-          if (node.type !== "TSMethodSignature" || node.computed === true) return;
+        TSMethodSignature(node) {
+          if (node.computed) return;
           check(node.key, memberName(node.key), "typeMember");
         },
-        TSEnumMember(node: AstNode) {
-          if (node.type !== "TSEnumMember") return;
+        TSEnumMember(node) {
           check(node.id, memberName(node.id), "enumMember");
         },
       };

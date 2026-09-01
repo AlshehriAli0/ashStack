@@ -73,7 +73,7 @@ export const noInlineKeys: Rule = problem(
   {
     createOnce(context: RuleContext) {
       return {
-        CallExpression(node: AstNode) {
+        CallExpression(node) {
           const method = methodName(node);
           if (method === "getQueryData" || method === "setQueryData") {
             const key = firstArgumentArray(node);

@@ -17,7 +17,6 @@ export const noRnNamespaceImport: Rule = problem(
           return gate(context, "react-native");
         },
         ImportDeclaration(node) {
-          if (node.type !== "ImportDeclaration") return;
           if (node.source.value !== "react-native") return;
           for (const specifier of node.specifiers) {
             if (specifier.type !== "ImportNamespaceSpecifier") continue;
@@ -25,7 +24,6 @@ export const noRnNamespaceImport: Rule = problem(
           }
         },
         ExportNamedDeclaration(node) {
-          if (node.type !== "ExportNamedDeclaration") return;
           if (node.source?.value !== "react-native") return;
           for (const specifier of node.specifiers) {
             const { local } = specifier;

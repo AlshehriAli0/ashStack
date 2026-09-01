@@ -31,8 +31,7 @@ export const componentsTsxOnly: Rule = {
       JSXFragment() {
         rendersJsx = true;
       },
-      "Program:exit"(node: AstNode) {
-        if (node.type !== "Program") return;
+      "Program:exit"(node) {
         if (rendersJsx || isBarrel(node.body)) return;
         context.report({ node, message: COMPONENTS_TSX_ONLY });
       },

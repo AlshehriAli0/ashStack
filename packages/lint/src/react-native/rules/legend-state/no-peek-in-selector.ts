@@ -16,7 +16,7 @@ const trackingCallbackOf = (node: Extract<AstNode, { type: "CallExpression" }>):
   if (callee.type !== "Identifier") return null;
   if (!TRACKING_CONTEXT_CALLEES.has(callee.name)) return null;
   const argument = node.arguments[0];
-  return isFunction(argument) ? argument : null;
+  return argument && isFunction(argument) ? argument : null;
 };
 
 const peekedObservable = (callee: AstNode): AstNode | null => {

@@ -1,5 +1,5 @@
-import { attributeName } from "../../../lib/ast.js";
-import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
+import { attributeName, optionsOf } from "../../../lib/ast.js";
+import type { Rule, RuleContext } from "../../../lib/types.js";
 
 const BARE_JSX_ATTRIBUTE = 'Pass `t("<key>")` as this attribute value and add the key to every locale file.';
 
@@ -25,13 +25,13 @@ export const noBareAttrs: Rule = {
     return {
       before() {
         attributes.clear();
-        const configured = (context.options?.[0] as { attributes?: string[] } | undefined)?.attributes;
+        const configured = optionsOf<{ attributes?: string[] }>(context, {}).attributes;
         for (const attribute of configured ?? NATIVE_TRANSLATABLE_ATTRIBUTES) {
           attributes.add(attribute);
         }
       },
-      JSXAttribute(node: AstNode) {
-        if (node.type !== "JSXAttribute" || !attributes.has(attributeName(node))) return;
+      JSXAttribute(node) {
+        if (!attributes.has(attributeName(node))) return;
         const { value } = node;
         if (value?.type !== "Literal" || typeof value.value !== "string" || value.value.length === 0) return;
         context.report({ node, message: BARE_JSX_ATTRIBUTE });

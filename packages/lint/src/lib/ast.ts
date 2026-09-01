@@ -1,4 +1,4 @@
-import type { AstNode, Rule, RuleBody, Visitor } from "./types.js";
+import type { AstNode, Rule, RuleBody, RuleContext, Visitor } from "./types.js";
 
 const SKIPPED_KEYS = new Set(["parent", "loc", "range", "start", "end", "type"]);
 
@@ -24,6 +24,7 @@ const childValues = (node: AstNode): unknown[] => {
 export const findInSubtree = (node: unknown, predicate: Predicate): AstNode | null => {
   if (node === null || typeof node !== "object") return null;
   if (Array.isArray(node)) return findInEach(node, predicate);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const candidate = node as AstNode;
   if (typeof candidate.type !== "string") return null;
   if (predicate(candidate)) return candidate;
@@ -115,12 +116,11 @@ export const tagIdentifier = (node: AstNode | null | undefined): string => {
 export const attributeName = (attribute: AstNode): string => {
   if (attribute.type !== "JSXAttribute") return "";
   const { name } = attribute;
-  if (name.type === "JSXIdentifier") return name.name;
-  return name.type === "JSXNamespacedName" ? name.name.name : "";
+  return name.type === "JSXIdentifier" ? name.name : name.name.name;
 };
 
 export const importedSpecifiers = (node: AstNode, source: string): AstNode[] =>
-  node.type === "ImportDeclaration" && node.source.value === source ? [...(node.specifiers ?? [])] : [];
+  node.type === "ImportDeclaration" && node.source.value === source ? [...node.specifiers] : [];
 
 /** Function-ish node types, for ancestor walks. */
 export const FUNCTION_TYPES = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"]);
@@ -130,18 +130,23 @@ export const COMPONENT_OR_HOOK = /^(?:[A-Z]|use[A-Z])/;
 
 export const isFunction = (node: AstNode | null | undefined): boolean => !!node && FUNCTION_TYPES.has(node.type);
 
+/** Source-text gate for createOnce rules: skip whole files that cannot contain the pattern. */
+export const gate = (context: RuleContext, ...markers: string[]): boolean =>
+  markers.some(marker => context.sourceCode.text.includes(marker));
+
 /**
- * Source-text gate for createOnce rules: skip whole files that cannot contain
- * the pattern. Fails open (lints) when the source text is unavailable.
+ * A rule's first option object, or `fallback` when the consumer passed none.
+ * oxlint types options as untyped JSON, so this is the one place a rule's
+ * option shape is asserted rather than checked.
  */
-export const gate = (context: { sourceCode?: { text?: unknown } }, ...markers: string[]): boolean => {
-  const text = context.sourceCode?.text;
-  if (typeof text !== "string") return true;
-  return markers.some(marker => text.includes(marker));
-};
+export const optionsOf = <T extends object>(context: RuleContext, fallback: T): T =>
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  (context.options[0] as T | undefined) ?? fallback;
 
 /** Shorthand for a problem rule with a description. */
-export const problem = (description: string, rule: RuleBody): Rule =>
-  ({ ...rule, meta: { type: "problem", ...rule.meta, docs: { description } } }) as Rule;
+export const problem = (description: string, rule: RuleBody): Rule => ({
+  ...rule,
+  meta: { type: "problem", ...rule.meta, docs: { description } },
+});
 
 export type { AstNode, Rule, Visitor };

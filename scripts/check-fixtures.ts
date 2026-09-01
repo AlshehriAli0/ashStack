@@ -76,12 +76,15 @@ for (const fixtureDir of fixtureDirs) {
 
   for (const rule of rulesWithFixtures) {
     const timesFiredIn = (fixture: string) =>
-      diagnostics.filter(
-        d =>
-          d.filename?.includes(`fixtures/${fixtureDir}/${rule}/`) &&
-          d.filename?.includes(`/${fixture}.`) &&
-          (d.code?.includes(`${module.meta.name}(${rule})`) || d.code?.includes(`${module.meta.name}/${rule}`))
-      ).length;
+      diagnostics.filter(d => {
+        const file = d.filename ?? "";
+        const code = d.code ?? "";
+        return (
+          file.includes(`fixtures/${fixtureDir}/${rule}/`) &&
+          file.includes(`/${fixture}.`) &&
+          (code.includes(`${module.meta.name}(${rule})`) || code.includes(`${module.meta.name}/${rule}`))
+        );
+      }).length;
     if (timesFiredIn("bad") === 0) failures.push(`${fixtureDir}/${rule}: bad fixture did not fire`);
     if (timesFiredIn("good") > 0) failures.push(`${fixtureDir}/${rule}: good fixture fired`);
   }

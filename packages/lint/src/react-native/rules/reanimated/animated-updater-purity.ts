@@ -15,7 +15,6 @@ export const animatedUpdaterPurity: Rule = problem(
           depth = 0;
         },
         CallExpression(node) {
-          if (node.type !== "CallExpression") return;
           const name = calleeName(node);
           if (ANIMATED_STYLE_HOOKS.has(name)) {
             depth += 1;

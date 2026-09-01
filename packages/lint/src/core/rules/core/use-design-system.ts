@@ -1,7 +1,8 @@
 import { readdirSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 
-import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
+import { optionsOf } from "../../../lib/ast.js";
+import type { Rule, RuleContext } from "../../../lib/types.js";
 
 const DESIGN_SYSTEM_DIR = "src/components/ui";
 const DESIGN_SYSTEM_ALIAS = "@/components/ui";
@@ -30,7 +31,7 @@ const toPascalCase = (name: string): string =>
   name
     .split("-")
     .filter(Boolean)
-    .map(part => (part[0] as string).toUpperCase() + part.slice(1))
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
     .join("");
 
 const toKebabCase = (name: string): string => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
@@ -126,16 +127,15 @@ export const useDesignSystem: Rule = {
     let banned: Banned = new Map();
     return {
       before() {
-        const options = (context.options?.[0] as Options | undefined) ?? {};
+        const options = optionsOf<Options>(context, {});
         const designSystem = designSystemFor(options);
         banned = designSystem.banned;
         if (banned.size === 0) return false;
-        const filename = context.filename ?? context.physicalFilename;
+        const { filename } = context;
         if (isExemptFile(filename, designSystem.exempt)) return false;
         return true;
       },
-      ImportDeclaration(node: AstNode) {
-        if (node.type !== "ImportDeclaration") return;
+      ImportDeclaration(node) {
         const source = node.source.value;
         const bySource = banned.get(source);
         if (bySource === undefined) return;

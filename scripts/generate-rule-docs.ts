@@ -26,17 +26,15 @@ const check = process.argv.includes("--check");
 const OXLINT_RULE_DOCS = "https://oxc.rs/docs/guide/usage/linter/rules";
 const REACT_EFFECT_DOCS = "https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect";
 const linkedRuleId = (ruleId: string): string => {
-  const [plugin, rule] = ruleId.includes("/") ? ruleId.split("/") : ["eslint", ruleId];
+  const [plugin = "eslint", rule = ruleId] = ruleId.includes("/") ? ruleId.split("/") : ["eslint", ruleId];
   if (plugin === "react-effect") return `[\`${ruleId}\`](${REACT_EFFECT_DOCS})`;
-  const pluginPath = (plugin as string).replace(/-/g, "_");
+  const pluginPath = plugin.replace(/-/g, "_");
   return `[\`${ruleId}\`](${OXLINT_RULE_DOCS}/${pluginPath}/${rule}.html)`;
 };
 
 const builtInRules = (config: OxlintConfig): Record<string, unknown> =>
   Object.fromEntries(
-    Object.entries(config.rules as Record<string, unknown>).filter(
-      ([id]) => !id.startsWith("@ashstack/") && id !== "no-restricted-imports"
-    )
+    Object.entries(config.rules ?? {}).filter(([id]) => !id.startsWith("@ashstack/") && id !== "no-restricted-imports")
   );
 
 const builtInTable = (config: OxlintConfig, inherited: Record<string, unknown>): string[] => {
@@ -76,24 +74,21 @@ const examples = (moduleDir: string, name: string): string[] => {
   ];
 };
 
-const ruleSection = (module: ModuleManifest, name: string): string[] => {
-  const rule = module.rules[name];
-  return [
-    `#### \`${module.meta.name}/${name}\``,
-    "",
-    rule.meta.docs.description,
-    "",
-    ...activationNotes(rule.meta),
-    ...examples(shortName(module), name),
-  ];
-};
+const ruleSection = (module: ModuleManifest, name: string, rule: ModuleManifest["rules"][string]): string[] => [
+  `#### \`${module.meta.name}/${name}\``,
+  "",
+  rule.meta.docs.description,
+  "",
+  ...activationNotes(rule.meta),
+  ...examples(shortName(module), name),
+];
 
 const moduleSection = (module: ModuleManifest): string[] => {
   const lines = [`### \`${module.meta.name}\``, "", `_${module.docsWhen}._`, ""];
   if (module.restrictedImports) {
     lines.push("**Import bans that ship with this module**", "", ...banList(module.restrictedImports), "");
   }
-  for (const name of Object.keys(module.rules)) lines.push(...ruleSection(module, name));
+  for (const [name, rule] of Object.entries(module.rules)) lines.push(...ruleSection(module, name, rule));
   return lines;
 };
 
@@ -130,7 +125,7 @@ const entrySection = ({ entry, summary, config, inherited, modules, extra = [] }
   "",
   summary,
   "",
-  `Plugins: ${(config.plugins as string[]).map(p => `\`${p}\``).join(", ")}.`,
+  `Plugins: ${(config.plugins ?? []).map(p => `\`${p}\``).join(", ")}.`,
   "",
   "### Built-in rules",
   "",

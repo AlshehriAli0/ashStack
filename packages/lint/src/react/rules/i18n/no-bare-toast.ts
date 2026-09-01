@@ -17,14 +17,14 @@ const isToastCall = (node: AstNode): boolean => {
 const onlyStringArgument = (node: AstNode): AstNode | undefined => {
   if (node.type !== "CallExpression" || node.arguments.length !== 1) return undefined;
   const [argument] = node.arguments;
-  if (argument.type !== "Literal" || typeof argument.value !== "string") return undefined;
+  if (argument?.type !== "Literal" || typeof argument.value !== "string") return undefined;
   return argument;
 };
 
 export const noBareToast: Rule = problem("Matches a `toast.*` call whose only argument is a string literal.", {
   createOnce(context: RuleContext) {
     return {
-      CallExpression(node: AstNode) {
+      CallExpression(node) {
         if (!isToastCall(node)) return;
         const argument = onlyStringArgument(node);
         if (argument === undefined) return;

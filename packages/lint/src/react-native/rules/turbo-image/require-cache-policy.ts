@@ -13,7 +13,6 @@ export const requireCachePolicy: Rule = problem(
           return gate(context, "TurboImage");
         },
         JSXOpeningElement(node) {
-          if (node.type !== "JSXOpeningElement") return;
           if (!tagIdentifier(node.name).endsWith("TurboImage")) return;
           const { attributes } = node;
           if (attributes.some(attribute => attribute.type === "JSXSpreadAttribute")) return;
