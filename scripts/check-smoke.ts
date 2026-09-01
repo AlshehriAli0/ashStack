@@ -7,7 +7,7 @@ const root = join(import.meta.dir, "..");
 const smokeDir = join(root, "examples", "smoke");
 const oxlint = join(root, "node_modules", ".bin", "oxlint");
 
-const proc = Bun.spawnSync([oxlint, "--format", "json", "."], { cwd: smokeDir });
+const proc = Bun.spawnSync([oxlint, "--type-aware", "--format", "json", "."], { cwd: smokeDir });
 const out = proc.stdout.toString();
 const diagnostics: { filename?: string; code?: string }[] = (() => {
   try {
@@ -29,6 +29,7 @@ expectFired("eqeqeq"); // built-in eslint rule from core
 expectFired("no-var"); // categories/correctness pipeline
 expectFired("jsx-key"); // react plugin propagated through the entry
 expectFired("prefer-enum"); // zod/ group auto-detected from the smoke package's zod dep
+expectFired("no-floating-promises"); // type-aware pipeline (oxlint-tsgolint) works through the entry
 
 // detection: zod is a smoke dep (group on), turbo-image is not (group absent)
 const detection = Bun.spawnSync(

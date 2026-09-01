@@ -7,6 +7,10 @@ enum Kind {
 
 export const kindSchema = z.nativeEnum(Kind);
 
+export const floating = () => {
+  Promise.resolve(1);
+};
+
 export const Bad = ({ items }: { items: string[] }) => {
   var total = 0;
   if (total == 1) {

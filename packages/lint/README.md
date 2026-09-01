@@ -21,4 +21,4 @@ Run with `oxlint --type-aware --deny-warnings .` (type-aware rules need the `oxl
 
 Always on: the strict `core` base, react + jsx-a11y + React Compiler + you-might-not-need-an-effect, generic `@ashstack/react-native/` rules, and `@ashstack/core/` convention rules. Off by default (opt in): `@ashstack/core/no-comments`, `@ashstack/core/use-design-system`, `@ashstack/core/components-tsx-only`.
 
-Layout: `src/core`, `src/react`, `src/react-native` each hold their entry (`index.js`) and the rule plugins they introduce (`rules/*.js`).
+Layout: `src/core`, `src/react`, `src/react-native` each hold their entry (`index.ts`) and the modules they introduce (`rules/<module>/` — a manifest `index.ts` plus one file per rule).
