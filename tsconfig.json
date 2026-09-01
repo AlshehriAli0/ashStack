@@ -8,7 +8,8 @@
     "noEmit": true,
     "types": ["bun"],
     "skipLibCheck": true,
-    "verbatimModuleSyntax": true
+    "verbatimModuleSyntax": true,
+    "lib": ["ES2023"]
   },
-  "include": ["scripts", "*.mts"]
+  "include": ["scripts", "tests", "*.mts"]
 }

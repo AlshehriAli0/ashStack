@@ -165,6 +165,16 @@ const BASE_RULES: RuleMap = {
   "oxc/no-async-endpoint-handlers": "off",
 };
 
+/** Test code is a different kind of code: long tables of cases, and assertions that know more than the type does. */
+export const TEST_FILES = [
+  "**/*.test.ts",
+  "**/*.test.tsx",
+  "**/*.spec.ts",
+  "**/*.spec.tsx",
+  "**/__tests__/**",
+  "**/tests/**",
+];
+
 /**
  * Base entry — strict TypeScript rules for any project (backend, CLI, library).
  * Library modules (zod) auto-enable when the consumer depends on the library;
@@ -201,9 +211,12 @@ const core = (options: CoreOptions = {}): OxlintConfig => {
         rules: { "typescript/no-explicit-any": "off" },
       },
       {
-        files: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx", "**/__tests__/**"],
+        files: TEST_FILES,
         rules: {
+          "max-lines": "off",
+          "max-lines-per-function": "off",
           "typescript/await-thenable": "off",
+          "typescript/no-non-null-assertion": "off",
           "typescript/no-unsafe-type-assertion": "off",
           "typescript/require-await": "off",
           "typescript/unbound-method": "off",

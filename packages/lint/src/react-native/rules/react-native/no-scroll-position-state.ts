@@ -14,7 +14,7 @@ export const noScrollPositionState: Rule = problem(
     createOnce(context: RuleContext) {
       return {
         before() {
-          return gate(context, "onScroll");
+          return gate(context, ...SCROLL_HANDLERS);
         },
         JSXAttribute(node) {
           if (!SCROLL_HANDLERS.has(attributeName(node))) return;

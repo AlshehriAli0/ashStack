@@ -27,6 +27,26 @@ interface Options {
   exempt?: string[];
 }
 
+const NAME_OR_NAMES = { anyOf: [{ type: "string" }, { type: "array", items: { type: "string" } }] };
+
+/** What one `use` entry may be. Declared here so oxlint rejects a typo'd key instead of silently dropping the ban. */
+const USE_ENTRY_SCHEMA = {
+  anyOf: [
+    ...NAME_OR_NAMES.anyOf,
+    {
+      type: "object",
+      properties: {
+        replaces: NAME_OR_NAMES,
+        from: { type: "string" },
+        path: { type: "string" },
+        reason: { type: "string" },
+      },
+      required: ["replaces"],
+      additionalProperties: false,
+    },
+  ],
+};
+
 const toPascalCase = (name: string): string =>
   name
     .split("-")
@@ -113,9 +133,9 @@ export const useDesignSystem: Rule = {
       {
         type: "object",
         properties: {
-          dir: { type: "string" },
-          alias: { type: "string" },
-          use: { type: "object" },
+          dir: { type: "string", minLength: 1 },
+          alias: { type: "string", minLength: 1 },
+          use: { type: "object", additionalProperties: USE_ENTRY_SCHEMA },
           exempt: { type: "array", items: { type: "string" } },
         },
         additionalProperties: false,

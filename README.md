@@ -106,13 +106,16 @@ Off by default, since they need a team decision first: `@ashstack/core/no-commen
 
 ```sh
 bun install
+bun run test            # every custom rule and helper, asserted by message and position
+bun run check:mutants   # breaks each rule on purpose; a test must notice
 bun run lint            # this repo lints itself with core()
-bun run check:fixtures  # every rule: the bad fixture fires, the good one doesn't
 bun run check:smoke     # a real consumer app, end to end
 bun run docs:rules      # regenerate RULES.md
 ```
 
-Add a [changeset](https://github.com/changesets/changesets) with your PR; CI publishes on merge.
+Rule tests live in `tests/`, one file per module, and run through real oxlint. A case names the code, the expected message and the line it lands on. `check:mutants` then flips an operator in each compiled rule and re-runs that module's tests: a change no test notices is a hole in the suite.
+
+Add a [changeset](https://github.com/changesets/changesets) with your PR. Releases run from a manual CI dispatch, not from the merge.
 
 ## License
 

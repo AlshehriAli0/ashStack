@@ -58,7 +58,7 @@ const runsWhileJsxEvaluates = (node: AstNode): boolean => {
 interface Candidate {
   node: AstNode;
   shared: string;
-  isGet: boolean;
+  message: string;
 }
 
 export const sharedValueUsage: Rule = problem(
@@ -91,7 +91,9 @@ export const sharedValueUsage: Rule = problem(
         AssignmentExpression(node) {
           if (node.left.type !== "MemberExpression") return;
           if (!isMemberCall(node.left.object, "get")) return;
-          context.report({ node, message: MESSAGES.nestedProperty });
+          const shared = receiverName(node.left.object);
+          if (!shared) return;
+          candidates.push({ node, shared, message: MESSAGES.nestedProperty });
         },
         CallExpression(node) {
           if (mutatesWhatGetReturned(node)) {
@@ -103,15 +105,11 @@ export const sharedValueUsage: Rule = problem(
           const shared = receiverName(node);
           if (!shared) return;
           if (!runsWhileJsxEvaluates(node)) return;
-          candidates.push({ node, shared, isGet });
+          candidates.push({ node, shared, message: isGet ? MESSAGES.renderRead : MESSAGES.renderWrite });
         },
         "Program:exit"() {
-          for (const candidate of candidates) {
-            if (!names.has(candidate.shared)) continue;
-            context.report({
-              node: candidate.node,
-              message: candidate.isGet ? MESSAGES.renderRead : MESSAGES.renderWrite,
-            });
+          for (const { node, shared, message } of candidates) {
+            if (names.has(shared)) context.report({ node, message });
           }
         },
       };

@@ -1,4 +1,4 @@
-import { coreModules } from "../core/index.js";
+import { TEST_FILES, coreModules } from "../core/index.js";
 import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
 import type { BanGroup, OxlintConfig, ReactNativeOptions } from "../lib/types.js";
@@ -89,8 +89,6 @@ const FORBID_EMPTY_NOOP_HANDLERS = {
 const ALLOW_GESTURE_AND_ANIMATION_EFFECTS = {
   "react-effect/no-event-handler": "off",
 } as const;
-
-const TEST_FILES = ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx", "**/__tests__/**"];
 
 /**
  * React Native / Expo entry — everything in react plus generic RN rules, with

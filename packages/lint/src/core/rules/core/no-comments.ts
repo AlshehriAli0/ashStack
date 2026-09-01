@@ -31,10 +31,9 @@ const COMMENT_DIRECTIVES = [
   "EXPECT_FAIL",
 ];
 
-const ESCAPE_HATCH = /^what:\s*(?<fact>.+)$/i;
+const ESCAPE_HATCH = /^what:\s*(?<fact>[\s\S]+)$/i;
 const BLOCK_COMMENT_TYPES = new Set(["Block", "MultiLine"]);
 const IGNORED_COMMENT_TYPES = new Set(["Shebang", "Hashbang"]);
-const LINE_BREAK = /[\n\r]/;
 
 const HATCH_MIN_FACT = 10;
 const HATCH_MAX_LENGTH = 120;
@@ -57,7 +56,6 @@ const FLOATING_JSDOC =
 const HATCH_MESSAGES = {
   block:
     "Rewrite this as a single `// what: <fact>` line comment. If the fact needs a paragraph, name the pieces in code until it fits on one line.",
-  multiline: `Fit this \`what:\` on one \`//\` line under ${HATCH_MAX_LENGTH} characters, and move whatever spills over into names in the code.`,
   shortFact: `Write the fact after \`what:\` (at least ${HATCH_MIN_FACT} characters), or delete the comment.`,
   tooLong: `Trim this \`what:\` line under ${HATCH_MAX_LENGTH} characters, moving what is left into names in the code.`,
   stacked:
@@ -85,6 +83,12 @@ const DECLARATION_TYPES = new Set([
   "TSDeclareFunction",
   "TSPropertySignature",
   "TSMethodSignature",
+  "TSIndexSignature",
+  "TSCallSignatureDeclaration",
+  "TSConstructSignatureDeclaration",
+  "TSAbstractMethodDefinition",
+  "TSAbstractPropertyDefinition",
+  "AccessorProperty",
   "ImportDeclaration",
 ]);
 
@@ -116,7 +120,6 @@ const nextTokenStart = (text: string, from: number): number => {
 
 const shapeViolation = (comment: Comment, body: string, fact: string): string | null => {
   if (BLOCK_COMMENT_TYPES.has(comment.type)) return HATCH_MESSAGES.block;
-  if (LINE_BREAK.test(comment.value)) return HATCH_MESSAGES.multiline;
   if (fact.trim().length < HATCH_MIN_FACT) return HATCH_MESSAGES.shortFact;
   if (body.length > HATCH_MAX_LENGTH) return HATCH_MESSAGES.tooLong;
   return null;

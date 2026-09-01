@@ -8,7 +8,7 @@ export const noNestedObservable: Rule = problem(
     createOnce(context) {
       return {
         before() {
-          return gate(context, "observable(", "useObservable(");
+          return gate(context, "observable", "useObservable");
         },
         CallExpression(node) {
           const factory = factoryCalled(node);

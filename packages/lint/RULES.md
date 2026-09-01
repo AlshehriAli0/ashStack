@@ -304,13 +304,59 @@ Disallow importing a raw primitive your design system already wraps. Wrapped com
     "type": "object",
     "properties": {
       "dir": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       },
       "alias": {
-        "type": "string"
+        "type": "string",
+        "minLength": 1
       },
       "use": {
-        "type": "object"
+        "type": "object",
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "replaces": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  ]
+                },
+                "from": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "replaces"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        }
       },
       "exempt": {
         "type": "array",
@@ -798,7 +844,8 @@ Disallow a plain string literal on a configurable list of user-visible JSX attri
         "type": "array",
         "items": {
           "type": "string"
-        }
+        },
+        "minItems": 1
       }
     },
     "additionalProperties": false
@@ -2514,7 +2561,7 @@ export function GoodLayoutBuilder() {
 
 #### `@ashstack/reanimated/interpolate-needs-clamp`
 
-Give `interpolate()` an explicit `Extrapolation.CLAMP` fourth argument. Without it the output keeps going past the ends of the input range.
+Give `interpolate()` a fourth argument that clamps. Without one, or with `EXTEND` or `IDENTITY`, the output keeps going past the ends of the input range.
 
 **Fails**
 

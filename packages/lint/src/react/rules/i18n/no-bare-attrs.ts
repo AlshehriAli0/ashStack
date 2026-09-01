@@ -15,7 +15,7 @@ export const noBareAttrs: Rule = {
     schema: [
       {
         type: "object",
-        properties: { attributes: { type: "array", items: { type: "string" } } },
+        properties: { attributes: { type: "array", items: { type: "string" }, minItems: 1 } },
         additionalProperties: false,
       },
     ],

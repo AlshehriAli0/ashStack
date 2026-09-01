@@ -24,8 +24,18 @@ const dotValueOwner = (node: AstNode | null | undefined): string | null => {
   return object.name;
 };
 
+/** A parent that makes `x.value` a write target no `.get()` rewrite can stand in for. */
+const WRITE_TARGET_PARENTS = new Set([
+  "UpdateExpression",
+  "ArrayPattern",
+  "ObjectPattern",
+  "RestElement",
+  "AssignmentPattern",
+]);
+
 type Candidate =
   | { kind: "read"; node: AstNode; name: string }
+  | { kind: "update"; node: AstNode; name: string }
   | { kind: "write"; node: AstNode; name: string; right: AstNode }
   | { kind: "compound"; node: AstNode; name: string; operator: string; right: AstNode };
 
@@ -62,16 +72,26 @@ export const noSharedValueDotValue: Rule = {
         if (node.operator !== "=") return;
         candidates.push({ kind: "write", node, name, right: node.right });
       },
+      UpdateExpression(node) {
+        const name = dotValueOwner(node.argument);
+        if (name === null) return;
+        candidates.push({ kind: "update", node, name });
+      },
       MemberExpression(node) {
         const name = dotValueOwner(node);
         if (name === null) return;
         if (node.parent.type === "AssignmentExpression" && node.parent.left === node) return;
+        if (WRITE_TARGET_PARENTS.has(node.parent.type)) return;
         candidates.push({ kind: "read", node, name });
       },
       "Program:exit"() {
         for (const candidate of candidates) {
           const { node, name } = candidate;
           if (!names.has(name)) continue;
+          if (candidate.kind === "update") {
+            context.report({ node, message: MESSAGES.compound });
+            continue;
+          }
           if (candidate.kind === "read") {
             context.report({
               node,

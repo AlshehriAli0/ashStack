@@ -4,14 +4,13 @@ import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 const IDENTIFIER_NAME = /^[\p{ID_Start}$_][\p{ID_Continue}$]*$/u;
 const CAMEL_CASE = /^[a-z][A-Za-z0-9]*$/;
 const PASCAL_CASE = /^[A-Z][A-Za-z0-9]*$/;
-const NUMBERABLE_CAPITAL = /^[A-Z][0-9]*$/;
 const CONSTANT_CASE = /^[A-Z][A-Z0-9]*(?:_[A-Z0-9]+)*$/;
 const SNAKE_CASE = /^[a-z][a-z0-9]*(?:_[a-z0-9]+)*$/;
 const PLACEHOLDER_NAME = /^_+$/;
 
 const FORMAT_TESTS: Record<string, (name: string) => boolean> = {
   camelCase: name => CAMEL_CASE.test(name),
-  PascalCase: name => PASCAL_CASE.test(name) && (/[a-z]/.test(name) || NUMBERABLE_CAPITAL.test(name)),
+  PascalCase: name => PASCAL_CASE.test(name) && /[a-z]/.test(name),
   CONSTANT_CASE: name => CONSTANT_CASE.test(name),
   snake_case: name => SNAKE_CASE.test(name),
 };

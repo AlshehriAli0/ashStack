@@ -1,18 +1,9 @@
-import { problem } from "../../../lib/ast.js";
+import { problem, tagPath } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const LAYOUT_ONLY_PROPS = new Set(["style"]);
 
 const MERGEABLE_WRAPPERS = new Set(["View", "Animated.View"]);
-
-/** `Animated.View` keeps its object here, unlike `tagIdentifier`. */
-const fullTagName = (name: AstNode): string => {
-  if (name.type === "JSXIdentifier") return name.name;
-  if (name.type !== "JSXMemberExpression") return "";
-  const object = fullTagName(name.object);
-  const property = name.property.name;
-  return object === "" || property === "" ? "" : `${object}.${property}`;
-};
 
 const elementChildren = (children: readonly AstNode[]): AstNode[] =>
   children.filter(child => child.type !== "JSXText" || child.value.trim() !== "");
@@ -32,7 +23,7 @@ export const noRedundantViewNesting: Rule = problem(
       return {
         JSXElement(node) {
           const opening = node.openingElement;
-          const tag = fullTagName(opening.name);
+          const tag = tagPath(opening.name);
           if (!MERGEABLE_WRAPPERS.has(tag)) return;
           if (!onlyLayoutProps(opening.attributes)) return;
           const children = elementChildren(node.children);
@@ -40,7 +31,7 @@ export const noRedundantViewNesting: Rule = problem(
           const child = children[0];
           if (child?.type !== "JSXElement") return;
           const childOpening = child.openingElement;
-          if (fullTagName(childOpening.name) !== tag) return;
+          if (tagPath(childOpening.name) !== tag) return;
           if (!onlyLayoutProps(childOpening.attributes)) return;
           context.report({
             node: opening.name,

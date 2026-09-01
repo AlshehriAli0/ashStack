@@ -1,4 +1,4 @@
-import { attributeName, calleeName, gate, problem } from "../../../lib/ast.js";
+import { attributeName, calleeName, gate, problem, tagPath } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 import { ANIMATED_STYLE_HOOKS } from "./shared.js";
 
@@ -11,16 +11,6 @@ const ANIMATED_COMPONENT_FACTORIES = new Set(["createAnimatedComponent", "withUn
 const elementName = (node: AstNode): AstNode | null => {
   if (node.type === "JSXElement") return node.openingElement.name;
   if (node.type === "JSXOpeningElement") return node.name;
-  return null;
-};
-
-const jsxTagName = (node: AstNode): string | null => {
-  const name = elementName(node);
-  if (name?.type === "JSXIdentifier") return name.name;
-  if (name?.type === "JSXMemberExpression") {
-    const { object, property } = name;
-    return `${object.type === "JSXIdentifier" ? object.name : undefined}.${property.name}`;
-  }
   return null;
 };
 
@@ -61,12 +51,6 @@ export const animatedStyleNeedsAnimatedComponent: Rule = problem(
           if (ANIMATED_STYLE_HOOKS.has(callee)) animatedStyles.add(id.name);
           else if (ANIMATED_COMPONENT_FACTORIES.has(callee)) animatedComponents.add(id.name);
         },
-        ImportDeclaration(node) {
-          for (const specifier of node.specifiers) {
-            const local = specifier.local.name;
-            if (local.startsWith("Animated")) animatedComponents.add(local);
-          }
-        },
         "Program:exit"() {
           if (animatedStyles.size === 0) return;
           for (const { node, tag, referenced } of candidates) {
@@ -78,8 +62,8 @@ export const animatedStyleNeedsAnimatedComponent: Rule = problem(
         JSXAttribute(node) {
           if (attributeName(node) !== "style") return;
 
-          const tag = jsxTagName(node.parent);
-          if (tag === null || tag.startsWith("Animated")) return;
+          const tag = tagPath(elementName(node.parent));
+          if (tag === "" || tag.startsWith("Animated")) return;
 
           const referenced = referencedStyleNames(node.value);
           if (referenced.length === 0) return;

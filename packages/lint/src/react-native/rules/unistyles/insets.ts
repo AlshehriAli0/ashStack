@@ -13,15 +13,13 @@ const MESSAGES = {
 
 const boundNames = (id: AstNode): string[] => {
   if (id.type === "Identifier") return [id.name];
+  if (id.type === "AssignmentPattern") return boundNames(id.left);
+  if (id.type === "RestElement") return boundNames(id.argument);
+  if (id.type === "ArrayPattern") return id.elements.flatMap(element => (element ? boundNames(element) : []));
   if (id.type !== "ObjectPattern") return [];
-  const names: string[] = [];
-  for (const property of id.properties) {
-    if (property.type !== "Property") continue;
-    const { key, value } = property;
-    if (value.type === "Identifier") names.push(value.name);
-    else if (key.type === "Identifier") names.push(key.name);
-  }
-  return names;
+  return id.properties.flatMap(property =>
+    property.type === "Property" ? boundNames(property.value) : boundNames(property.argument)
+  );
 };
 
 export const insets: Rule = problem(

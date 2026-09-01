@@ -113,6 +113,15 @@ export const tagIdentifier = (node: AstNode | null | undefined): string => {
   return "";
 };
 
+/** The full dotted JSX tag name: `Animated.View` reads as `Animated.View`. Empty when a segment is not a plain name. */
+export const tagPath = (node: AstNode | null | undefined): string => {
+  if (node?.type === "JSXIdentifier" || node?.type === "Identifier") return node.name;
+  if (node?.type !== "JSXMemberExpression") return "";
+  const object = tagPath(node.object);
+  const property = tagPath(node.property);
+  return object === "" || property === "" ? "" : `${object}.${property}`;
+};
+
 export const attributeName = (attribute: AstNode): string => {
   if (attribute.type !== "JSXAttribute") return "";
   const { name } = attribute;

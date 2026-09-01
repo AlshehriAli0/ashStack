@@ -9,6 +9,7 @@
   "scripts": {
     "build": "rm -rf packages/lint/dist && tsc -p packages/lint",
     "check:fixtures": "bun run build && bun scripts/check-fixtures.ts",
+    "check:mutants": "bun run build && bun scripts/check-mutants.ts",
     "check:pack": "bun scripts/check-pack.ts",
     "check:smoke": "bun run build && bun scripts/check-smoke.ts",
     "docs:rules": "bun run build && bun scripts/generate-rule-docs.ts",
@@ -18,6 +19,7 @@
     "lint": "bun run build && oxlint --disable-nested-config --type-aware .",
     "lint:fix": "bun run build && oxlint --disable-nested-config --type-aware --fix .",
     "release": "changeset publish",
+    "test": "bun run build && bun test tests/",
     "typecheck": "bun run build && tsc -p . --noEmit"
   },
   "devDependencies": {

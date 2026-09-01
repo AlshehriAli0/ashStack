@@ -8,7 +8,7 @@ export const naming: Rule = problem(
     createOnce(context) {
       return {
         before() {
-          return gate(context, "observable(", "useObservable(");
+          return gate(context, "observable", "useObservable");
         },
         VariableDeclarator(node) {
           const { id, init } = node;

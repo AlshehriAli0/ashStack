@@ -18,7 +18,7 @@ export const noObservableInComponent: Rule = problem(
       return {
         before() {
           componentDepth = 0;
-          return gate(context, "observable(");
+          return gate(context, "observable");
         },
         FunctionDeclaration(node) {
           enter(declaredName(node.id));

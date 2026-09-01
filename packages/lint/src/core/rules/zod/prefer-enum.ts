@@ -8,8 +8,9 @@ const MESSAGES = {
     "Replace this union with `z.enum([...])` listing the same string values, so invalid input reports one issue and the options stay reusable.",
 };
 
-const isZodCall = (node: AstNode | null | undefined, method: string): boolean => {
-  if (node?.type !== "CallExpression") return false;
+type Call = Extract<AstNode, { type: "CallExpression" }>;
+
+const isZodCall = (node: Call, method: string): boolean => {
   const { callee } = node;
   if (callee.type !== "MemberExpression") return false;
   const { object, property } = callee;
