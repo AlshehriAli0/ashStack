@@ -12,13 +12,12 @@
 
 ---
 
-**ashStack is a strict [oxlint](https://oxc.rs) and [oxfmt](https://oxc.rs) setup** in two packages, [`@ashstack/lint`](packages/lint) and [`@ashstack/fmt`](packages/fmt). One install per project, instead of copying a lint config around and watching the copies drift.
+Two packages: [`@ashstack/lint`](packages/lint) and [`@ashstack/fmt`](packages/fmt). Install once per project instead of copying a lint config around and watching the copies drift.
 
-**`react-native()` turns on 238 rules.** 71 of them are written here and documented in [RULES.md](packages/lint/RULES.md), each with a passing and a failing example. The rest is a strict base drawn from eslint, typescript-eslint, unicorn, promise, import, react and jsx-a11y.
-
-**The strictness is aimed at agents.** One will produce a hundred files in an hour, and the linter is the only thing that reads all of them. Rules that would merely nag a person are what hold the line on generated code: no leaked renders, no `.value` writes React Compiler can't track, no hardcoded colors that skip dark mode. Every message names the fix rather than the symptom, so an agent can act on it without a second prompt.
-
-**Rules for a library ship only when you depend on that library.** Thirteen modules detect themselves from your `package.json`, so nothing fires about code you don't have.
+- `react-native()` turns on **238 rules**, 71 of them written here
+- library rules ship only when you depend on that library: 13 self-detecting modules
+- every rule is in [RULES.md](packages/lint/RULES.md) with a passing and a failing example
+- your `rules` block always wins
 
 ## Install
 
@@ -46,6 +45,12 @@ oxfmt --check .
 ```
 
 > `.mts` config files are the only supported path: oxlint's JSON `extends` can't resolve npm packages, and oxfmt has no `extends` at all. Needs Node 22.18+.
+
+## Why it's this strict
+
+An agent writes more code in an hour than anyone reviews line by line, and the linter is the only thing that reads all of it. So this config keeps the rules a human reviewer would wave through: leaked renders, `.value` writes React Compiler can't track, hardcoded colors that skip dark mode.
+
+Every message names the fix, so an agent can act on it without a second prompt.
 
 ## Three entries
 
