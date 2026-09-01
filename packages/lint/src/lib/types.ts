@@ -107,7 +107,7 @@ export type ReactNativeOptions = ReactOptions & {
   turboImage?: boolean;
   /** `@ashstack/skia/` rules — `@shopify/react-native-skia` */
   skia?: boolean;
-  /** `@ashstack/keyboard/` rules — `react-native-keyboard-controller` */
+  /** `@ashstack/keyboard` import bans — `react-native-keyboard-controller` */
   keyboard?: boolean;
 };
 

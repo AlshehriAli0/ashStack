@@ -138,7 +138,8 @@ const tocFor = (entry: string, modules: ModuleManifest[]): string[] => [
   `- [\`${entry}\`](#${anchor(entry)})`,
   ...modules.map(m => {
     const count = Object.keys(m.rules).length;
-    return `  - [\`${m.meta.name}\`](#${anchor(m.meta.name)}) — ${count} rule${count === 1 ? "" : "s"}`;
+    const summary = count === 0 ? "import bans only" : `${count} rule${count === 1 ? "" : "s"}`;
+    return `  - [\`${m.meta.name}\`](#${anchor(m.meta.name)}) — ${summary}`;
   }),
 ];
 

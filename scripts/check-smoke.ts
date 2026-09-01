@@ -26,6 +26,9 @@ const ONE_RULE_PER_DETECTED_MODULE = [
 
 const RULES_THE_CONSUMER_TURNED_OFF = ["no-nested-ternary", "@ashstack/unistyles/no-margin"];
 
+const IMPORT_BAN_FILE = "import-bans.tsx";
+const IMPORT_BANS_FORCED_ON = 2;
+
 const DESIGN_SYSTEM_DIR = "components/ui/";
 const DESIGN_SYSTEM_RULE = "use-design-system";
 
@@ -53,6 +56,15 @@ for (const ruleId of [...Object.values(RULES_PROVING_THE_PIPELINE), ...ONE_RULE_
 
 for (const ruleId of RULES_THE_CONSUMER_TURNED_OFF) {
   if (fired(ruleId)) failures.push(`consumer override failed: ${ruleId} fired despite being turned off`);
+}
+
+const bansFromForcedModules = diagnostics.filter(
+  d => d.filename?.includes(IMPORT_BAN_FILE) && d.code?.includes("no-restricted-imports")
+).length;
+if (bansFromForcedModules !== IMPORT_BANS_FORCED_ON) {
+  failures.push(
+    `forced-module import bans: expected ${IMPORT_BANS_FORCED_ON} in ${IMPORT_BAN_FILE}, saw ${bansFromForcedModules}`
+  );
 }
 
 const firedInsideDesignSystem = diagnostics.some(

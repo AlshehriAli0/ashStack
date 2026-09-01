@@ -50,8 +50,9 @@ export const composeModules = (
   for (const module of modules) {
     if (!isModuleEnabled(module, options)) continue;
 
-    composed.jsPlugins.push(fileURLToPath(module.url));
-    for (const id of enabledRuleIds(module)) composed.rules[id] = "error";
+    const ids = enabledRuleIds(module);
+    if (ids.length > 0) composed.jsPlugins.push(fileURLToPath(module.url));
+    for (const id of ids) composed.rules[id] = "error";
     addRestrictedImports(composed.restricted, module.restrictedImports);
   }
 

@@ -20,8 +20,8 @@ Disable any rule by its id in your `rules` block, e.g. `"@ashstack/unistyles/no-
   - [`@ashstack/legend-state`](#ashstacklegend-state) — 8 rules
   - [`@ashstack/reanimated`](#ashstackreanimated) — 11 rules
   - [`@ashstack/turbo-image`](#ashstackturbo-image) — 2 rules
-  - [`@ashstack/skia`](#ashstackskia) — 2 rules
-  - [`@ashstack/keyboard`](#ashstackkeyboard) — 1 rule
+  - [`@ashstack/skia`](#ashstackskia) — 1 rule
+  - [`@ashstack/keyboard`](#ashstackkeyboard) — import bans only
 
 ## `core()`
 
@@ -2757,6 +2757,10 @@ export function GoodTurboCache({ uri }: { uri: string }) {
 
 _auto-enabled when `@shopify/react-native-skia` is a dependency._
 
+**Import bans that ship with this module**
+
+- `usePathValue`, `usePathInterpolation` from `@shopify/react-native-skia`
+
 #### `@ashstack/skia/canvas-opaque`
 
 Requires an explicit `opaque` prop on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.
@@ -2782,78 +2786,13 @@ export function GoodCanvas() {
 }
 ```
 
-#### `@ashstack/skia/no-legacy-path-hooks`
-
-Bans the `usePathValue` and `usePathInterpolation` imports. Both self-dirty Reanimated mappers and re-record idle canvases.
-
-**Fails**
-
-```tsx
-import { Skia, usePathValue } from "@shopify/react-native-skia";
-
-const basePath = Skia.Path.Make();
-
-export function useBadPath(width: number) {
-  return usePathValue(path => {
-    path.reset();
-    path.addRect({ x: 0, y: 0, width, height: 8 });
-  }, basePath);
-}
-```
-
-**Passes**
-
-```tsx
-import { Skia } from "@shopify/react-native-skia";
-import { useDerivedValue, type SharedValue } from "react-native-reanimated";
-
-const basePath = Skia.Path.Make();
-
-export function useGoodPath(width: SharedValue<number>) {
-  return useDerivedValue(() => {
-    basePath.reset();
-    basePath.addRect({ x: 0, y: 0, width: width.get(), height: 8 });
-    return basePath;
-  });
-}
-```
-
 ### `@ashstack/keyboard`
 
 _auto-enabled when `react-native-keyboard-controller` is a dependency._
 
-#### `@ashstack/keyboard/avoiding-view-source`
+**Import bans that ship with this module**
 
-Bans `KeyboardAvoidingView` imported from react-native. It waits on `keyboardDidShow` and never subscribes to WindowInsetsAnimationCallback, so under edge-to-edge Android the input sits under the keyboard.
-
-**Fails**
-
-```tsx
-import { KeyboardAvoidingView, Text } from "react-native";
-
-export function BadKeyboardHost() {
-  return (
-    <KeyboardAvoidingView>
-      <Text>Sign in</Text>
-    </KeyboardAvoidingView>
-  );
-}
-```
-
-**Passes**
-
-```tsx
-import { Text } from "react-native";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-
-export function GoodKeyboardHost() {
-  return (
-    <KeyboardAvoidingView>
-      <Text>Sign in</Text>
-    </KeyboardAvoidingView>
-  );
-}
-```
+- `KeyboardAvoidingView` from `react-native`
 
 ### Import bans without a module
 

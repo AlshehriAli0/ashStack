@@ -91,6 +91,7 @@ for (const fixtureDir of fixtureDirs) {
 }
 
 for (const module of allModules) {
+  if (Object.keys(module.rules).length === 0) continue;
   if (!fixtureDirs.includes(shortName(module))) failures.push(`${shortName(module)}: module has no fixtures dir`);
 }
 
