@@ -21,31 +21,52 @@ const diagnostics: { filename?: string; code?: string }[] = (() => {
 const codes = diagnostics.map(d => `${d.filename}::${d.code}`).join("\n");
 const failures: string[] = [];
 
-const expectFired = (fragment: string) => {
-  if (!codes.includes(fragment)) failures.push(`expected rule to fire: ${fragment}`);
+// oxlint prints custom-rule codes as "<plugin>(<rule>)"; accept either form
+const parenForm = (id: string) => id.replace(/\/([^/]+)$/, "($1)");
+const expectFired = (id: string) => {
+  if (!codes.includes(id) && !codes.includes(parenForm(id))) failures.push(`expected rule to fire: ${id}`);
 };
 
 expectFired("eqeqeq"); // built-in eslint rule from core
 expectFired("no-var"); // categories/correctness pipeline
 expectFired("jsx-key"); // react plugin propagated through the entry
-expectFired("prefer-enum"); // zod/ group auto-detected from the smoke package's zod dep
 expectFired("no-floating-promises"); // type-aware pipeline (oxlint-tsgolint) works through the entry
+expectFired("@ashstack/zod/prefer-enum"); // module auto-detected from the smoke package's zod dep
+// forced-on modules (no library installed), one custom rule each
+expectFired("@ashstack/unistyles/no-hardcoded-color");
+expectFired("@ashstack/legend-state/naming");
+expectFired("@ashstack/legend-list/no-remount-key");
+expectFired("@ashstack/reanimated/no-shared-value-dot-value");
+expectFired("@ashstack/react-native/no-leaked-render");
+expectFired("@ashstack/query/no-inline-keys");
+expectFired("@ashstack/i18n/no-bare-text");
+expectFired("no-restricted-imports"); // FlatList ban ships with the forced-on legend-list module
 
-// detection: zod is a smoke dep (group on), turbo-image is not (group absent)
+// consumer per-rule override of a custom rule must win
+if (codes.includes("@ashstack/unistyles/no-margin") || codes.includes("@ashstack/unistyles(no-margin)")) {
+  failures.push("consumer override failed: @ashstack/unistyles/no-margin fired despite being turned off");
+}
+
+// detection: zod dep auto-on (asserted above); zustand dep FORCED off; turbo-image auto-off (no dep)
 const detection = Bun.spawnSync(
   [
     "bun",
     "-e",
     `const { reactNative } = await import("@ashstack/lint");
-     const rules = Object.keys(reactNative().rules);
-     console.log(JSON.stringify({ zod: rules.some(r => r.startsWith("@ashstack/zod/")), turbo: rules.some(r => r.includes("turbo-image")) }));`,
+     const rules = Object.keys(reactNative({ zustand: false }).rules);
+     console.log(JSON.stringify({
+       zod: rules.some(r => r.startsWith("@ashstack/zod/")),
+       turbo: rules.some(r => r.includes("turbo-image")),
+       zustand: rules.some(r => r.startsWith("@ashstack/zustand/")),
+     }));`,
   ],
   { cwd: smokeDir }
 );
 try {
-  const { zod, turbo } = JSON.parse(detection.stdout.toString());
+  const { zod, turbo, zustand } = JSON.parse(detection.stdout.toString());
   if (!zod) failures.push("detection failed: zod/ rules missing despite zod dependency");
   if (turbo) failures.push("detection failed: turbo-image rules present without the dependency");
+  if (zustand) failures.push("force-off failed: zustand rules present despite zustand: false");
 } catch {
   failures.push(`detection probe failed: ${detection.stderr.toString().slice(0, 300)}`);
 }
