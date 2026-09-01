@@ -65,20 +65,9 @@ for (const module of allModules) {
 // ---------------------------------------------------------------------------
 // Built-in configuration per entry, rendered as deltas (react() contains
 // core(), react-native() contains react()). Module toggles are forced off so
-// the tables stay deterministic regardless of this repo's own dependencies.
-const ALL_OFF = {
-  zod: false,
-  query: false,
-  zustand: false,
-  i18n: false,
-  unistyles: false,
-  legendList: false,
-  legendState: false,
-  reanimated: false,
-  turboImage: false,
-  skia: false,
-  keyboard: false,
-};
+// the tables stay deterministic regardless of this repo's own dependencies —
+// derived from the registry so a new module can't be forgotten here.
+const ALL_OFF = Object.fromEntries(allModules.filter(m => m.option).map(m => [m.option, false]));
 
 const builtinRules = (config: Record<string, unknown>): Record<string, unknown> =>
   Object.fromEntries(

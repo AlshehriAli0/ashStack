@@ -32,7 +32,7 @@ expectFired("no-var"); // categories/correctness pipeline
 expectFired("jsx-key"); // react plugin propagated through the entry
 expectFired("no-floating-promises"); // type-aware pipeline (oxlint-tsgolint) works through the entry
 expectFired("@ashstack/zod/prefer-enum"); // module auto-detected from the smoke package's zod dep
-// forced-on modules (no library installed), one custom rule each
+// modules auto-detected from the smoke package's deps, one custom rule each
 expectFired("@ashstack/unistyles/no-hardcoded-color");
 expectFired("@ashstack/legend-state/naming");
 expectFired("@ashstack/legend-list/no-remount-key");
@@ -49,8 +49,9 @@ if (diagnostics.some(d => d.filename?.includes("components/ui/") && d.code?.incl
 }
 
 // consumer per-rule override of a custom rule must win
-if (codes.includes("@ashstack/unistyles/no-margin") || codes.includes("@ashstack/unistyles(no-margin)")) {
-  failures.push("consumer override failed: @ashstack/unistyles/no-margin fired despite being turned off");
+const noMargin = "@ashstack/unistyles/no-margin";
+if (codes.includes(noMargin) || codes.includes(parenForm(noMargin))) {
+  failures.push(`consumer override failed: ${noMargin} fired despite being turned off`);
 }
 
 // detection: zod dep auto-on (asserted above); zustand dep FORCED off; turbo-image auto-off (no dep)
