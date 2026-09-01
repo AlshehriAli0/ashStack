@@ -5,7 +5,7 @@ const MESSAGE =
   "Move the condition into a Unistyles dynamic style function: `card: (active: boolean) => ({ ... })`, then `style={styles.card(active)}`. A conditional entry can evaluate to a falsy hole, which shifts the array indices and breaks the Unistyles C++ proxy.";
 
 export const noConditionalStyleArray: Rule = problem(
-  "Bans conditional and logical entries inside a JSX `style` array. A falsy entry leaves a hole that breaks the Unistyles C++ proxy.",
+  "Disallow conditional and logical entries inside a JSX `style` array. A falsy entry leaves a hole that breaks the Unistyles C++ proxy.",
   {
     createOnce(context: RuleContext) {
       return {

@@ -37,7 +37,7 @@ const isLengthGuard = (node: AstNode | undefined): boolean => {
 };
 
 export const noLeakedRender: Rule = problem(
-  'Bans a `&&` guard on a `.length` expression in JSX. The falsy left operand leaks into the output, and a bare `0` crashes React Native with "Text strings must be rendered within a <Text> component".',
+  'Disallow a `&&` guard on a `.length` expression in JSX. The falsy left operand leaks into the output, and a bare `0` crashes React Native with "Text strings must be rendered within a <Text> component".',
   {
     createOnce(context: RuleContext) {
       return {

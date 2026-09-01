@@ -15,7 +15,7 @@ export const componentsTsxOnly: Rule = {
   meta: {
     type: "problem",
     docs: {
-      description: "Reports a file that renders no JSX and is not a re-export barrel. Scope it to `components/`.",
+      description: "Require every file to render JSX or be a re-export barrel. Scope it to `components/`.",
     },
     defaultOff: true,
   },

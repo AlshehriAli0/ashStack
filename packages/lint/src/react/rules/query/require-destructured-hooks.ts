@@ -7,7 +7,7 @@ const DESTRUCTURE_QUERY_HOOK =
 const API_HOOK_MODULE = /^@\/api\/.*\.(?:queries|mutations)$/;
 
 export const requireDestructuredHooks: Rule = problem(
-  "Reports a hook imported from an `@/api/*.queries` or `@/api/*.mutations` module whose result is bound to one name instead of destructured.",
+  "Require destructuring the result of a hook imported from an `@/api/*.queries` or `@/api/*.mutations` module.",
   {
     createOnce(context: RuleContext) {
       const apiHooks = new Set<string>();

@@ -21,7 +21,7 @@ const onlyStringArgument = (node: AstNode): AstNode | undefined => {
   return argument;
 };
 
-export const noBareToast: Rule = problem("Matches a `toast.*` call whose only argument is a string literal.", {
+export const noBareToast: Rule = problem("Disallow a `toast.*` call whose only argument is a string literal.", {
   createOnce(context: RuleContext) {
     return {
       CallExpression(node) {

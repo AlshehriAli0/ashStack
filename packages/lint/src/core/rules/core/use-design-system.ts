@@ -107,7 +107,7 @@ export const useDesignSystem: Rule = {
     type: "problem",
     docs: {
       description:
-        "Bans importing a raw primitive your design system already wraps. Wrapped components come from scanning the design-system directory, plus the explicit `use` map for names, paths and source modules the scan cannot infer. Files under the design-system directory (or `exempt`) are skipped.",
+        "Disallow importing a raw primitive your design system already wraps. Wrapped components come from scanning the design-system directory, plus the explicit `use` map for names, paths and source modules the scan cannot infer. Files under the design-system directory (or `exempt`) are skipped.",
     },
     schema: [
       {

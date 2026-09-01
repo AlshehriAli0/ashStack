@@ -10,7 +10,7 @@ export const noBareAttrs: Rule = {
     type: "problem",
     docs: {
       description:
-        "Checks a configurable list of user-visible JSX attributes for a plain string literal value. It defaults to placeholder, accessibilityLabel, accessibilityHint and title.",
+        "Disallow a plain string literal on a configurable list of user-visible JSX attributes, defaulting to placeholder, accessibilityLabel, accessibilityHint and title.",
     },
     schema: [
       {

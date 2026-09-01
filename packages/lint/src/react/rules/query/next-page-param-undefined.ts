@@ -7,21 +7,18 @@ const NEXT_PAGE_PARAM_NULL =
 
 const RETURNS_NULL = /\breturn\s+null\b/;
 
-export const nextPageParamUndefined: Rule = problem(
-  "Fires when the body of a `getNextPageParam` contains `return null`.",
-  {
-    createOnce(context: RuleContext) {
-      return {
-        before() {
-          return gate(context, "getNextPageParam");
-        },
-        Property(node) {
-          if (propertyKeyName(node) !== "getNextPageParam") return;
-          const body = context.sourceCode.getText(node.value);
-          if (!RETURNS_NULL.test(body)) return;
-          context.report({ node: node.value, message: NEXT_PAGE_PARAM_NULL });
-        },
-      };
-    },
-  }
-);
+export const nextPageParamUndefined: Rule = problem("Disallow `return null` in the body of a `getNextPageParam`.", {
+  createOnce(context: RuleContext) {
+    return {
+      before() {
+        return gate(context, "getNextPageParam");
+      },
+      Property(node) {
+        if (propertyKeyName(node) !== "getNextPageParam") return;
+        const body = context.sourceCode.getText(node.value);
+        if (!RETURNS_NULL.test(body)) return;
+        context.report({ node: node.value, message: NEXT_PAGE_PARAM_NULL });
+      },
+    };
+  },
+});

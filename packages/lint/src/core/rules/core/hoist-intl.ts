@@ -7,7 +7,7 @@ const HOIST_INTL =
 const MEMO_HOOKS = new Set(["useMemo", "useCallback"]);
 
 export const hoistIntl: Rule = problem(
-  "Fires on `new Intl.*` inside a function that renders JSX, unless the call already sits in `useMemo` or `useCallback`.",
+  "Disallow `new Intl.*` inside a function that renders JSX, unless the call already sits in `useMemo` or `useCallback`.",
   {
     createOnce(context: RuleContext) {
       return {

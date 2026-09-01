@@ -5,7 +5,7 @@ const MESSAGE =
   "Add an explicit `opaque` prop to this `<Canvas>`: `opaque={Platform.OS === 'android'}` for a fullscreen animated canvas, or `opaque={false}` when it needs transparency, view transforms, or ordinary stacking.";
 
 export const canvasOpaque: Rule = problem(
-  "Requires an explicit `opaque` prop on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.",
+  "Require an explicit `opaque` prop on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.",
   {
     createOnce(context: RuleContext) {
       const canvasLocals = new Set<string>();

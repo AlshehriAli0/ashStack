@@ -8,7 +8,7 @@ const FETCH_IN_QUERY_FN =
 const BARE_FETCH = /\bfetch\s*\(/;
 const QUERY_FN_KEYS = new Set(["queryFn", "mutationFn"]);
 
-export const noFetchInQueryFn: Rule = problem("Looks inside every `queryFn` and `mutationFn` for a bare `fetch(`.", {
+export const noFetchInQueryFn: Rule = problem("Disallow a bare `fetch(` inside a `queryFn` or `mutationFn`.", {
   createOnce(context: RuleContext) {
     return {
       before() {

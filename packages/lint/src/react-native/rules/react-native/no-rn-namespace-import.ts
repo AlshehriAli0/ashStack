@@ -9,7 +9,7 @@ const MESSAGES = {
 };
 
 export const noRnNamespaceImport: Rule = problem(
-  "Bans a namespace import of react-native and a re-export of its `Platform`. Both defeat Metro's platform shaking, so dead `Platform.OS` branches ship in both bundles.",
+  "Disallow a namespace import of react-native and a re-export of its `Platform`. Both defeat Metro's platform shaking, so dead `Platform.OS` branches ship in both bundles.",
   {
     createOnce(context: RuleContext) {
       return {

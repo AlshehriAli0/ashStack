@@ -8,7 +8,7 @@ const I18N_COMPONENTS = new Set(["Trans", "Plural", "Select"]);
 const BARE_TEXT = /^[A-Za-z][^<{}]{2,}$/;
 
 export const noBareText: Rule = problem(
-  "Fires when a JSX element carries no attributes and its single child is plain literal text.",
+  "Disallow a JSX element that carries no attributes and whose single child is plain literal text.",
   {
     createOnce(context: RuleContext) {
       return {

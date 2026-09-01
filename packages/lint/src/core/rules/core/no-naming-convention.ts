@@ -89,7 +89,7 @@ const namingViolation = (name: string, kind: Kind): string | null => {
 };
 
 export const noNamingConvention: Rule = problem(
-  "Flags a variable, object property, type member or enum member whose name misses the casings allowed for its kind.",
+  "Require a variable, object property, type member or enum member to use one of the casings allowed for its kind.",
   {
     createOnce(context: RuleContext) {
       const check = (node: AstNode, name: string | null, kind: Kind): void => {

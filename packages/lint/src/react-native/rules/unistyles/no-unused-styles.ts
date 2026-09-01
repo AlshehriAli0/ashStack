@@ -16,7 +16,7 @@ const namedStyleKeys = (styles: StylesObject): Map<string, AstNode> | null => {
 };
 
 export const noUnusedStyles: Rule = problem(
-  "Report stylesheet keys that nothing in the file reads. A computed key, a computed read, or a sheet that leaves the module skips the whole file.",
+  "Disallow stylesheet keys that nothing in the file reads. A computed key, a computed read, or a sheet that leaves the module skips the whole file.",
   {
     createOnce(context) {
       let declaredStyleKeys = new Map<string, Map<string, AstNode>>();

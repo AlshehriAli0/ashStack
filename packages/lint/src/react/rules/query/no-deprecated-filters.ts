@@ -37,7 +37,7 @@ export const noDeprecatedFilters: Rule = {
     type: "problem",
     docs: {
       description:
-        "Catches the positional key argument that TanStack Query v5 removed from `invalidateQueries` and its sibling methods. Suggests the filter-object form.",
+        "Disallow the positional key argument that TanStack Query v5 removed from `invalidateQueries` and its sibling methods. The suggestion rewrites it to the filter-object form.",
     },
     hasSuggestions: true,
   },

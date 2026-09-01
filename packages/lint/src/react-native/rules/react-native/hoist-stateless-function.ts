@@ -36,7 +36,7 @@ const readsComponentScope = (scope: Scope, componentScope: Scope): boolean => {
 };
 
 export const hoistStatelessFunction: Rule = problem(
-  "Requires module scope for a non-component function that reads nothing from the component around it. Out there it is created once, keeps a stable identity, and can be tested without rendering.",
+  "Require module scope for a non-component function that reads nothing from the component around it. Out there it is created once, keeps a stable identity, and can be tested without rendering.",
   {
     createOnce(context: RuleContext) {
       const check = (node: AstNode) => {

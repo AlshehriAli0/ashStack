@@ -138,7 +138,7 @@ export const noComments: Rule = {
     type: "problem",
     docs: {
       description:
-        'Reports every comment that is neither a `// what: <fact>` line nor a tooling directive. The message names the refactoring that removes it — Rename, Extract Function, Guard Clause. Surviving `// what:` lines are held to one short line each, at most `budget` per file (default 2); `escapeHatch: false` removes the hatch entirely, so no prose survives at all. With `jsdoc: "allow"`, a `/** */` block documenting the declaration directly beneath it is kept, while a floating one still reports.',
+        'Disallow every comment that is neither a `// what: <fact>` line nor a tooling directive. The message names the refactoring that removes it: Rename, Extract Function, Guard Clause. Surviving `// what:` lines are held to one short line each, at most `budget` per file (default 2); `escapeHatch: false` removes the hatch entirely, so no prose survives at all. With `jsdoc: "allow"`, a `/** */` block documenting the declaration directly beneath it is kept, while a floating one still reports.',
     },
     schema: [
       {

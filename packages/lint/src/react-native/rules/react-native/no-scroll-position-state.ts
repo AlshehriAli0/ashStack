@@ -9,7 +9,7 @@ const MESSAGE =
   "Use `useAnimatedScrollHandler` with a shared value when this drives an animation, or a ref when nothing renders from it. Scroll fires every frame, so a state setter here re-renders the screen every frame.";
 
 export const noScrollPositionState: Rule = problem(
-  "Bans a React state setter inside a scroll handler prop. Scroll fires every frame, and so would the re-render.",
+  "Disallow a React state setter inside a scroll handler prop. Scroll fires every frame, and so would the re-render.",
   {
     createOnce(context: RuleContext) {
       return {

@@ -7,7 +7,7 @@ const MESSAGE =
   "Turn this into a static `import` at the top of the file. Metro inlines `import()` into the same bundle, so it buys no laziness and only hides the module from the typechecker; wrapping it in `React.lazy(() => import(...))` or `dynamic(() => import(...))` stays allowed.";
 
 export const noDynamicImport: Rule = problem(
-  "Bans dynamic `import()` outside a `React.lazy` or `dynamic` wrapper. Metro inlines it into the same bundle, so nothing is deferred and the module is hidden from the typechecker.",
+  "Disallow dynamic `import()` outside a `React.lazy` or `dynamic` wrapper. Metro inlines it into the same bundle, so nothing is deferred and the module is hidden from the typechecker.",
   {
     createOnce(context: RuleContext) {
       return {

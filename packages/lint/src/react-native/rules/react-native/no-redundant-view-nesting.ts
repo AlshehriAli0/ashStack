@@ -26,7 +26,7 @@ const onlyLayoutProps = (attributes: readonly AstNode[]): boolean =>
   );
 
 export const noRedundantViewNesting: Rule = problem(
-  "Bans a View or Animated.View that wraps an identical view when neither carries anything but a style. Every extra host view is a real node in the native tree.",
+  "Disallow a View or Animated.View that wraps an identical view when neither carries anything but a style. Every extra host view is a real node in the native tree.",
   {
     createOnce(context: RuleContext) {
       return {

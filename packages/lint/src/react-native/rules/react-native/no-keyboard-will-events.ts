@@ -10,7 +10,7 @@ const isIosOnlyEventName = (node: AstNode): boolean =>
   node.type === "Literal" && typeof node.value === "string" && IOS_ONLY_EVENT_NAMES.has(node.value);
 
 export const noKeyboardWillEvents: Rule = problem(
-  "Bans the `keyboardWill*` event names. They are iOS-only, so on Android the listener registers and never fires.",
+  "Disallow the `keyboardWill*` event names. They are iOS-only, so on Android the listener registers and never fires.",
   {
     createOnce(context: RuleContext) {
       return {

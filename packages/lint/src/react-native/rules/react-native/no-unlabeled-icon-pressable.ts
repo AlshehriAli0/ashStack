@@ -39,7 +39,7 @@ const childKinds = (children: readonly AstNode[]): ChildKinds => {
 };
 
 export const noUnlabeledIconPressable: Rule = problem(
-  "Requires an accessible name on an icon-only touchable or an icon-only Expo UI `<Button>`. Without a label, hint or visible text, a screen reader cannot reach the control.",
+  "Require an accessible name on an icon-only touchable or an icon-only Expo UI `<Button>`. Without a label, hint or visible text, a screen reader cannot reach the control.",
   {
     createOnce(context: RuleContext) {
       return {

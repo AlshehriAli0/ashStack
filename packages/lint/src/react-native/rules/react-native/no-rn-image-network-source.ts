@@ -19,7 +19,7 @@ const hasUriProperty = (attribute: AstNode): boolean => {
 };
 
 export const noRnImageNetworkSource: Rule = problem(
-  "Bans a react-native `<Image>` with a network `{ uri }` source. It has no disk cache and no decode sizing, so the image re-downloads at full size on every cold start.",
+  "Disallow a react-native `<Image>` with a network `{ uri }` source. It has no disk cache and no decode sizing, so the image re-downloads at full size on every cold start.",
   {
     createOnce(context: RuleContext) {
       const imageBindings = new Set<string>();

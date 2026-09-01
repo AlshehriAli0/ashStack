@@ -26,7 +26,7 @@ const isStringLiteralCall = (node: AstNode | null | undefined): boolean => {
 };
 
 export const preferEnum: Rule = problem(
-  "Matches `z.nativeEnum()` calls and any `z.union()` whose members are all `z.literal()` strings.",
+  "Disallow `z.nativeEnum()` and any `z.union()` whose members are all `z.literal()` strings.",
   {
     createOnce(context: RuleContext) {
       return {

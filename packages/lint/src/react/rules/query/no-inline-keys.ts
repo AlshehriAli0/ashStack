@@ -69,7 +69,7 @@ const inlineQueryKeys = (node: AstNode): AstNode[] => {
 };
 
 export const noInlineKeys: Rule = problem(
-  "Fires when a query key is written as an array literal at the call site instead of coming from a keys factory.",
+  "Disallow a query key written as an array literal at the call site instead of coming from a keys factory.",
   {
     createOnce(context: RuleContext) {
       return {

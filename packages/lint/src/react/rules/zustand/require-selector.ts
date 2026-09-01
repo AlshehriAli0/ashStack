@@ -19,7 +19,7 @@ const storeHookLocalName = (specifier: AstNode): string | null => {
 };
 
 export const requireSelector: Rule = problem(
-  "Reports a store hook called with no arguments, or with `undefined` where the selector belongs.",
+  "Require a selector on a store hook, rather than no arguments or `undefined` in its place.",
   {
     createOnce(context: RuleContext) {
       const hooks = new Set<string>();

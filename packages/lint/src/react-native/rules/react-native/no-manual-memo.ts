@@ -58,7 +58,7 @@ const linesCoveredByWhyComments = (comments: Comments, lineOf: (offset: number) 
 };
 
 export const noManualMemo: Rule = problem(
-  "Bans `useMemo`, `useCallback` and `memo` unless a `why:` comment on the line above states the case the React Compiler cannot see: something rendered per list row, or a cost that was measured.",
+  "Disallow `useMemo`, `useCallback` and `memo` unless a `why:` comment on the line above states the case the React Compiler cannot see: something rendered per list row, or a cost that was measured.",
   {
     meta: { packages: REACT_COMPILER_PACKAGES },
     createOnce(context: RuleContext) {

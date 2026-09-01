@@ -48,7 +48,9 @@ oxfmt --check .
 
 ## Why it's this strict
 
-An agent writes more code in an hour than anyone reviews line by line, and the linter is the only thing that reads all of it. So this config keeps the rules a human reviewer waves through: a `fetch(` sitting bare inside a `queryFn`, a `&&` guard that leaks a `0` into JSX, a hardcoded color that skips dark mode.
+An agent writes more code in an hour than anyone reads line by line. Unchecked, that becomes the codebase everyone dreads: modules wound into each other, the same problem solved three different ways in three files.
+
+Most of these rules exist to stop that forming, and to keep what does get written readable by the next person. The rest encode how a given library expects to be used, so its anti-patterns get caught the first time instead of the fiftieth: a query key built at the call site, a shared value read through `.value`.
 
 Every message names the fix, so an agent can act on it without a second prompt.
 
