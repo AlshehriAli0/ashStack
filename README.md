@@ -80,7 +80,7 @@ Each library gets a **module**: one rule namespace, one toggle. A module turns o
 | `@ashstack/skia`         | `@shopify/react-native-skia`                                                             |
 | `@ashstack/keyboard`     | `react-native-keyboard-controller`                                                       |
 
-Force one either way when detection guesses wrong:
+Detection is the default, not the rule. Turn any module on or off yourself, whatever your dependencies say:
 
 ```ts
 reactNative({ unistyles: false, i18n: true });

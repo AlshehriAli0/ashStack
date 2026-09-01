@@ -39,7 +39,7 @@ A module is one rule namespace with one toggle, and turns on when its library is
 
 `@ashstack/zod` · `@ashstack/query` · `@ashstack/zustand` · `@ashstack/i18n` · `@ashstack/unistyles` · `@ashstack/legend-list` · `@ashstack/legend-state` · `@ashstack/reanimated` · `@ashstack/turbo-image` · `@ashstack/skia` · `@ashstack/keyboard`
 
-Force one either way when detection guesses wrong:
+Detection is the default, not the rule. Turn any module on or off yourself, whatever your dependencies say:
 
 ```ts
 reactNative({ unistyles: false, i18n: true });
