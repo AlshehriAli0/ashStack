@@ -15,7 +15,7 @@
 Two packages: [`@ashstack/lint`](packages/lint) and [`@ashstack/fmt`](packages/fmt). Install once per project instead of copying a lint config around and watching the copies drift.
 
 - **147 rules** on any TypeScript project, **227** with React, **238** on React Native; 71 of them written here
-- library rules ship only when you depend on that library: 13 self-detecting modules
+- library-specific rules ship only when you depend on that library: 13 self-detecting modules
 - every rule is in [RULES.md](packages/lint/RULES.md), with options and examples, generated and CI-checked
 - your `rules` block always wins
 
@@ -62,7 +62,7 @@ Each returns one flat config. `react()` contains `core()`; `react-native()` cont
 | `react()`        | React on the web       | react, jsx-a11y, React Compiler, you-might-not-need-an-effect                                    |
 | `react-native()` | Expo and React Native  | `@ashstack/react-native/`: leaked renders, view nesting, iOS-only keyboard events, remote images |
 
-## Library rules, auto-detected
+## Library-specific rules, auto-detected
 
 One module per library: one rule namespace, one toggle. A module turns on when its library is in your `package.json`, searched up to the repo root.
 

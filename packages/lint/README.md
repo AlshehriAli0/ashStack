@@ -2,7 +2,7 @@
 
 Strict shared [oxlint](https://oxc.rs) config with 71 custom rules: 147 rules on any TypeScript project, 227 with React, 238 on React Native. Three entries, each containing the one before it: `core()`, `react()`, `react-native()`.
 
-Library rules ship only when you depend on that library, so nothing fires about code you don't have.
+Library-specific rules ship only when you depend on that library, so nothing fires about code you don't have.
 
 The strictness is aimed at agents. One writes more code in an hour than anyone reviews line by line, and the linter is the only thing that reads all of it. Every message names the fix, so an agent can act on it without a second prompt.
 
@@ -33,7 +33,7 @@ Type-aware rules need the `oxlint-tsgolint` peer. Node 22.18+.
 
 `core()` is a strict eslint / typescript / unicorn / promise / import base plus the `@ashstack/core/` convention rules. `react()` adds react, jsx-a11y, React Compiler and you-might-not-need-an-effect. `react-native()` adds the generic `@ashstack/react-native/` rules: leaked renders, view nesting, iOS-only keyboard events, remote images.
 
-## Library rules, auto-detected
+## Library-specific rules, auto-detected
 
 One module per library: one rule namespace, one toggle. A module turns on when its library is in your `package.json`, searched up to the repo root.
 
