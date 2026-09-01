@@ -1,31 +1,14 @@
-import { calleeName, findInSubtree, gate, problem, subtreeHas } from "../../../lib/ast.js";
+import { ancestors, calleeName, gate, isFunction, problem, subtreeHas } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext, Visitor } from "../../../lib/types.js";
+import { CREATE_MARKER, isStyleSheetCreate } from "../../stylesheet.js";
 
-/** The object literal a stylesheet is built from. */
-export type StylesObject = Extract<AstNode, { type: "ObjectExpression" }>;
-
-export const CREATE_MARKER = "StyleSheet.create";
-
-export const isStyleSheetCreate = (node: AstNode | null | undefined): boolean => {
-  if (node?.type !== "CallExpression") return false;
-  const { callee } = node;
-  if (callee.type !== "MemberExpression") return false;
-  const { object, property } = callee;
-  return (
-    object.type === "Identifier" &&
-    object.name === "StyleSheet" &&
-    property.type === "Identifier" &&
-    property.name === "create"
-  );
-};
-
-export const propertyName = (node: AstNode): string => {
-  if (node.type !== "Property") return "";
-  const { key } = node;
-  if (key.type === "Identifier") return key.name;
-  if (key.type === "Literal") return String(key.value);
-  return "";
-};
+export {
+  CREATE_MARKER,
+  isStyleSheetCreate,
+  propertyName,
+  stylesObjectOf,
+  type StylesObject,
+} from "../../stylesheet.js";
 
 export const memberPath = (node: AstNode | null | undefined): string => {
   const parts: string[] = [];
@@ -41,24 +24,6 @@ export const memberPath = (node: AstNode | null | undefined): string => {
   return parts.join(".");
 };
 
-const themeFunctionBody = (factory: AstNode): AstNode | null =>
-  factory.type === "ArrowFunctionExpression" || factory.type === "FunctionExpression" ? factory.body : null;
-
-const objectReturnedFrom = (body: AstNode): StylesObject | null => {
-  if (body.type === "ObjectExpression") return body;
-  if (body.type === "ParenthesizedExpression" && body.expression.type === "ObjectExpression") return body.expression;
-  const found = findInSubtree(body, current => current.type === "ObjectExpression");
-  return found?.type === "ObjectExpression" ? found : null;
-};
-
-/** The styles object a `StyleSheet.create` argument holds: a literal, or the one its theme function returns. */
-export const stylesObjectOf = (factory: AstNode | null | undefined): StylesObject | null => {
-  if (!factory) return null;
-  if (factory.type === "ObjectExpression") return factory;
-  const body = themeFunctionBody(factory);
-  return body === null ? null : objectReturnedFrom(body);
-};
-
 export const declaresUseUnistylesTheme = (scope: AstNode): boolean =>
   subtreeHas(scope, current => {
     if (current.type !== "VariableDeclarator") return false;
@@ -71,6 +36,17 @@ export const declaresUseUnistylesTheme = (scope: AstNode): boolean =>
       )
     );
   });
+
+/**
+ * The enclosing function that destructures a `useUnistyles()` theme, innermost first. Walking past the
+ * innermost function matters: the read is often inside a callback the component passes down.
+ */
+export const themeConsumingComponent = (node: AstNode): AstNode | null => {
+  for (const current of ancestors(node)) {
+    if (isFunction(current) && declaresUseUnistylesTheme(current)) return current;
+  }
+  return null;
+};
 
 export const readsTheme = (node: AstNode): boolean =>
   subtreeHas(node, current => current.type === "MemberExpression" && memberPath(current).startsWith("theme."));

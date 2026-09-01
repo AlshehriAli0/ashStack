@@ -1,6 +1,6 @@
-import { closestAncestor, hasAncestor, problem } from "../../../lib/ast.js";
+import { hasAncestor, problem } from "../../../lib/ast.js";
 import type { Rule } from "../../../lib/types.js";
-import { declaresUseUnistylesTheme, isStyleSheetCreate, memberPath } from "./shared.js";
+import { isStyleSheetCreate, memberPath, themeConsumingComponent } from "./shared.js";
 
 const THEME_SCREEN_PREFIX = "theme.screen.";
 
@@ -17,8 +17,7 @@ export const themeScreenComponent: Rule = problem(
           const { parent } = node;
           if (parent.type === "MemberExpression" && parent.object === node) return;
           if (hasAncestor(node, isStyleSheetCreate)) return;
-          const component = closestAncestor(node, new Set(["FunctionDeclaration"]));
-          if (!component || !declaresUseUnistylesTheme(component)) return;
+          if (!themeConsumingComponent(node)) return;
           context.report({ node, message: MESSAGE });
         },
       };

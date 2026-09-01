@@ -16,6 +16,7 @@ export const Bad = () => (
   />
 );
 
-const styles = StyleSheet.create({
-  stretched: { flex: 1 },
+const styles = StyleSheet.create(theme => {
+  if (theme.dark) return { stretched: { flex: 1 } };
+  return { stretched: { padding: theme.gap } };
 });

@@ -6,3 +6,9 @@ export function Panel() {
 
   return <View accessibilityLabel={String(theme.screen.width)} />;
 }
+
+export const Card = () => {
+  const { theme } = useUnistyles();
+
+  return <View accessibilityLabel={String(theme.screen.height)} />;
+};

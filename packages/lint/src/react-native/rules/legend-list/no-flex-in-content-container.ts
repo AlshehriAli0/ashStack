@@ -1,56 +1,10 @@
-import { attributeName, gate, isFunction, problem } from "../../../lib/ast.js";
+import { attributeName, gate, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
+import { isStyleSheetCreate, propertyName, stylesObjectOf } from "../../stylesheet.js";
 import { expressionOf } from "./shared.js";
 
-type StyleObject = Extract<AstNode, { type: "ObjectExpression" }>;
-
-const keyName = (property: AstNode): string | null => {
-  if (property.type !== "Property") return null;
-  const { key } = property;
-  if (key.type === "Identifier") return key.name;
-  if (key.type === "Literal") return String(key.value);
-  return null;
-};
-
 const objectHasFlex = (node: AstNode | null | undefined): boolean =>
-  node?.type === "ObjectExpression" &&
-  node.properties.some(property => property.type === "Property" && keyName(property) === "flex");
-
-const isStyleSheetCreate = (node: AstNode): boolean => {
-  if (node.type !== "CallExpression") return false;
-  const { callee } = node;
-  if (callee.type !== "MemberExpression") return false;
-  const { object, property } = callee;
-  return (
-    object.type === "Identifier" &&
-    object.name === "StyleSheet" &&
-    property.type === "Identifier" &&
-    property.name === "create"
-  );
-};
-
-const bodyOf = (node: AstNode): AstNode | null =>
-  node.type === "ArrowFunctionExpression" || node.type === "FunctionExpression" || node.type === "FunctionDeclaration"
-    ? node.body
-    : null;
-
-const objectReturnedBy = (themeFunction: AstNode): StyleObject | null => {
-  const body = bodyOf(themeFunction);
-  if (body?.type === "ObjectExpression") return body;
-  if (body?.type !== "BlockStatement") return null;
-  const returned = body.body.find(statement => statement.type === "ReturnStatement");
-  if (returned?.type !== "ReturnStatement") return null;
-  const { argument } = returned;
-  return argument?.type === "ObjectExpression" ? argument : null;
-};
-
-/** The styles object given to `StyleSheet.create`: a literal, or the one a (unistyles) theme function returns. */
-const createdStyleObject = (node: AstNode): StyleObject | null => {
-  if (node.type !== "CallExpression") return null;
-  const argument = node.arguments[0];
-  if (argument?.type === "ObjectExpression") return argument;
-  return isFunction(argument) ? objectReturnedBy(argument) : null;
-};
+  node?.type === "ObjectExpression" && node.properties.some(property => propertyName(property) === "flex");
 
 export const noFlexInContentContainer: Rule = problem(
   "Disallow `flex` in a Legend List's `contentContainerStyle`, where it sizes the scrolled content to the viewport and the list ends up measuring zero height.",
@@ -79,13 +33,13 @@ export const noFlexInContentContainer: Rule = problem(
         },
         CallExpression(node) {
           if (!isStyleSheetCreate(node)) return;
-          const object = createdStyleObject(node);
+          const object = stylesObjectOf(node.arguments[0]);
           if (!object) return;
 
           for (const property of object.properties) {
             if (property.type !== "Property" || property.computed) continue;
-            const name = keyName(property);
-            if (name !== null && objectHasFlex(property.value)) styleKeysWithFlex.add(name);
+            const name = propertyName(property);
+            if (name !== "" && objectHasFlex(property.value)) styleKeysWithFlex.add(name);
           }
         },
         JSXAttribute(node) {

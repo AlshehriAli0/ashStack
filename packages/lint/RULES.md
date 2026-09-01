@@ -1564,6 +1564,12 @@ export function Panel() {
 
   return <View accessibilityLabel={String(theme.screen.width)} />;
 }
+
+export const Card = () => {
+  const { theme } = useUnistyles();
+
+  return <View accessibilityLabel={String(theme.screen.height)} />;
+};
 ```
 
 **Passes**
@@ -1593,6 +1599,12 @@ export function Badge() {
   const { theme } = useUnistyles();
 
   return <View style={{ backgroundColor: theme.colors.accent }} />;
+}
+
+export function BadgeList({ ids }: { ids: string[] }) {
+  const { theme } = useUnistyles();
+
+  return <>{ids.map(id => <View key={id} style={{ backgroundColor: theme.colors.accent }} />)}</>;
 }
 ```
 
@@ -1925,8 +1937,9 @@ export const Bad = () => (
   />
 );
 
-const styles = StyleSheet.create({
-  stretched: { flex: 1 },
+const styles = StyleSheet.create(theme => {
+  if (theme.dark) return { stretched: { flex: 1 } };
+  return { stretched: { padding: theme.gap } };
 });
 ```
 

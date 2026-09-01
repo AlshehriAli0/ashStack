@@ -1,6 +1,6 @@
-import { closestAncestor, FUNCTION_TYPES, problem } from "../../../lib/ast.js";
+import { problem } from "../../../lib/ast.js";
 import type { Rule } from "../../../lib/types.js";
-import { declaresUseUnistylesTheme, readsTheme } from "./shared.js";
+import { readsTheme, themeConsumingComponent } from "./shared.js";
 
 const MESSAGE =
   "Resolve theme-dependent style values inside `StyleSheet.create` instead of reading `theme` in a JSX `style` prop or passing it into a dynamic style function.";
@@ -13,8 +13,7 @@ export const themeStyleAttr: Rule = problem(
         JSXAttribute(node) {
           if (node.name.type !== "JSXIdentifier" || node.name.name !== "style") return;
           if (!readsTheme(node)) return;
-          const component = closestAncestor(node, FUNCTION_TYPES);
-          if (!component || !declaresUseUnistylesTheme(component)) return;
+          if (!themeConsumingComponent(node)) return;
           context.report({ node, message: MESSAGE });
         },
       };
