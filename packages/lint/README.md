@@ -1,6 +1,6 @@
 # @ashstack/lint
 
-Strict shared [oxlint](https://oxc.rs) config with 71 custom rules. Three entries, each containing the one before it: `core()`, `react()`, `react-native()`.
+Strict shared [oxlint](https://oxc.rs) config with 71 custom rules: 147 rules on any TypeScript project, 227 with React, 238 on React Native. Three entries, each containing the one before it: `core()`, `react()`, `react-native()`.
 
 Library rules ship only when you depend on that library, so nothing fires about code you don't have.
 
@@ -14,12 +14,12 @@ bun add -d oxlint oxlint-tsgolint @ashstack/lint
 
 ```ts
 // oxlint.config.mts (JSON configs can't resolve npm packages, so TS config only)
-import { reactNative } from "@ashstack/lint"; // or: core, react
+import { core } from "@ashstack/lint"; // or: react, reactNative
 import { defineConfig } from "oxlint";
 
 export default defineConfig({
-  extends: [reactNative()],
-  rules: { "@ashstack/unistyles/no-margin": "off" }, // your overrides always win
+  extends: [core()],
+  rules: { "@ashstack/query/no-inline-keys": "off" }, // your overrides always win
 });
 ```
 

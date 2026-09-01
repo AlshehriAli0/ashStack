@@ -14,7 +14,7 @@
 
 Two packages: [`@ashstack/lint`](packages/lint) and [`@ashstack/fmt`](packages/fmt). Install once per project instead of copying a lint config around and watching the copies drift.
 
-- `react-native()` turns on **238 rules**, 71 of them written here
+- **147 rules** on any TypeScript project, **227** with React, **238** on React Native; 71 of them written here
 - library rules ship only when you depend on that library: 13 self-detecting modules
 - every rule is in [RULES.md](packages/lint/RULES.md), with options and examples, generated and CI-checked
 - your `rules` block always wins
@@ -27,10 +27,10 @@ bun add -d oxlint oxfmt oxlint-tsgolint @ashstack/lint @ashstack/fmt
 
 ```ts
 // oxlint.config.mts
-import { reactNative } from "@ashstack/lint"; // or: core, react
+import { core } from "@ashstack/lint"; // or: react, reactNative
 import { defineConfig } from "oxlint";
 
-export default defineConfig({ extends: [reactNative()] });
+export default defineConfig({ extends: [core()] });
 ```
 
 ```ts
@@ -48,7 +48,7 @@ oxfmt --check .
 
 ## Why it's this strict
 
-An agent writes more code in an hour than anyone reviews line by line, and the linter is the only thing that reads all of it. So this config keeps the rules a human reviewer would wave through: leaked renders, `.value` writes React Compiler can't track, hardcoded colors that skip dark mode.
+An agent writes more code in an hour than anyone reviews line by line, and the linter is the only thing that reads all of it. So this config keeps the rules a human reviewer waves through: a `fetch(` sitting bare inside a `queryFn`, a `&&` guard that leaks a `0` into JSX, a hardcoded color that skips dark mode.
 
 Every message names the fix, so an agent can act on it without a second prompt.
 
