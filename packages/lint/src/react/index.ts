@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 
-import core from "../core/index.js";
+import core, { coreModules } from "../core/index.js";
 import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
 import type { OxlintConfig, ReactOptions } from "../lib/types.js";
@@ -112,7 +112,7 @@ const REACT_RULES = {
  * modules (query, zustand, i18n).
  */
 const react = (options: ReactOptions = {}): OxlintConfig => {
-  const composed = composeModules(reactModules, options as Record<string, boolean | undefined>);
+  const composed = composeModules([...coreModules, ...reactModules], options);
 
   return mergeConfigs(core(options), {
     plugins: ["react", "jsx-a11y"],

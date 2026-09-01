@@ -6,10 +6,22 @@
   "license": "MIT",
   "author": "Ali Alshehri (https://github.com/AlshehriAli0)",
   "exports": {
-    ".": "./dist/index.js",
-    "./core": "./dist/core/index.js",
-    "./react": "./dist/react/index.js",
-    "./react-native": "./dist/react-native/index.js"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./core": {
+      "types": "./dist/core/index.d.ts",
+      "default": "./dist/core/index.js"
+    },
+    "./react": {
+      "types": "./dist/react/index.d.ts",
+      "default": "./dist/react/index.js"
+    },
+    "./react-native": {
+      "types": "./dist/react-native/index.d.ts",
+      "default": "./dist/react-native/index.js"
+    }
   },
   "files": [
     "dist",
@@ -31,10 +43,10 @@
     }
   },
   "scripts": {
-    "build": "tsc",
-    "prepack": "tsc"
+    "prepack": "rm -rf dist && tsc"
   },
   "devDependencies": {
+    "@types/node": "^22.10.0",
     "typescript": "^7.0.2"
   }
 }

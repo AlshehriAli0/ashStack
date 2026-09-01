@@ -79,26 +79,26 @@ export interface BanGroup {
   restrictedImports: RestrictedImports;
 }
 
-export interface CoreOptions {
+export type CoreOptions = {
   /** `@ashstack/zod/` rules — detected from `zod` */
   zod?: boolean;
-}
+};
 
-export interface ReactOptions extends CoreOptions {
+export type ReactOptions = CoreOptions & {
   /** `@ashstack/query/` rules — detected from `@tanstack/react-query` */
   query?: boolean;
   /** `@ashstack/zustand/` rules — detected from `zustand` */
   zustand?: boolean;
   /** `@ashstack/i18n/` rules — detected from i18next/lingui/react-intl/use-intl/next-intl/expo-localization */
   i18n?: boolean;
-}
+};
 
 /**
  * Every toggle is a rule module — one rule namespace each. Import bans and
  * package-gated single rules are auto-detect only; disable individual rules
  * by name in your `rules` block.
  */
-export interface ReactNativeOptions extends ReactOptions {
+export type ReactNativeOptions = ReactOptions & {
   /** `@ashstack/unistyles/` rules + StyleSheet/Dimensions/SafeArea import bans — `react-native-unistyles` */
   unistyles?: boolean;
   /** `@ashstack/legend-list/` rules + FlatList/FlashList bans — `@legendapp/list` */
@@ -113,7 +113,7 @@ export interface ReactNativeOptions extends ReactOptions {
   skia?: boolean;
   /** `@ashstack/keyboard/` rules — `react-native-keyboard-controller` */
   keyboard?: boolean;
-}
+};
 
 /** The oxlint config object an entry returns (schema owned by oxlint). */
 export type OxlintConfig = Record<string, unknown>;

@@ -1,7 +1,8 @@
+import { coreModules } from "../core/index.js";
 import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
 import type { BanGroup, OxlintConfig, ReactNativeOptions } from "../lib/types.js";
-import react from "../react/index.js";
+import react, { reactModules } from "../react/index.js";
 import keyboardModule from "./rules/keyboard/index.js";
 import legendListModule from "./rules/legend-list/index.js";
 import legendStateModule from "./rules/legend-state/index.js";
@@ -98,7 +99,7 @@ const TEST_FILES = ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.
  * `rules` block always overrides.
  */
 const reactNative = (options: ReactNativeOptions = {}): OxlintConfig => {
-  const composed = composeModules(reactNativeModules, options as Record<string, boolean | undefined>, banGroups);
+  const composed = composeModules([...coreModules, ...reactModules, ...reactNativeModules], options, banGroups);
 
   return mergeConfigs(react(options), {
     jsPlugins: composed.jsPlugins,

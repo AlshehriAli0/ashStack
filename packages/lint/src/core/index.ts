@@ -175,7 +175,7 @@ const BASE_RULES = {
  * `--type-aware` and the `oxlint-tsgolint` peer installed.
  */
 const core = (options: CoreOptions = {}): OxlintConfig => {
-  const composed = composeModules(coreModules, options as Record<string, boolean | undefined>);
+  const composed = composeModules(coreModules, options);
 
   return {
     plugins: ["eslint", "typescript", "import", "unicorn", "promise", "oxc"],

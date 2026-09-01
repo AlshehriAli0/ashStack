@@ -6,7 +6,10 @@
   "license": "MIT",
   "author": "Ali Alshehri (https://github.com/AlshehriAli0)",
   "exports": {
-    ".": "./index.js"
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
   },
   "files": [
     "index.js",

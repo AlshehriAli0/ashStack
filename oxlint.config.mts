@@ -3,7 +3,7 @@ import { defineConfig } from "oxlint";
 
 export default defineConfig({
   extends: [core()],
-  ignorePatterns: ["**/dist/**", "**/fixtures/**", "examples/**", "**/node_modules/**"],
+  ignorePatterns: ["**/fixtures/**", "examples/**"],
   rules: {
     "@ashstack/core/no-comments": ["error", { jsdoc: "allow" }],
   },

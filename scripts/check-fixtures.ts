@@ -3,14 +3,17 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { allModules, shortName } from "../packages/lint/dist/lib/registry.js";
+import { coreModules, reactModules, reactNativeModules } from "../packages/lint/dist/index.js";
+import { shortName } from "../packages/lint/dist/lib/module.js";
 import type { ModuleManifest } from "../packages/lint/dist/lib/types.js";
 
-const lintDir = join(import.meta.dir, "..", "packages", "lint");
+const repoRoot = join(import.meta.dir, "..");
+const lintDir = join(repoRoot, "packages", "lint");
 const fixturesDir = join(lintDir, "fixtures");
-const oxlint = join(import.meta.dir, "..", "node_modules", ".bin", "oxlint");
+const oxlint = join(repoRoot, "node_modules", ".bin", "oxlint");
 
 const failures: string[] = [];
+const allModules = [...coreModules, ...reactModules, ...reactNativeModules];
 const moduleByFixtureDir = new Map(allModules.map(module => [shortName(module), module]));
 
 const subdirectoriesOf = (dir: string): string[] =>
@@ -35,7 +38,7 @@ const lintFixtures = (module: ModuleManifest, moduleDir: string, rules: string[]
     })
   );
 
-  const run = Bun.spawnSync([oxlint, "-c", configPath, "--format", "json", moduleDir]);
+  const run = Bun.spawnSync([oxlint, "-c", configPath, "--format", "json", moduleDir], { cwd: repoRoot });
   rmSync(configPath, { force: true });
 
   try {
