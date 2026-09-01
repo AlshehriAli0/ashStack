@@ -48,11 +48,9 @@ oxfmt --check .
 
 ## Why it's this strict
 
-An agent writes more code in an hour than anyone reads line by line. Unchecked, that becomes the codebase everyone dreads: modules wound into each other, the same problem solved three different ways in three files.
+An agent writes more code in an hour than anyone reads line by line, and unchecked it tangles: modules wound into each other, one problem solved three ways. Most of these rules exist to stop that.
 
-Most of these rules exist to stop that forming, and to keep what does get written readable by the next person. The rest encode how a given library expects to be used, so its anti-patterns get caught the first time instead of the fiftieth: a query key built at the call site, a shared value read through `.value`.
-
-Every message names the fix, so an agent can act on it without a second prompt.
+The rest encode how a library expects to be used, so its anti-patterns get caught the first time. Every message names the fix.
 
 ## Three entries
 
