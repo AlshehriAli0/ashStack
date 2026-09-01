@@ -1,5 +1,4 @@
 import { defineModule } from "../../../lib/module.js";
-import { commentEscapeHatch } from "./comment-escape-hatch.js";
 import { componentsTsxOnly } from "./components-tsx-only.js";
 import { hoistIntl } from "./hoist-intl.js";
 import { noComments } from "./no-comments.js";
@@ -12,7 +11,6 @@ export default defineModule({
   docsWhen: "always on via `core()` and every entry above it (opt-in rules noted per rule)",
   rules: {
     "no-comments": noComments,
-    "comment-escape-hatch": commentEscapeHatch,
     "no-naming-convention": noNamingConvention,
     "use-design-system": useDesignSystem,
     "components-tsx-only": componentsTsxOnly,

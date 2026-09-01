@@ -7,7 +7,7 @@ Every rule these entries turn on, generated from the entries, the module manifes
 Disable any rule by its id in your `rules` block, e.g. `"@ashstack/unistyles/no-margin": "off"`. Each entry contains the one before it, so its table lists only what it changes.
 
 - [`core()`](#core)
-  - [`@ashstack/core`](#ashstackcore) — 6 rules
+  - [`@ashstack/core`](#ashstackcore) — 5 rules
   - [`@ashstack/zod`](#ashstackzod) — 1 rule
 - [`react()`](#react)
   - [`@ashstack/query`](#ashstackquery) — 5 rules
@@ -185,7 +185,7 @@ _always on via `core()` and every entry above it (opt-in rules noted per rule)._
 
 #### `@ashstack/core/no-comments`
 
-Reports every comment that is neither a `// what: <fact>` line nor a tooling directive. The message names the refactoring that removes it — Rename, Extract Function, Guard Clause — and holds the `// what:` hatch to facts that outlive the code, such as a platform bug or a measured number. With `jsdoc: "allow"`, a `/** */` block documenting the declaration directly beneath it is kept, while a floating one still reports.
+Reports every comment that is neither a `// what: <fact>` line nor a tooling directive. The message names the refactoring that removes it — Rename, Extract Function, Guard Clause. Surviving `// what:` lines are held to one short line each, at most `budget` per file (default 2); `escapeHatch: false` removes the hatch entirely, so no prose survives at all. With `jsdoc: "allow"`, a `/** */` block documenting the declaration directly beneath it is kept, while a floating one still reports.
 
 > Off by default — opt in per project.
 
@@ -201,6 +201,13 @@ Reports every comment that is neither a `// what: <fact>` line nor a tooling dir
           "allow",
           "report"
         ]
+      },
+      "escapeHatch": {
+        "type": "boolean"
+      },
+      "budget": {
+        "type": "integer",
+        "minimum": 0
       }
     },
     "additionalProperties": false
@@ -217,6 +224,10 @@ import { View } from "react-native";
 export const Panel = () => {
   /** the flag that decides whether the footer shows */
   const flag = true;
+  // what: short
+  // what: iOS 17 reports the wrong inset for the first layout pass here.
+  // what: Android fires this layout pass twice below API 31 on Samsung devices.
+  // what: The upstream contract sends the cursor as a string, never a number.
   return <View>{flag}</View>;
 };
 ```
@@ -230,56 +241,10 @@ import { View } from "react-native";
 export const SettingsPanel = () => {
   // what: Android fires this layout pass twice below API 31.
   const showsFooter = true;
+
+  // what: The upstream contract sends the cursor as a string, never a number.
   return <View>{showsFooter}</View>;
 };
-```
-
-#### `@ashstack/core/comment-escape-hatch`
-
-Checks each `// what:` comment for the allowed one-line shape and length, and reports the ones past the per-file budget.
-
-**Options**
-
-```jsonc
-[
-  {
-    "type": "object",
-    "properties": {
-      "budget": {
-        "type": "integer",
-        "minimum": 0
-      }
-    },
-    "additionalProperties": false
-  }
-]
-```
-
-**Fails**
-
-```tsx
-/* what: a block comment cannot carry the hatch */
-import { View } from "react-native";
-
-// what: tiny
-export const first = 1;
-// what: this single line runs on well past the hundred and twenty character budget that the rule sets, so it counts as prose rather than a fact
-export const second = 2;
-// what: the first of two hatches with no blank line between them at all
-// what: the second one, which makes the pair a paragraph in disguise
-export const Panel = () => <View />;
-```
-
-**Passes**
-
-```tsx
-import { View } from "react-native";
-
-// what: the vendor SDK mutates the request array before it validates it
-export const first = 1;
-
-// what: this screen opens with all twenty slots on and needs 40 frames to settle
-export const Panel = () => <View />;
 ```
 
 #### `@ashstack/core/no-naming-convention`

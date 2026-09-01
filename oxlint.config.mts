@@ -6,6 +6,5 @@ export default defineConfig({
   ignorePatterns: ["**/dist/**", "**/fixtures/**", "examples/**", "**/node_modules/**"],
   rules: {
     "@ashstack/core/no-comments": ["error", { jsdoc: "allow" }],
-    "@ashstack/core/comment-escape-hatch": "error",
   },
 });

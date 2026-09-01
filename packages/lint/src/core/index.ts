@@ -207,7 +207,6 @@ const core = (options: CoreOptions = {}): OxlintConfig => {
           "typescript/no-unsafe-type-assertion": "off",
           "typescript/require-await": "off",
           "typescript/unbound-method": "off",
-          "@ashstack/core/comment-escape-hatch": "off",
         },
       },
     ],
