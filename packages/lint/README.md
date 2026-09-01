@@ -1,6 +1,6 @@
 # @ashstack/lint
 
-Strict shared [oxlint](https://oxc.rs) config with 71 custom rules: 147 rules on any TypeScript project, 227 with React, 238 on React Native. Three entries, each containing the one before it: `core()`, `react()`, `react-native()`.
+Strict shared [oxlint](https://oxc.rs) config: 147 rules on plain TypeScript, 227 with React, 238 on React Native, over 70 of them custom-built. Three entries, each containing the one before it: `core()`, `react()`, `react-native()`.
 
 Library-specific rules ship only when you depend on that library, so nothing fires about code you don't have.
 
@@ -39,7 +39,7 @@ One module per library: one rule namespace, one toggle. A module turns on when i
 
 `@ashstack/zod` · `@ashstack/query` · `@ashstack/zustand` · `@ashstack/i18n` · `@ashstack/unistyles` · `@ashstack/legend-list` · `@ashstack/legend-state` · `@ashstack/reanimated` · `@ashstack/turbo-image` · `@ashstack/skia` · `@ashstack/keyboard`
 
-Detection is the default, not the rule. Turn any module on or off yourself, whatever your dependencies say:
+Detection only sets the default. Turn any module on or off yourself, whatever your dependencies say:
 
 ```ts
 reactNative({ unistyles: false, i18n: true });

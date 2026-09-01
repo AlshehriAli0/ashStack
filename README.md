@@ -14,7 +14,7 @@
 
 Two packages: [`@ashstack/lint`](packages/lint) and [`@ashstack/fmt`](packages/fmt). Install once per project instead of copying a lint config around and watching the copies drift.
 
-- **147 rules** on any TypeScript project, **227** with React, **238** on React Native; 71 of them written here
+- **147 rules** on plain TypeScript, **227** with React, **238** on React Native, over 70 of them custom-built
 - library-specific rules ship only when you depend on that library: 13 self-detecting modules
 - every rule is in [RULES.md](packages/lint/RULES.md), with options and examples, generated and CI-checked
 - your `rules` block always wins
@@ -80,7 +80,7 @@ One module per library: one rule namespace, one toggle. A module turns on when i
 | `@ashstack/skia`         | `@shopify/react-native-skia`                                                             |
 | `@ashstack/keyboard`     | `react-native-keyboard-controller`                                                       |
 
-Detection is the default, not the rule. Turn any module on or off yourself, whatever your dependencies say:
+Detection only sets the default. Turn any module on or off yourself, whatever your dependencies say:
 
 ```ts
 reactNative({ unistyles: false, i18n: true });
