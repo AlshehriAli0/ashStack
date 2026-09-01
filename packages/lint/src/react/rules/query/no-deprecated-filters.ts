@@ -14,7 +14,7 @@ const FILTER_METHODS = new Set([
 const isFilterMethodCall = (node: AstNode): boolean => {
   if (node.type !== "CallExpression") return false;
   const { callee } = node;
-  if (callee.type !== "MemberExpression") return false;
+  if (callee.type !== "MemberExpression" || callee.computed) return false;
   const { property } = callee;
   return property.type === "Identifier" && FILTER_METHODS.has(property.name);
 };

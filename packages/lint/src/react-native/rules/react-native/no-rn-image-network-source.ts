@@ -1,4 +1,4 @@
-import { gate, importedSpecifiers, problem, tagIdentifier } from "../../../lib/ast.js";
+import { componentName, gate, importedSpecifiers, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGE =
@@ -40,7 +40,7 @@ export const noRnImageNetworkSource: Rule = problem(
           }
         },
         JSXOpeningElement(node) {
-          const tag = tagIdentifier(node.name);
+          const tag = componentName(node.name);
           if (tag === "") return;
           const source = node.attributes.find(
             attribute =>

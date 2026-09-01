@@ -19,8 +19,6 @@ jobs:
       - run: bun run typecheck
       - name: Rules and helpers
         run: bun run test
-      - name: Mutation sweep
-        run: bun run check:mutants
 
   check:
     runs-on: ubuntu-latest

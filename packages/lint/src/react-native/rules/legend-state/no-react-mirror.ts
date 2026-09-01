@@ -7,7 +7,7 @@ const OBSERVABLE_READS = new Set(["get", "peek"]);
 const readsObservable = (node: AstNode | undefined): boolean => {
   if (node?.type !== "CallExpression") return false;
   const { callee } = node;
-  if (callee.type !== "MemberExpression") return false;
+  if (callee.type !== "MemberExpression" || callee.computed) return false;
   if (callee.property.type !== "Identifier" || !OBSERVABLE_READS.has(callee.property.name)) return false;
   return isObservableRef(callee.object);
 };

@@ -23,6 +23,10 @@ export const noRnNamespaceImport: Rule = problem(
             context.report({ node: specifier, message: MESSAGES.namespaceImport });
           }
         },
+        ExportAllDeclaration(node) {
+          if (node.source.value !== "react-native") return;
+          context.report({ node, message: MESSAGES.namespaceImport });
+        },
         ExportNamedDeclaration(node) {
           if (node.source?.value !== "react-native") return;
           for (const specifier of node.specifiers) {

@@ -70,6 +70,7 @@ export const gpuPropertiesOnly: Rule = problem(
         },
         Property(node) {
           if (depth === 0) return;
+          if (node.parent.type !== "ObjectExpression") return;
           const name = styleKeyName(node);
           if (name !== null && LAYOUT_PROPS.has(name)) {
             context.report({ node, message: GPU_PROPERTIES_ONLY });

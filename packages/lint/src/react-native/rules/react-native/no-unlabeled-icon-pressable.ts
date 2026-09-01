@@ -1,4 +1,4 @@
-import { problem, tagIdentifier } from "../../../lib/ast.js";
+import { componentName, problem, tagIdentifier } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const TOUCHABLES = new Set(["Pressable", "PressableScale", "TouchableOpacity", "TouchableHighlight"]);
@@ -30,6 +30,7 @@ const childKinds = (children: readonly AstNode[]): ChildKinds => {
   const kinds: ChildKinds = { hasIcon: false, hasText: false, hasExpression: false };
   for (const child of children) {
     if (child.type === "JSXExpressionContainer") kinds.hasExpression = true;
+    if (child.type === "JSXText" && child.value.trim() !== "") kinds.hasText = true;
     if (child.type !== "JSXElement") continue;
     const childTag = tagIdentifier(child.openingElement.name);
     if (childTag === "Text") kinds.hasText = true;
@@ -45,8 +46,7 @@ export const noUnlabeledIconPressable: Rule = problem(
       return {
         JSXElement(node) {
           const opening = node.openingElement;
-          const tag = tagIdentifier(opening.name);
-          if (!TOUCHABLES.has(tag)) return;
+          if (!TOUCHABLES.has(componentName(opening.name))) return;
           if (hasAccessibleName(opening.attributes)) return;
           const { hasIcon, hasText, hasExpression } = childKinds(node.children);
           if (!hasIcon || hasText || hasExpression) return;
@@ -54,7 +54,7 @@ export const noUnlabeledIconPressable: Rule = problem(
         },
         JSXOpeningElement(node) {
           if (!node.selfClosing) return;
-          if (tagIdentifier(node.name) !== "Button") return;
+          if (componentName(node.name) !== "Button") return;
           const names = new Set(node.attributes.map(plainAttributeName).filter(Boolean));
           if (!names.has("systemImage")) return;
           if (

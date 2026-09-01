@@ -122,6 +122,22 @@ export const tagPath = (node: AstNode | null | undefined): string => {
   return object === "" || property === "" ? "" : `${object}.${property}`;
 };
 
+/** Namespaces and name prefixes that wrap a component without changing which component it is. */
+const WRAPPER_PREFIX = /^(?:Animated|Reanimated)/;
+
+/**
+ * Which component a tag names, seeing through animation wrappers and nothing
+ * else: `Animated.View` and `AnimatedView` both read as `View`, while
+ * `Ui.View` reads as `""` — a different component that merely ends in `View`.
+ */
+export const componentName = (node: AstNode | null | undefined): string => {
+  const path = tagPath(node);
+  const dot = path.lastIndexOf(".");
+  if (dot !== -1) return WRAPPER_PREFIX.test(path.slice(0, dot)) ? path.slice(dot + 1) : "";
+  const unwrapped = path.replace(WRAPPER_PREFIX, "");
+  return unwrapped === "" ? path : unwrapped;
+};
+
 export const attributeName = (attribute: AstNode): string => {
   if (attribute.type !== "JSXAttribute") return "";
   const { name } = attribute;

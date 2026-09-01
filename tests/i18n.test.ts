@@ -210,6 +210,10 @@ export const EmailField = () => {
   "no-bare-toast": {
     valid: [
       {
+        name: "a computed member named like a toast method is a different method",
+        code: 'toast[success]("Saved");',
+      },
+      {
         name: "the message goes through t()",
         code: `
 import { toast } from "sonner";
@@ -260,11 +264,6 @@ toast.message("f");
         name: "an empty string is still a literal, unlike no-bare-attrs",
         code: 'toast.error("");',
         errors: [{ line: 1, column: 13 }],
-      },
-      {
-        name: "documents a false positive: a computed member whose identifier happens to be a toast method",
-        code: 'toast[success]("Saved");',
-        errors: 1,
       },
     ],
   },

@@ -5,6 +5,59 @@ moduleTests(query, {
   "next-page-param-undefined": {
     valid: [
       {
+        name: "returning undefined is the shape this rule asks for",
+        code: "const options = { getNextPageParam: last => last.cursor ?? undefined };",
+      },
+      {
+        name: "returning a non-null literal",
+        code: "const options = { getNextPageParam: () => 0 };",
+      },
+      {
+        name: "a computed getNextPageParam key is a different key",
+        code: `
+const options = {
+  [getNextPageParam]: () => {
+    return null;
+  },
+};
+`,
+      },
+      {
+        name: "return null written only in a comment",
+        code: `
+const options = {
+  getNextPageParam: lastPage => {
+    // never return null here
+    return lastPage.cursor ?? undefined;
+  },
+};
+`,
+      },
+      {
+        name: "return null inside a nested helper is not this function's return",
+        code: `
+const options = {
+  getNextPageParam: lastPage => {
+    const pick = () => {
+      return null;
+    };
+    return pick() ?? undefined;
+  },
+};
+`,
+      },
+      {
+        name: "a newline after return ends the statement, so nothing returns null",
+        code: `
+const options = {
+  getNextPageParam: () => {
+    return
+      null;
+  },
+};
+`,
+      },
+      {
         name: "returns undefined for the last page",
         code: `
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -93,6 +146,11 @@ const options = {
     ],
     invalid: [
       {
+        name: "a concise arrow returning null",
+        code: "const options = { getNextPageParam: () => null };",
+        errors: 1,
+      },
+      {
         name: "shorthand method syntax is still a property",
         code: `
 const options = {
@@ -147,18 +205,6 @@ const options = {
         errors: [{ line: 3, column: 21 }],
       },
       {
-        name: "a newline between return and null still matches",
-        code: `
-const options = {
-  getNextPageParam: () => {
-    return
-      null;
-  },
-};
-`,
-        errors: 1,
-      },
-      {
         name: "two option objects in one file report once each",
         code: `
 const feed = {
@@ -179,43 +225,6 @@ const inbox = {
         ],
       },
       {
-        name: "documents a false positive: return null inside a nested helper, never returned to the caller",
-        code: `
-const options = {
-  getNextPageParam: lastPage => {
-    const pick = () => {
-      return null;
-    };
-    return pick() ?? undefined;
-  },
-};
-`,
-        errors: 1,
-      },
-      {
-        name: "documents a false positive: return null only inside a comment",
-        code: `
-const options = {
-  getNextPageParam: lastPage => {
-    // never return null here
-    return lastPage.cursor ?? undefined;
-  },
-};
-`,
-        errors: 1,
-      },
-      {
-        name: "documents a false positive: a computed key is read as a plain key",
-        code: `
-const options = {
-  [getNextPageParam]: () => {
-    return null;
-  },
-};
-`,
-        errors: 1,
-      },
-      {
         name: "an escaped key does report once the marker appears elsewhere in the file",
         code: `
 const key = "getNextPageParam";
@@ -233,6 +242,10 @@ const options = {
 
   "no-deprecated-filters": {
     valid: [
+      {
+        name: "a computed member named like a filter is a different method",
+        code: 'client[invalidateQueries](["todos"]);',
+      },
       {
         name: "the v5 filter object form",
         code: `
@@ -285,11 +298,6 @@ client.resetQueries(["e"]);
       { name: "an empty array is still a positional key", code: "client.resetQueries([]);", errors: 1 },
       { name: "an empty string is still a positional key", code: 'client.cancelQueries("");', errors: 1 },
       {
-        name: "documents a false positive: a computed member whose identifier happens to be a filter name",
-        code: 'client[invalidateQueries](["todos"]);',
-        errors: 1,
-      },
-      {
         name: "the call may hang off any receiver",
         code: `
 import { QueryClient } from "@tanstack/react-query";
@@ -305,6 +313,18 @@ export const clear = () => queryClient.resetQueries("session");
 
   "no-fetch-in-query-fn": {
     valid: [
+      {
+        name: "a computed queryFn key is a different key",
+        code: 'const options = { [queryFn]: () => fetch("/a") };',
+      },
+      {
+        name: "a typed client's own fetch method",
+        code: "const options = { queryFn: () => api.fetch(url) };",
+      },
+      {
+        name: "fetch written only in a comment",
+        code: "const options = { queryFn: () => { /* no fetch( here */ return read(url); } };",
+      },
       {
         name: "the queryFn calls a typed request module",
         code: `
@@ -400,11 +420,6 @@ const options = {
         errors: 1,
       },
       {
-        name: "documents a false positive: a member call named fetch",
-        code: "const options = { queryFn: () => api.fetch(url) };",
-        errors: 1,
-      },
-      {
         name: "queryFn and mutationFn in one file report once each",
         code: `
 const read = { queryFn: () => fetch("/a") };
@@ -420,16 +435,23 @@ const write = { mutationFn: () => fetch("/b") };
         code: 'const options = { "queryFn": () => fetch("/a") };',
         errors: 1,
       },
-      {
-        name: "documents a false positive: a computed key is read as a plain key",
-        code: 'const options = { [queryFn]: () => fetch("/a") };',
-        errors: 1,
-      },
     ],
   },
 
   "no-inline-keys": {
     valid: [
+      {
+        name: "useQueries whose queries entry is not an array",
+        code: "const results = useQueries({ queries: buildQueries() });",
+      },
+      {
+        name: "useQueries whose nested keys come from a factory",
+        code: "const results = useQueries({ queries: [{ queryKey: keys.todos() }] });",
+      },
+      {
+        name: "a computed queryKey property is a different key",
+        code: 'useQuery({ [queryKey]: ["todos"] });',
+      },
       {
         name: "the key comes from a keys factory",
         code: `
@@ -462,12 +484,13 @@ export const useTodos = () => useQuery({ queryKey: todoKeys.all(), queryFn: getT
         name: "a member-call named like a hook is not the hook",
         code: 'client.useQuery({ queryKey: ["todos"] });',
       },
-      {
-        name: "documents a gap: keys nested inside useQueries are not inspected",
-        code: 'useQueries({ queries: [{ queryKey: ["todos"], queryFn: getTodos }] });',
-      },
     ],
     invalid: [
+      {
+        name: "a key nested inside useQueries",
+        code: 'useQueries({ queries: [{ queryKey: ["todos"], queryFn: getTodos }] });',
+        errors: 1,
+      },
       {
         name: "an inline key on useQuery",
         code: `
@@ -537,11 +560,6 @@ client.setQueriesData({ queryKey: ["j"] }, next);
       },
       { name: "an empty inline key array", code: "useQuery({ queryKey: [] });", errors: 1 },
       { name: "an empty array on getQueryData", code: "client.getQueryData([]);", errors: 1 },
-      {
-        name: "documents a false positive: a computed queryKey property",
-        code: 'useQuery({ [queryKey]: ["todos"] });',
-        errors: 1,
-      },
     ],
   },
 

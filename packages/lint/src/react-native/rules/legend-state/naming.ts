@@ -18,7 +18,9 @@ export const naming: Rule = problem(
           if (OBS.test(name)) return;
           context.report({
             node: id,
-            message: `Rename this to \`${name}$\`. The trailing \`$\` is how a reader tells an observable from a plain value, and every other observable rule keys off it.`,
+            message: name.includes("$")
+              ? `Give this observable a trailing \`$\` and no other. The suffix is how a reader tells an observable from a plain value, and every other observable rule keys off it.`
+              : `Rename this to \`${name}$\`. The trailing \`$\` is how a reader tells an observable from a plain value, and every other observable rule keys off it.`,
           });
         },
       };

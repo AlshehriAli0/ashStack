@@ -1,6 +1,8 @@
-import { findInSubtree, gate, problem } from "../../../lib/ast.js";
+import { FUNCTION_TYPES, calleeName, crossesFunctionBefore, findInSubtree, gate, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
-import { attributeNamed, isListElement, LIST } from "./shared.js";
+import { attributeNamed, expressionOf, isListElement, LIST } from "./shared.js";
+
+const MEMO_HOOKS = new Set(["useMemo", "useCallback"]);
 
 const buildsFreshArray = (node: AstNode): boolean =>
   node.type === "ArrayExpression" || (node.type === "CallExpression" && node.callee.type === "MemberExpression");
@@ -13,7 +15,10 @@ export const noInlineData: Rule = problem(
       JSXElement(node) {
         if (!isListElement(node)) return;
         const data = attributeNamed(node, "data");
-        if (!data || !findInSubtree(data.value, buildsFreshArray)) return;
+        if (!data) return;
+        if (MEMO_HOOKS.has(calleeName(expressionOf(data)))) return;
+        const built = findInSubtree(data.value, buildsFreshArray);
+        if (!built || crossesFunctionBefore(built, data, FUNCTION_TYPES)) return;
 
         context.report({
           node: data,

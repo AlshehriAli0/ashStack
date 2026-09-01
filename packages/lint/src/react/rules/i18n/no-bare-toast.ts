@@ -9,6 +9,7 @@ const isToastCall = (node: AstNode): boolean => {
   if (node.type !== "CallExpression") return false;
   const { callee } = node;
   if (callee.type !== "MemberExpression") return false;
+  if (callee.computed) return false;
   const { object, property } = callee;
   if (object.type !== "Identifier" || object.name !== "toast") return false;
   return property.type === "Identifier" && TOAST_METHODS.has(property.name);

@@ -1,4 +1,12 @@
-import { calleeName, enclosingCall, gate, importedSpecifiers, problem } from "../../../lib/ast.js";
+import {
+  calleeName,
+  enclosingCall,
+  gate,
+  importedSpecifiers,
+  isFunction,
+  problem,
+  subtreeHas,
+} from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const CONTINUOUS_WORKLET_STATE =
@@ -17,6 +25,18 @@ const CONTINUOUS_HOOKS = new Set([
 /** True for `import { name } from ...` — a named import, not a default or namespace one. */
 const importsName = (specifier: AstNode, name: string): boolean =>
   specifier.type === "ImportSpecifier" && specifier.imported.type === "Identifier" && specifier.imported.name === name;
+
+/** The setters this argument names, whether handed over directly or called inside an inline callback. */
+const settersReached = (target: AstNode): string[] => {
+  if (target.type === "Identifier") return [target.name];
+  if (!isFunction(target)) return [];
+  const called: string[] = [];
+  subtreeHas(target, current => {
+    if (current.type === "CallExpression" && current.callee.type === "Identifier") called.push(current.callee.name);
+    return false;
+  });
+  return called;
+};
 
 export const noReactStateFromContinuousWorklet: Rule = problem(
   "A worklet that runs every frame must not send a React state setter through `scheduleOnRN`. That puts a Fabric commit on an animation frame.",
@@ -53,9 +73,9 @@ export const noReactStateFromContinuousWorklet: Rule = problem(
         CallExpression(node) {
           if (calleeName(node) !== "scheduleOnRN") return;
           const target = node.arguments[0];
-          if (target?.type !== "Identifier") return;
+          if (target === undefined) return;
           if (!enclosingCall(node, CONTINUOUS_HOOKS)) return;
-          pending.push({ node, name: target.name });
+          for (const name of settersReached(target)) pending.push({ node, name });
         },
         "Program:exit"() {
           if (!useStateFromReact || !scheduleFromWorklets) return;

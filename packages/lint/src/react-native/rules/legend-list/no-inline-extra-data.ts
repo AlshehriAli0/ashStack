@@ -1,6 +1,6 @@
 import { attributeName, gate, problem } from "../../../lib/ast.js";
 import type { Rule } from "../../../lib/types.js";
-import { expressionOf, literalKind } from "./shared.js";
+import { expressionOf, isListElement, literalKind } from "./shared.js";
 
 export const noInlineExtraData: Rule = problem(
   "An inline object or array as `extraData` takes a new identity on every parent render, and every mounted row re-evaluates with it.",
@@ -9,6 +9,7 @@ export const noInlineExtraData: Rule = problem(
       before: () => gate(context, "extraData"),
       JSXAttribute(node) {
         if (attributeName(node) !== "extraData") return;
+        if (!isListElement(node.parent.parent)) return;
 
         const value = expressionOf(node);
         const kind = literalKind(value);

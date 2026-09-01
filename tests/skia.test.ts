@@ -5,6 +5,14 @@ moduleTests(skia, {
   "canvas-opaque": {
     valid: [
       {
+        name: "a Canvas from another namespace is a different component",
+        code: `import * as Skia from "@shopify/react-native-skia";
+import * as Chart from "some-chart-library";
+
+export const Background = () => <Chart.Canvas style={{ flex: 1 }} />;
+`,
+      },
+      {
         name: "opaque driven by platform",
         code: `import { Canvas, Fill } from "@shopify/react-native-skia";
 import { Platform } from "react-native";
@@ -61,27 +69,6 @@ export const Layer = () => <SurfaceCanvas style={{ flex: 1 }} />;
 `,
       },
       {
-        name: "documents current behaviour: Canvas aliased to a name without the suffix is never checked",
-        code: `import { Canvas as Surface } from "@shopify/react-native-skia";
-
-export const Background = () => <Surface style={{ flex: 1 }} />;
-`,
-      },
-      {
-        name: "documents current behaviour: a namespace import reaches Canvas without registering a local",
-        code: `import * as Skia from "@shopify/react-native-skia";
-
-export const Background = () => <Skia.Canvas style={{ flex: 1 }} />;
-`,
-      },
-      {
-        name: "documents current behaviour: a default import reaches Canvas without registering a local",
-        code: `import Skia from "@shopify/react-native-skia";
-
-export const Background = () => <Skia.Canvas style={{ flex: 1 }} />;
-`,
-      },
-      {
         name: "lowercase host element is not a Canvas",
         code: `import { Canvas } from "@shopify/react-native-skia";
 
@@ -112,6 +99,30 @@ export const Background = () => <Canvas style={{ flex: 1 }} opaque={false} />;
       },
     ],
     invalid: [
+      {
+        name: "Canvas aliased to any name is still a Canvas",
+        code: `import { Canvas as Surface } from "@shopify/react-native-skia";
+
+export const Background = () => <Surface style={{ flex: 1 }} />;
+`,
+        errors: 1,
+      },
+      {
+        name: "Canvas reached through a namespace import",
+        code: `import * as Skia from "@shopify/react-native-skia";
+
+export const Background = () => <Skia.Canvas style={{ flex: 1 }} />;
+`,
+        errors: 1,
+      },
+      {
+        name: "Canvas reached through a default import",
+        code: `import Skia from "@shopify/react-native-skia";
+
+export const Background = () => <Skia.Canvas style={{ flex: 1 }} />;
+`,
+        errors: 1,
+      },
       {
         name: "imported Canvas with no opaque prop",
         code: `import { Canvas, Fill } from "@shopify/react-native-skia";

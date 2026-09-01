@@ -19,6 +19,7 @@ import {
   optionsOf,
   problem,
   receiverName,
+  componentName,
   subtreeHas,
   tagIdentifier,
   tagPath,
@@ -373,6 +374,53 @@ describe("tagPath", () => {
   it("is empty for null and undefined", () => {
     expect(tagPath(null)).toBe("");
     expect(tagPath(undefined)).toBe("");
+  });
+});
+
+describe("componentName", () => {
+  const jsxIdentifier = (name: string) => node({ type: "JSXIdentifier", name });
+  const jsxMember = (object: AstNode, property: AstNode) => node({ type: "JSXMemberExpression", object, property });
+
+  it("reads a bare tag as itself", () => {
+    expect(componentName(jsxIdentifier("Image"))).toBe("Image");
+  });
+
+  it("sees through an animation namespace", () => {
+    expect(componentName(jsxMember(jsxIdentifier("Animated"), jsxIdentifier("Image")))).toBe("Image");
+  });
+
+  it("sees through the Reanimated namespace too", () => {
+    expect(componentName(jsxMember(jsxIdentifier("Reanimated"), jsxIdentifier("Image")))).toBe("Image");
+  });
+
+  it("sees through an animation prefix on a bare tag", () => {
+    expect(componentName(jsxIdentifier("AnimatedLegendList"))).toBe("LegendList");
+  });
+
+  it("keeps a bare tag that is only the prefix", () => {
+    expect(componentName(jsxIdentifier("Animated"))).toBe("Animated");
+  });
+
+  it("is empty for any other namespace", () => {
+    expect(componentName(jsxMember(jsxIdentifier("Ui"), jsxIdentifier("Image")))).toBe("");
+  });
+
+  it("does not see through a name that merely ends in the component", () => {
+    expect(componentName(jsxIdentifier("MyLegendList"))).toBe("MyLegendList");
+  });
+
+  it("is empty for a tag with no plain name", () => {
+    const namespaced = node({
+      type: "JSXNamespacedName",
+      namespace: jsxIdentifier("svg"),
+      name: jsxIdentifier("circle"),
+    });
+    expect(componentName(namespaced)).toBe("");
+  });
+
+  it("is empty for null and undefined", () => {
+    expect(componentName(null)).toBe("");
+    expect(componentName(undefined)).toBe("");
   });
 });
 

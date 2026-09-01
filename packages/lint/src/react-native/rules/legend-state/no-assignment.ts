@@ -16,7 +16,7 @@ export const noAssignment: Rule = problem(
           const target = textOf(context, left);
           context.report({
             node,
-            message: `Write through \`${target}.set(...)\`, or \`.assign({...})\` to merge several fields. Assigning to an observable with \`=\` is a silent no-op, so the value never changes.`,
+            message: `Write through \`${target}.set(...)\`, or \`.assign({...})\` to merge several fields. Assigning to an observable with \`${node.operator}\` replaces the observable in place of its value, so nothing downstream ever updates.`,
           });
         },
         UpdateExpression(node) {

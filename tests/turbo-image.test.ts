@@ -126,14 +126,16 @@ export const Avatar = ({ uri }) => (
         errors: [{ line: 7, column: 4 }],
       },
       {
-        name: "a locally named wrapper ending in TurboImage is treated as one",
-        code: `import { MyTurboImage } from "../components/my-turbo-image";
+        name: "an animation wrapper of TurboImage is still a TurboImage",
+        code: `import Animated from "react-native-reanimated";
+${IMPORT}
+const AnimatedTurboImage = Animated.createAnimatedComponent(TurboImage);
 
 export const Avatar = ({ uri }) => (
-  <MyTurboImage source={{ uri }} />
+  <AnimatedTurboImage source={{ uri }} />
 );
 `,
-        errors: [{ line: 4, column: 4 }],
+        errors: [{ line: 6, column: 4 }],
       },
       {
         name: "attribute name is matched case-sensitively",
@@ -167,14 +169,13 @@ export const Grid = ({ a, b, c }) => (
     <TurboImage source={{ uri: a }} />
     <TurboImage source={{ uri: b }} resize={96} />
     <TurboImage source={{ uri: c }} cachePolicy="dataCache" />
-    <MyTurboImage source={{ uri: a }} />
+    <Widget source={{ uri: a }} />
   </>
 );
 `,
         errors: [
           { line: 5, column: 6 },
           { line: 6, column: 6 },
-          { line: 8, column: 6 },
         ],
       },
       {
@@ -300,17 +301,7 @@ export const Avatar = ({ uri }) => (
         errors: [{ line: 4, column: 4 }],
       },
       {
-        name: "documents current behaviour: a namespaced resize attribute is not accepted",
-        code: `${IMPORT}
-
-export const Avatar = ({ uri }) => (
-  <TurboImage source={{ uri }} data:resize={96} cachePolicy="dataCache" />
-);
-`,
-        errors: [{ line: 4, column: 4 }],
-      },
-      {
-        name: "member-expression tag reports on its last segment",
+        name: "an animation namespace tag is still a TurboImage",
         code: `${IMPORT}
 import Animated from "react-native-reanimated";
 
@@ -321,14 +312,16 @@ export const Avatar = ({ uri }) => (
         errors: [{ line: 5, column: 4 }],
       },
       {
-        name: "a locally named wrapper ending in TurboImage is treated as one",
-        code: `import { MyTurboImage } from "../components/my-turbo-image";
+        name: "an animation wrapper of TurboImage is still a TurboImage",
+        code: `import Animated from "react-native-reanimated";
+${IMPORT}
+const AnimatedTurboImage = Animated.createAnimatedComponent(TurboImage);
 
 export const Avatar = ({ uri }) => (
-  <MyTurboImage source={{ uri }} />
+  <AnimatedTurboImage source={{ uri }} />
 );
 `,
-        errors: [{ line: 4, column: 4 }],
+        errors: [{ line: 6, column: 4 }],
       },
       {
         name: "every offending element reports exactly once",

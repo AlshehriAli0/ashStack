@@ -1,10 +1,20 @@
-import { gate, problem } from "../../../lib/ast.js";
+import { FUNCTION_TYPES, crossesFunctionBefore, findInSubtree, gate, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
 
 const literalKind = (node: AstNode): "object" | "array" | null => {
   if (node.type === "ObjectExpression") return "object";
   if (node.type === "ArrayExpression") return "array";
   return null;
+};
+
+/** What a selector hands back, whether written as an expression body or as a `return`. */
+const returnedValue = (fn: AstNode): AstNode | null => {
+  const { body } = fn.type === "ArrowFunctionExpression" || fn.type === "FunctionExpression" ? fn : { body: null };
+  if (body === null) return null;
+  if (body.type !== "BlockStatement") return body;
+  const found = findInSubtree(body, (current: AstNode) => current.type === "ReturnStatement");
+  if (found?.type !== "ReturnStatement" || crossesFunctionBefore(found, body, FUNCTION_TYPES)) return null;
+  return found.argument;
 };
 
 export const noObjectSelector: Rule = problem(
@@ -22,13 +32,13 @@ export const noObjectSelector: Rule = problem(
           const argument = node.arguments[0];
           if (argument?.type !== "ArrowFunctionExpression" && argument?.type !== "FunctionExpression") return;
 
-          const { body } = argument;
-          if (!body) return;
-          const kind = literalKind(body);
+          const returned = returnedValue(argument);
+          if (returned === null) return;
+          const kind = literalKind(returned);
           if (kind === null) return;
 
           context.report({
-            node: body,
+            node: returned,
             message: `Return the primitive that decides the render from this selector, or call \`useValue\` once per field. A new ${kind} each run has a new identity, so the component re-renders on every store change.`,
           });
         },

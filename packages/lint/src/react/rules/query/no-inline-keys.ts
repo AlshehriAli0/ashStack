@@ -1,5 +1,6 @@
 import { problem } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
+import { propertyKeyName } from "./shared.js";
 
 const MESSAGES = {
   inlineQueryKey:
@@ -31,7 +32,7 @@ const QUERY_KEY_METHODS = new Set([
 const methodName = (node: AstNode): string => {
   if (node.type !== "CallExpression") return "";
   const { callee } = node;
-  if (callee.type !== "MemberExpression") return "";
+  if (callee.type !== "MemberExpression" || callee.computed) return "";
   const { property } = callee;
   return property.type === "Identifier" ? property.name : "";
 };
@@ -45,25 +46,38 @@ const firstArgumentArray = (node: AstNode): AstNode | undefined => {
 const takesQueryKeyOptions = (node: AstNode, method: string): boolean => {
   const callee = node.type === "CallExpression" ? node.callee : undefined;
   const isHook = callee?.type === "Identifier" && QUERY_KEY_HOOKS.has(callee.name);
-  return isHook || (method !== "" && QUERY_KEY_METHODS.has(method));
+  return isHook || QUERY_KEY_METHODS.has(method);
 };
 
 const isQueryKeyProperty = (property: AstNode): boolean => {
-  if (property.type !== "Property") return false;
+  if (property.type !== "Property" || property.computed) return false;
   const { key } = property;
   if (key.type === "Identifier") return key.name === "queryKey";
   return key.type === "Literal" && key.value === "queryKey";
 };
 
+/** `useQueries({ queries: [...] })` carries its keys one level down, inside the array. */
+const optionObjects = (options: AstNode): AstNode[] => {
+  if (options.type !== "ObjectExpression") return [];
+  const queries = options.properties.find(
+    property => property.type === "Property" && propertyKeyName(property) === "queries"
+  );
+  if (queries?.type !== "Property" || queries.value.type !== "ArrayExpression") return [options];
+  return [options, ...queries.value.elements.filter(element => element !== null)];
+};
+
 const inlineQueryKeys = (node: AstNode): AstNode[] => {
   if (node.type !== "CallExpression") return [];
-  const [options] = node.arguments;
-  if (options?.type !== "ObjectExpression") return [];
+  const [first] = node.arguments;
+  if (first === undefined) return [];
   const inline: AstNode[] = [];
-  for (const property of options.properties) {
-    if (property.type !== "Property" || !isQueryKeyProperty(property)) continue;
-    const { value } = property;
-    if (value.type === "ArrayExpression") inline.push(value);
+  for (const options of optionObjects(first)) {
+    if (options.type !== "ObjectExpression") continue;
+    for (const property of options.properties) {
+      if (property.type !== "Property" || !isQueryKeyProperty(property)) continue;
+      const { value } = property;
+      if (value.type === "ArrayExpression") inline.push(value);
+    }
   }
   return inline;
 };

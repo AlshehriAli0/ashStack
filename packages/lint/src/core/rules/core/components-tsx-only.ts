@@ -1,7 +1,14 @@
+import { optionsOf } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const COMPONENTS_TSX_ONLY =
   "Move this file to `src/utils` (helpers, pure logic), `src/hooks` (a hook), or `src/api/<feature>/` (data access). `components/` holds only files that render JSX, plus a barrel.";
+
+const DEFAULT_DIR = "src/components";
+
+interface Options {
+  dir?: string;
+}
 
 const isBarrel = (body: AstNode[]): boolean =>
   body.every(
@@ -15,8 +22,10 @@ export const componentsTsxOnly: Rule = {
   meta: {
     type: "problem",
     docs: {
-      description: "Require every file to render JSX or be a re-export barrel. Scope it to `components/`.",
+      description:
+        "Require every file under the components directory to render JSX or be a re-export barrel. `dir` says which directory, defaulting to `src/components`.",
     },
+    schema: [{ type: "object", properties: { dir: { type: "string", minLength: 1 } }, additionalProperties: false }],
     defaultOff: true,
   },
   createOnce(context: RuleContext) {
@@ -24,6 +33,8 @@ export const componentsTsxOnly: Rule = {
     return {
       before() {
         rendersJsx = false;
+        const { dir = DEFAULT_DIR } = optionsOf<Options>(context, {});
+        return context.filename.replaceAll("\\", "/").includes(`/${dir}/`);
       },
       JSXElement() {
         rendersJsx = true;

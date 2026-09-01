@@ -1,4 +1,4 @@
-import { gate, problem, tagIdentifier } from "../../../lib/ast.js";
+import { attributeName, componentName, gate, problem } from "../../../lib/ast.js";
 import type { Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGE =
@@ -13,14 +13,11 @@ export const requireResize: Rule = problem(
           return gate(context, "TurboImage");
         },
         JSXOpeningElement(node) {
-          if (!tagIdentifier(node.name).endsWith("TurboImage")) return;
+          if (componentName(node.name) !== "TurboImage") return;
           const { attributes } = node;
           if (attributes.some(attribute => attribute.type === "JSXSpreadAttribute")) return;
           const hasResize = attributes.some(
-            attribute =>
-              attribute.type === "JSXAttribute" &&
-              attribute.name.type === "JSXIdentifier" &&
-              attribute.name.name === "resize"
+            attribute => attribute.type === "JSXAttribute" && attributeName(attribute) === "resize"
           );
           if (hasResize) return;
           context.report({ node: node.name, message: MESSAGE });

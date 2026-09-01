@@ -780,6 +780,30 @@ const handlers = { "keyboardWillShow": onShow };
   "no-leaked-render": {
     valid: [
       {
+        name: "a computed length access is not a length property",
+        code: `
+import { View } from "react-native";
+
+export const List = ({ items, key }) => <View>{items[key] && <Rows />}</View>;
+`,
+      },
+      {
+        name: "a boolean literal guard leaks nothing",
+        code: `
+import { View } from "react-native";
+
+export const List = () => <View>{true && <Rows />}</View>;
+`,
+      },
+      {
+        name: "a comparison is already a boolean",
+        code: `
+import { View } from "react-native";
+
+export const List = ({ items }) => <View>{items.length > 0 && <Rows />}</View>;
+`,
+      },
+      {
         name: "an or-chain on the left is not a length guard",
         code: `import { View, Text } from "react-native";
 export const List = ({ items, ready }) => <View>{(ready || items.length) && <Text>Some</Text>}</View>;
@@ -876,11 +900,19 @@ export const Sheet = ({ isOpen }: { isOpen: boolean }) => <View>{isOpen && <Body
 `,
       },
       {
-        name: "a property that is not length",
+        name: "a property that is neither length nor size",
         code: `
 import { View } from "react-native";
 
-export const List = ({ items }) => <View>{items.size && <Rows />}</View>;
+export const List = ({ items }) => <View>{items.total && <Rows />}</View>;
+`,
+      },
+      {
+        name: "a boolean-looking identifier this rule cannot read stays quiet",
+        code: `
+import { View } from "react-native";
+
+export const List = ({ isOpen }) => <View>{isOpen && <Rows />}</View>;
 `,
       },
       {
@@ -951,6 +983,51 @@ export const List = ({ items, forced }) => <View>{forced || items.length}</View>
       },
     ],
     invalid: [
+      {
+        name: "a string literal guard leaks the empty string",
+        code: `
+import { View } from "react-native";
+
+export const List = () => <View>{"" && <Rows />}</View>;
+`,
+        errors: 1,
+      },
+      {
+        name: "a numeric literal guard leaks the zero",
+        code: `
+import { View } from "react-native";
+
+export const List = () => <View>{0 && <Rows />}</View>;
+`,
+        errors: 1,
+      },
+      {
+        name: "a Set's size leaks the same way a length does",
+        code: `
+import { View } from "react-native";
+
+export const List = ({ items }) => <View>{items.size && <Rows />}</View>;
+`,
+        errors: 1,
+      },
+      {
+        name: "arithmetic leaks its result",
+        code: `
+import { View } from "react-native";
+
+export const List = ({ items }) => <View>{(items.length - 1) && <Rows />}</View>;
+`,
+        errors: 1,
+      },
+      {
+        name: "a template literal leaks the empty string",
+        code: `
+import { View } from "react-native";
+
+export const List = ({ name }) => <View>{\`\${name}\` && <Rows />}</View>;
+`,
+        errors: 1,
+      },
       {
         name: "a bare length guard on a JSX child",
         code: `
@@ -1837,20 +1914,22 @@ export { View, Text } from "react-native";
 export { View as Platform } from "react-native";
 `,
       },
+    ],
+    invalid: [
       {
-        name: "documents current behaviour: export * is not an ExportNamedDeclaration",
-        code: `
-export * from "react-native";
-`,
-      },
-      {
-        name: "documents current behaviour: export * as is not an ExportNamedDeclaration",
+        name: "export * as leaks the namespace too",
         code: `
 export * as RN from "react-native";
 `,
+        errors: 1,
       },
-    ],
-    invalid: [
+      {
+        name: "export * leaks the namespace too",
+        code: `
+export * from "react-native";
+`,
+        errors: 1,
+      },
       {
         name: "a namespace import of react-native",
         code: `
@@ -2146,6 +2225,31 @@ export const Screen = ({ setOffset, setDragging }) => (
   "no-unlabeled-icon-pressable": {
     valid: [
       {
+        name: "raw JSX text beside the icon is a visible label",
+        code: `
+import { Pressable } from "react-native";
+
+export const LikeButton = () => (
+  <Pressable onPress={onLike}>
+    <HeartIcon />
+    Like
+  </Pressable>
+);
+`,
+      },
+      {
+        name: "whitespace-only JSX text is not a label",
+        code: `
+import { Pressable } from "react-native";
+
+export const LikeButton = () => (
+  <Pressable onPress={onLike} accessibilityLabel="Like">
+    <HeartIcon />
+  </Pressable>
+);
+`,
+      },
+      {
         name: "an accessibilityLabel on the touchable",
         code: `
 import { Pressable } from "react-native";
@@ -2387,20 +2491,6 @@ export const LikeButton = () => (
         errors: [{ line: 5, column: 4 }],
       },
       {
-        name: "documents current behaviour: raw JSX text is not a visible Text child",
-        code: `
-import { Pressable } from "react-native";
-
-export const LikeButton = () => (
-  <Pressable onPress={onLike}>
-    <HeartIcon />
-    Like
-  </Pressable>
-);
-`,
-        errors: [{ line: 5, column: 4 }],
-      },
-      {
         name: "documents current behaviour: a spread cannot supply the accessible name",
         code: `
 import { Pressable } from "react-native";
@@ -2437,11 +2527,11 @@ export const AddButton = () => <Button systemImage="plus" onPress={onAdd} />;
         errors: [{ message: "Expo UI `<Button>`", line: 4, column: 33 }],
       },
       {
-        name: "a namespaced Expo UI Button",
+        name: "an animation wrapper of the Expo UI Button",
         code: `
-import { Host } from "@expo/ui/swift-ui";
+import { Button } from "@expo/ui/swift-ui";
 
-export const AddButton = () => <Host.Button systemImage="plus" />;
+export const AddButton = () => <AnimatedButton systemImage="plus" />;
 `,
         errors: [{ message: "Add a `label`", line: 4, column: 33 }],
       },

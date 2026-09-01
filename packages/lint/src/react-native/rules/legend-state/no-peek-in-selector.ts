@@ -20,7 +20,7 @@ const trackingCallbackOf = (node: Extract<AstNode, { type: "CallExpression" }>):
 };
 
 const peekedObservable = (callee: AstNode): AstNode | null => {
-  if (callee.type !== "MemberExpression") return null;
+  if (callee.type !== "MemberExpression" || callee.computed) return null;
   if (callee.property.type !== "Identifier" || callee.property.name !== "peek") return null;
   const { object } = callee;
   return isObservableRef(object) ? object : null;
@@ -56,7 +56,7 @@ export const noPeekInSelector: Rule = problem(
           const target = textOf(context, observable);
           context.report({
             node,
-            message: `Use \`${target}.get()\` inside this selector and keep \`peek()\` for handlers and async work. \`peek()\` never subscribes, so the selector never re-runs and the component keeps rendering the first value.`,
+            message: `Use \`${target}.get()\` inside this selector and keep \`peek()\` for handlers and async work. \`peek()\` never subscribes, so nothing re-runs when the value changes and the first read is the only one.`,
           });
         },
         ArrowFunctionExpression: enterIfTracking,

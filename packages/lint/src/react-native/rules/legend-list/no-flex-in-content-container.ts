@@ -1,7 +1,7 @@
 import { attributeName, gate, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
 import { isStyleSheetCreate, propertyName, stylesObjectOf } from "../../stylesheet.js";
-import { expressionOf } from "./shared.js";
+import { expressionOf, isListElement } from "./shared.js";
 
 const MESSAGE =
   "Move `flex` onto `style` and keep `contentContainerStyle` for padding inside the content. On the content container it sizes the content to the viewport, so the list measures as zero height and renders a blank screen with no error.";
@@ -65,6 +65,7 @@ export const noFlexInContentContainer: Rule = problem(
         },
         JSXAttribute(node) {
           if (attributeName(node) !== "contentContainerStyle") return;
+          if (!isListElement(node.parent.parent)) return;
           const parts = styleParts(expressionOf(node));
           if (parts.length > 0) candidates.push({ node, parts });
         },

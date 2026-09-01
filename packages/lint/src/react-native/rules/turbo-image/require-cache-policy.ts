@@ -1,4 +1,4 @@
-import { attributeName, gate, problem, tagIdentifier } from "../../../lib/ast.js";
+import { attributeName, componentName, gate, problem } from "../../../lib/ast.js";
 import type { Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGE =
@@ -13,7 +13,7 @@ export const requireCachePolicy: Rule = problem(
           return gate(context, "TurboImage");
         },
         JSXOpeningElement(node) {
-          if (!tagIdentifier(node.name).endsWith("TurboImage")) return;
+          if (componentName(node.name) !== "TurboImage") return;
           const { attributes } = node;
           if (attributes.some(attribute => attribute.type === "JSXSpreadAttribute")) return;
           if (attributes.some(attribute => attributeName(attribute) === "cachePolicy")) return;

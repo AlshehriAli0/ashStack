@@ -42,7 +42,7 @@ export const noUntrackedGetInJsx: Rule = problem(
           if (!directlyInJsxContainer()) return;
 
           const { callee } = node;
-          if (callee.type !== "MemberExpression") return;
+          if (callee.type !== "MemberExpression" || callee.computed) return;
           if (callee.property.type !== "Identifier" || callee.property.name !== "get") return;
           const { object } = callee;
           if (!isObservableRef(object)) return;

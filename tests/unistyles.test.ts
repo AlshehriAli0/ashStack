@@ -1131,6 +1131,21 @@ const styles = StyleSheet.create({ container: top => ({ paddingTop: top }) });`,
   "no-hardcoded-color": {
     valid: [
       {
+        name: "a hex string inside a call, not directly under a property",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ card: { shadowColor: darken("#ff0044") } });`,
+      },
+      {
+        name: "a hex string not under any property",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ card: { shadowOffset: ["#fff"] } });`,
+      },
+      {
+        name: "a hex string in a property that is not a colour",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ card: { testID: "#fff" } });`,
+      },
+      {
         name: "theme colour tokens",
         code: `${IMPORTS}
 const styles = StyleSheet.create(theme => ({
@@ -1207,6 +1222,12 @@ export const OVERLAY = "rgba(0, 0, 0, 0.4)";`,
     ],
     invalid: [
       {
+        name: "a raw colour inside a gradient array",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ card: { colors: ["#fff", "#000"] } });`,
+        errors: 2,
+      },
+      {
         name: "a hex colour in a line-split sheet",
         code: `${IMPORTS}
 const styles = StyleSheet
@@ -1273,12 +1294,6 @@ const styles = StyleSheet.create(theme => ({
   card: { backgroundColor: theme.colors.surface, borderColor: "#e5e5e5" },
 }));`,
         errors: [{ line: 5, column: 63 }],
-      },
-      {
-        name: "a hex string in a non-colour property is still reported",
-        code: `${IMPORTS}
-const styles = StyleSheet.create({ card: { testID: "#fff" } });`,
-        errors: 1,
       },
       {
         name: "several raw colours in one sheet",
@@ -1482,6 +1497,21 @@ const styles = StyleSheet.create({ container: { card: { paddingVertical: 20 } } 
   "no-margin": {
     valid: [
       {
+        name: "a negative directional margin",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ row: { marginLeft: -8 } });`,
+      },
+      {
+        name: "zero is a reset, not spacing",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ row: { margin: 0 } });`,
+      },
+      {
+        name: "a directional zero is a reset too",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ row: { marginTop: 0 } });`,
+      },
+      {
         name: "a computed identifier key spelled margin is not that property",
         code: `${IMPORTS}
 const styles = StyleSheet.create({ row: { [marginTop]: 4 } });`,
@@ -1530,16 +1560,16 @@ export const layout = { margin: 8, marginTop: 4 };`,
     ],
     invalid: [
       {
+        name: "a unary plus is not a negation",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ row: { marginTop: +8 } });`,
+        errors: 1,
+      },
+      {
         name: "a plain margin",
         code: `${IMPORTS}
 const styles = StyleSheet.create(theme => ({ row: { margin: theme.spacing.md } }));`,
         errors: [{ message: "`gap` on the parent", line: 4, column: 53 }],
-      },
-      {
-        name: "zero is still a margin",
-        code: `${IMPORTS}
-const styles = StyleSheet.create({ row: { margin: 0 } });`,
-        errors: 1,
       },
       {
         name: "every directional margin key",
@@ -1587,6 +1617,16 @@ const styles = StyleSheet.create({
 
   "no-style-spread": {
     valid: [
+      {
+        name: "an argument spread is not an object spread",
+        code: `${IMPORTS}
+const flat = merge(...cardStyles);`,
+      },
+      {
+        name: "an array spread is not an object spread",
+        code: `${IMPORTS}
+const list = [...cardStyles];`,
+      },
       {
         name: "styles composed with an array",
         code: `${IMPORTS}
@@ -1695,18 +1735,6 @@ const merged = { ...textStyles.body.large };`,
         name: "a computed member chain still resolves to its root",
         code: `${IMPORTS}
 const merged = { ...textStyles["body"] };`,
-        errors: 1,
-      },
-      {
-        name: "an array spread of a styles-suffixed binding",
-        code: `${IMPORTS}
-const list = [...cardStyles];`,
-        errors: [{ line: 4, column: 15 }],
-      },
-      {
-        name: "a call-argument spread of a styles-suffixed binding",
-        code: `${IMPORTS}
-const flat = merge(...cardStyles);`,
         errors: 1,
       },
       {

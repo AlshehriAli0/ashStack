@@ -1,4 +1,4 @@
-import { gate, problem, tagIdentifier } from "../../../lib/ast.js";
+import { componentName, gate, problem } from "../../../lib/ast.js";
 import type { Rule } from "../../../lib/types.js";
 
 export const noScrollviewMap: Rule = problem(
@@ -7,7 +7,7 @@ export const noScrollviewMap: Rule = problem(
     createOnce: context => ({
       before: () => gate(context, "ScrollView"),
       JSXElement(node) {
-        if (tagIdentifier(node.openingElement.name) !== "ScrollView") return;
+        if (componentName(node.openingElement.name) !== "ScrollView") return;
 
         for (const child of node.children) {
           if (child.type !== "JSXExpressionContainer") continue;

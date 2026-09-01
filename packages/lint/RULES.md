@@ -398,9 +398,26 @@ export const Panel = () => (
 
 #### `@ashstack/core/components-tsx-only`
 
-Require every file to render JSX or be a re-export barrel. Scope it to `components/`.
+Require every file under the components directory to render JSX or be a re-export barrel. `dir` says which directory, defaulting to `src/components`.
 
 > Off by default — opt in per project.
+
+**Options**
+
+```jsonc
+[
+  {
+    "type": "object",
+    "properties": {
+      "dir": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "additionalProperties": false
+  }
+]
+```
 
 **Fails**
 
@@ -1017,7 +1034,7 @@ const styles = StyleSheet.create({
 
 #### `@ashstack/react-native/no-leaked-render`
 
-Disallow a `&&` guard on a `.length` expression in JSX. The falsy left operand leaks into the output, and a bare `0` crashes React Native with "Text strings must be rendered within a <Text> component".
+Disallow a `&&` guard in JSX on a value this rule can see is a number or a string — a `.length`, a `.size`, arithmetic, a literal. The falsy left operand leaks into the output, and a bare `0` crashes React Native with "Text strings must be rendered within a <Text> component".
 
 **Fails**
 

@@ -997,6 +997,16 @@ export const useCard = (opacity) =>
   "gpu-properties-only": {
     valid: [
       {
+        name: "a destructuring pattern key is not a style key",
+        code: `import { useAnimatedStyle } from "react-native-reanimated";
+export const useBar = (props) =>
+  useAnimatedStyle(() => {
+    const { width } = props;
+    return { opacity: width };
+  });
+`,
+      },
+      {
         name: "transform and opacity only",
         code: `import { useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 export const useCard = () => {
@@ -1184,17 +1194,6 @@ export const useRing = (progress) => useAnimatedProps(() => ({ height: progress.
         errors: [{ message: "recalculates layout", line: 2, column: 64 }],
       },
       {
-        name: "documents that a destructuring pattern key is treated as a style key",
-        code: `import { useAnimatedStyle } from "react-native-reanimated";
-export const useBar = (props) =>
-  useAnimatedStyle(() => {
-    const { width } = props;
-    return { opacity: width };
-  });
-`,
-        errors: [{ message: "recalculates layout", line: 4, column: 13 }],
-      },
-      {
         name: "documents that any object inside the updater is checked, not just the returned style",
         code: `import { useAnimatedStyle } from "react-native-reanimated";
 export const useBar = (progress) =>
@@ -1210,6 +1209,13 @@ export const useBar = (progress) =>
 
   "hoist-layout-animation-builder": {
     valid: [
+      {
+        name: "a builder already wrapped in useMemo",
+        code: `import { useMemo } from "react";
+import Animated, { FadeIn } from "react-native-reanimated";
+export const Row = ({ ms }) => <Animated.View entering={useMemo(() => FadeIn.duration(ms), [ms])} />;
+`,
+      },
       {
         name: "builder hoisted to module scope",
         code: `import Animated, { FadeIn } from "react-native-reanimated";
@@ -1310,14 +1316,6 @@ export const Row = () => (
 export const Row = ({ open }) => <Animated.View entering={open ? FadeIn.delay(100) : undefined} />;
 `,
         errors: [{ message: "Build this layout animation", line: 2, column: 66 }],
-      },
-      {
-        name: "documents that an inline useMemo around the builder still reports",
-        code: `import { useMemo } from "react";
-import Animated, { FadeIn } from "react-native-reanimated";
-export const Row = ({ ms }) => <Animated.View entering={useMemo(() => FadeIn.duration(ms), [ms])} />;
-`,
-        errors: [{ message: "Build this layout animation", line: 3, column: 71 }],
       },
       {
         name: "inside a render callback rather than a component body",
@@ -1570,6 +1568,20 @@ export const fade = (value) => interpolate(interpolate(value, [0, 1], [0, 2]), [
   "no-react-state-from-continuous-worklet": {
     valid: [
       {
+        name: "a non-function, non-identifier first argument names no setter",
+        code: `import { useState } from "react";
+import { scheduleOnRN } from "react-native-worklets";
+import { useAnimatedScrollHandler } from "react-native-reanimated";
+export const useTop = () => {
+  const [top, setTop] = useState(0);
+  const handler = useAnimatedScrollHandler(event => {
+    scheduleOnRN(handlers[event.kind], event.contentOffset.y);
+  });
+  return { top, handler };
+};
+`,
+      },
+      {
         name: "the setter is bridged from an event handler, not a worklet",
         code: `import { useState } from "react";
 import { scheduleOnRN } from "react-native-worklets";
@@ -1640,23 +1652,6 @@ export const useVisible = (offset, track) => {
     () => offset.get() > 100,
     (current) => {
       scheduleOnRN(track, current);
-    }
-  );
-  return visible;
-};
-`,
-      },
-      {
-        name: "documents that an inline callback hides the setter from this rule",
-        code: `import { useState } from "react";
-import { useAnimatedReaction } from "react-native-reanimated";
-import { scheduleOnRN } from "react-native-worklets";
-export const useVisible = (offset) => {
-  const [visible, setVisible] = useState(false);
-  useAnimatedReaction(
-    () => offset.get() > 100,
-    (current) => {
-      scheduleOnRN(() => setVisible(current));
     }
   );
   return visible;
@@ -1745,6 +1740,43 @@ export const useVisible = (offset) => {
       },
     ],
     invalid: [
+      {
+        name: "two setters inside one inline callback each report",
+        code: `import { useState } from "react";
+import { scheduleOnRN } from "react-native-worklets";
+import { useAnimatedScrollHandler } from "react-native-reanimated";
+export const useTop = () => {
+  const [top, setTop] = useState(0);
+  const [left, setLeft] = useState(0);
+  const handler = useAnimatedScrollHandler(event => {
+    scheduleOnRN(() => {
+      setTop(event.contentOffset.y);
+      setLeft(event.contentOffset.x);
+    });
+  });
+  return { top, left, handler };
+};
+`,
+        errors: 2,
+      },
+      {
+        name: "a setter called inside an inline scheduleOnRN callback",
+        code: `import { useState } from "react";
+import { useAnimatedReaction } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+export const useVisible = (offset) => {
+  const [visible, setVisible] = useState(false);
+  useAnimatedReaction(
+    () => offset.get() > 100,
+    (current) => {
+      scheduleOnRN(() => setVisible(current));
+    }
+  );
+  return visible;
+};
+`,
+        errors: 1,
+      },
       {
         name: "state setter bridged out of useAnimatedReaction",
         code: `import { useState } from "react";
@@ -1995,15 +2027,6 @@ export const useProgress = () => {
 `,
       },
       {
-        name: "documents that a namespaced producer call is not tracked",
-        code: `import * as Reanimated from "react-native-reanimated";
-export const useProgress = () => {
-  const progress = Reanimated.useSharedValue(0);
-  return progress.value;
-};
-`,
-      },
-      {
         name: "a shared value assigned outside a declarator is not tracked",
         code: `import { useSharedValue } from "react-native-reanimated";
 export const useProgress = () => {
@@ -2048,6 +2071,16 @@ export const useCard = () => {
       },
     ],
     invalid: [
+      {
+        name: "a namespaced producer call is still a producer",
+        code: `import * as Reanimated from "react-native-reanimated";
+export const useProgress = () => {
+  const progress = Reanimated.useSharedValue(0);
+  return progress.value;
+};
+`,
+        errors: 1,
+      },
       {
         name: "reading through .value",
         code: `import { useSharedValue } from "react-native-reanimated";

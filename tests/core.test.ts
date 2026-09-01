@@ -982,6 +982,31 @@ export interface Tokens {
   "components-tsx-only": {
     valid: [
       {
+        name: "a bare export list beside an import is still a barrel",
+        filename: "src/components/index.ts",
+        code: 'import { Card } from "./card";\n\nexport { Card };\n',
+      },
+      {
+        name: "a star export is a barrel",
+        filename: "src/components/index.ts",
+        code: 'export * from "./card";\n',
+      },
+      {
+        name: "a re-export with a declaration attached is still a barrel entry",
+        filename: "src/components/index.ts",
+        code: 'export { Card } from "./card";\nexport * from "./row";\n',
+      },
+      {
+        name: "a helper outside the components directory is none of this rule's business",
+        filename: "src/utils/money.ts",
+        code: "export const total = (a, b) => a + b;\n",
+      },
+      {
+        name: "a directory merely named like the configured one does not count",
+        filename: "src/componentsx/money.ts",
+        code: "export const total = (a, b) => a + b;\n",
+      },
+      {
         name: "a component that renders an element",
         code: `export const PriceRow = ({ amount }: { amount: number }) => <span>{amount}</span>;
 `,
@@ -1025,13 +1050,35 @@ export { PriceRow };
     ],
     invalid: [
       {
+        name: "a declaration beside re-exports is not a barrel",
+        filename: "src/components/index.ts",
+        code: 'export * from "./card";\nexport const GAP = 8;\n',
+        errors: 1,
+      },
+      {
+        name: "an empty dir option is rejected before linting",
+        filename: "src/components/helper.ts",
+        code: "export const total = (a, b) => a + b;\n",
+        options: { dir: "components" },
+        errors: 1,
+      },
+      {
+        name: "the directory is configurable",
+        filename: "app/ui/helper.ts",
+        code: "export const total = (a, b) => a + b;\n",
+        options: { dir: "app/ui" },
+        errors: 1,
+      },
+      {
         name: "a helper module with no jsx",
+        filename: "src/components/case.tsx",
         code: `export const add = (a: number, b: number) => a + b;
 `,
         errors: [{ message: "`components/` holds only files that render JSX", line: 1, column: 1 }],
       },
       {
         name: "a hook with no jsx",
+        filename: "src/components/case.tsx",
         code: `import { useState } from "react";
 
 export default function useToggle(initial: boolean) {
@@ -1043,6 +1090,7 @@ export default function useToggle(initial: boolean) {
       },
       {
         name: "a type-only module is not a barrel",
+        filename: "src/components/case.tsx",
         code: `export interface PriceProps {
   amount: number;
 }
@@ -1051,6 +1099,7 @@ export default function useToggle(initial: boolean) {
       },
       {
         name: "a barrel with one declaration at the end",
+        filename: "src/components/case.tsx",
         code: `export * from "./price-row";
 export { default as Icons } from "./icons";
 export const VERSION = "1.0.0";
@@ -1059,6 +1108,7 @@ export const VERSION = "1.0.0";
       },
       {
         name: "a barrel with one statement at the start",
+        filename: "src/components/case.tsx",
         code: `console.log("loaded");
 export * from "./price-row";
 export { default as Icons } from "./icons";
@@ -1067,6 +1117,7 @@ export { default as Icons } from "./icons";
       },
       {
         name: "a file full of offending statements still reports once",
+        filename: "src/components/case.tsx",
         code: `const a = 1;
 const b = 2;
 
@@ -1134,19 +1185,6 @@ export const PriceRow = ({ amount, locale }: { amount: number; locale: string })
 `,
       },
       {
-        name: "a formatter inside a useEffect documents the innermost-function rule",
-        code: `import { useEffect } from "react";
-
-export const PriceRow = ({ amount }: { amount: number }) => {
-  useEffect(() => {
-    const formatter = new Intl.NumberFormat("en-US");
-    console.log(formatter.format(amount));
-  }, [amount]);
-  return <span>{amount}</span>;
-};
-`,
-      },
-      {
         name: "a module-level helper in a file that renders jsx",
         code: `const formatPrice = (value: number) => new Intl.NumberFormat("en-US").format(value);
 
@@ -1161,14 +1199,6 @@ export const PriceRow = ({ amount }: { amount: number }) => <span>{formatPrice(a
 };
 
 export const PriceRow = ({ amount }: { amount: number }) => <span>{formatPrice(amount)}</span>;
-`,
-      },
-      {
-        name: "a formatter in an inner helper of a component documents the innermost-function rule",
-        code: `export const PriceRow = ({ amount }: { amount: number }) => {
-  const format = (value: number) => new Intl.NumberFormat("en-US").format(value);
-  return <span>{format(amount)}</span>;
-};
 `,
       },
       {
@@ -1215,6 +1245,29 @@ export const PriceRow = ({ amount }: { amount: number }) => <span>{formatters.pr
       },
     ],
     invalid: [
+      {
+        name: "a formatter in an inner helper of a component",
+        code: `export const PriceRow = ({ amount }: { amount: number }) => {
+  const format = (value: number) => new Intl.NumberFormat("en-US").format(value);
+  return <span>{format(amount)}</span>;
+};
+`,
+        errors: 1,
+      },
+      {
+        name: "a formatter inside a useEffect of a component",
+        code: `import { useEffect } from "react";
+
+export const PriceRow = ({ amount }: { amount: number }) => {
+  useEffect(() => {
+    const formatter = new Intl.NumberFormat("en-US");
+    console.log(formatter.format(amount));
+  }, [amount]);
+  return <span>{amount}</span>;
+};
+`,
+        errors: [{ line: 5, column: 23 }],
+      },
       {
         name: "a formatter built in the body of a component",
         code: `export const PriceRow = ({ amount }: { amount: number }) => {

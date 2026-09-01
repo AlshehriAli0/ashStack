@@ -148,6 +148,15 @@ export const Feed = ({ rows, pinned }) => (
   "no-index-key-extractor": {
     valid: [
       {
+        name: "another list's keyExtractor is not this rule's business",
+        code: `
+${IMPORT}
+import { FlatList } from 'react-native';
+
+export const Feed = ({ rows }) => <FlatList data={rows} keyExtractor={(item, index) => String(index)} />;
+`,
+      },
+      {
         name: "stable id, index parameter absent",
         code: `
 ${IMPORT}
@@ -318,16 +327,6 @@ export const Feed = ({ rows }) => (
         errors: 1,
       },
       {
-        name: "the rule is not scoped to Legend List elements",
-        code: `
-${IMPORT}
-import { FlatList } from 'react-native';
-
-export const Feed = ({ rows }) => <FlatList data={rows} keyExtractor={(item, index) => String(index)} />;
-`,
-        errors: 1,
-      },
-      {
         name: "two offending extractors in one file",
         code: `
 ${IMPORT}
@@ -480,6 +479,18 @@ export const Feed = ({ a, b, filter }) => (
   "no-inline-data": {
     valid: [
       {
+        name: "an array already wrapped in useMemo",
+        code: `
+${IMPORT}
+import { useMemo } from 'react';
+
+export const Feed = ({ rows }) => {
+  const visible = useMemo(() => rows.filter(row => row.active), [rows]);
+  return <LegendList data={useMemo(() => rows.filter(row => row.active), [rows])} keyExtractor={k} />;
+};
+`,
+      },
+      {
         name: "a hoisted reference",
         code: `
 ${IMPORT}
@@ -589,19 +600,6 @@ export const Feed = ({ rows }) => <LegendList data={rows.slice(0, 20)} keyExtrac
         errors: 1,
       },
       {
-        name: "documents current behaviour: an already memoised array still reports",
-        code: `
-${IMPORT}
-import { useMemo } from 'react';
-
-export const Feed = ({ rows }) => {
-  const visible = useMemo(() => rows.filter(row => row.active), [rows]);
-  return <LegendList data={useMemo(() => rows.filter(row => row.active), [rows])} keyExtractor={k} />;
-};
-`,
-        errors: 1,
-      },
-      {
         name: "two lists building data inline",
         code: `
 ${IMPORT}
@@ -629,6 +627,15 @@ export const Feed = ({ rows }) => <Animated.LegendList data={rows.concat(extra)}
 
   "no-inline-extra-data": {
     valid: [
+      {
+        name: "another list's extraData is not this rule's business",
+        code: `
+${IMPORT}
+import { FlatList } from 'react-native';
+
+export const Feed = ({ rows, selectedId }) => <FlatList data={rows} extraData={{ selectedId }} />;
+`,
+      },
       {
         name: "a primitive",
         code: `
@@ -726,16 +733,6 @@ export const Feed = ({ rows }) => <LegendList data={rows} extraData={{}} keyExtr
 ${IMPORT}
 
 export const Feed = ({ rows }) => <LegendList data={rows} extraData={[]} keyExtractor={k} />;
-`,
-        errors: 1,
-      },
-      {
-        name: "the rule is not scoped to Legend List elements",
-        code: `
-${IMPORT}
-import { FlatList } from 'react-native';
-
-export const Feed = ({ rows, selectedId }) => <FlatList data={rows} extraData={{ selectedId }} />;
 `,
         errors: 1,
       },
@@ -1128,6 +1125,27 @@ export const Feed = ({ rows }) => (
 
   "no-flex-in-content-container": {
     valid: [
+      {
+        name: "contentContainerStyle with no expression",
+        code: `
+${IMPORT}
+
+export const Feed = ({ rows }) => <LegendList data={rows} contentContainerStyle keyExtractor={k} />;
+`,
+      },
+      {
+        name: "a ScrollView's contentContainerStyle is not this rule's business",
+        code: `
+${IMPORT}
+import { ScrollView } from 'react-native';
+
+export const Screen = () => (
+  <ScrollView contentContainerStyle={{ flex: 1 }}>
+    <Feed />
+  </ScrollView>
+);
+`,
+      },
       {
         name: "a string-subscript lookup resolves to the real key",
         code: `
@@ -1614,20 +1632,6 @@ export const Feed = ({ rows }) => (
         errors: 1,
       },
       {
-        name: "documents current behaviour: the rule is not scoped to Legend List elements",
-        code: `
-${IMPORT}
-import { ScrollView } from 'react-native';
-
-export const Screen = () => (
-  <ScrollView contentContainerStyle={{ flex: 1 }}>
-    <Feed />
-  </ScrollView>
-);
-`,
-        errors: 1,
-      },
-      {
         name: "two lists, one offending key and one clean key",
         code: `
 ${IMPORT}
@@ -1948,6 +1952,17 @@ export const Feed = ({ rows }) => (
   "no-scrollview-map": {
     valid: [
       {
+        name: "another namespace's ScrollView is a different component",
+        code: `
+${IMPORT}
+import * as Ui from '../ui';
+
+export const Feed = ({ rows }) => (
+  <Ui.ScrollView>{rows.map(row => <Row key={row.id} row={row} />)}</Ui.ScrollView>
+);
+`,
+      },
+      {
         name: "a short static list of children",
         code: `
 import { ScrollView } from 'react-native';
@@ -2038,6 +2053,18 @@ export const Settings = ({ rows }) => <View>{rows.map(row => <Row key={row.id} /
       },
     ],
     invalid: [
+      {
+        name: "an animation wrapper of ScrollView is still a ScrollView",
+        code: `
+${IMPORT}
+import Animated from 'react-native-reanimated';
+
+export const Feed = ({ rows }) => (
+  <Animated.ScrollView>{rows.map(row => <Row key={row.id} row={row} />)}</Animated.ScrollView>
+);
+`,
+        errors: 1,
+      },
       {
         name: "a mapped collection as a direct child, reported on the expression container",
         code: `

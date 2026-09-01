@@ -28,6 +28,7 @@ export const noStyleSpread: Rule = problem(
           if (id.type === "Identifier" && isStyleSheetCreate(init)) sheets.add(id.name);
         },
         SpreadElement(node) {
+          if (node.parent.type !== "ObjectExpression") return;
           const base = spreadBase(node.argument);
           if (base !== "") candidates.push({ node, base });
         },

@@ -159,7 +159,7 @@ export const useDraft = () => {
 
 export const $settings = observable({ theme: "dark" });
 `,
-        errors: [{ message: "Rename this to `$settings$`", line: 3, column: 14 }],
+        errors: [{ message: "Give this observable a trailing `$` and no other", line: 3, column: 14 }],
       },
       {
         name: "a dollar in the middle is not a trailing dollar",
@@ -167,7 +167,7 @@ export const $settings = observable({ theme: "dark" });
 
 export const set$tings = observable({ theme: "dark" });
 `,
-        errors: [{ message: "Rename this to `set$tings$`", line: 3, column: 14 }],
+        errors: [{ message: "Give this observable a trailing `$` and no other", line: 3, column: 14 }],
       },
       {
         name: "let binding",
@@ -385,7 +385,7 @@ export const bump = () => {
   count$ += 1;
 };
 `,
-        errors: [{ message: "silent no-op", line: 4, column: 3 }],
+        errors: [{ message: "with `+=` replaces the observable", line: 4, column: 3 }],
       },
       {
         name: "logical assignment is caught by the same handler",
@@ -633,6 +633,21 @@ export const useSettings = () => useObservable(settings$);
   "no-object-selector": {
     valid: [
       {
+        name: "a block-bodied selector whose return sits in a nested function",
+        code: `import { useValue } from "@legendapp/state/react";
+
+export const Row = () => {
+  const value = useValue(() => {
+    const pick = () => {
+      return { a: 1 };
+    };
+    return pick().a;
+  });
+  return value;
+};
+`,
+      },
+      {
         name: "a primitive selector",
         code: `import { useValue } from "@legendapp/state/react";
 import { settings$ } from "../stores/settings";
@@ -673,28 +688,6 @@ export const useIds = () => useValue(() => new Set(ids$.get()));
 `,
       },
       {
-        name: "documents current behaviour: a block-bodied arrow returning an object literal is not caught",
-        code: `import { useValue } from "@legendapp/state/react";
-import { user$ } from "../stores/user";
-
-export const useUser = () =>
-  useValue(() => {
-    return { first: user$.first.get(), last: user$.last.get() };
-  });
-`,
-      },
-      {
-        name: "documents current behaviour: a FunctionExpression selector always has a block body",
-        code: `import { useValue } from "@legendapp/state/react";
-import { user$ } from "../stores/user";
-
-export const useUser = () =>
-  useValue(function () {
-    return { first: user$.first.get() };
-  });
-`,
-      },
-      {
         name: "useValue reached through a member expression",
         code: `import { store } from "../stores/root";
 
@@ -725,6 +718,30 @@ export const useTheme = () => useValue(() => settings$.theme.get(), { equality: 
       },
     ],
     invalid: [
+      {
+        name: "a FunctionExpression selector returning an object literal",
+        code: `import { useValue } from "@legendapp/state/react";
+import { user$ } from "../stores/user";
+
+export const useUser = () =>
+  useValue(function () {
+    return { first: user$.first.get() };
+  });
+`,
+        errors: 1,
+      },
+      {
+        name: "a block-bodied arrow returning an object literal",
+        code: `import { useValue } from "@legendapp/state/react";
+import { user$ } from "../stores/user";
+
+export const useUser = () =>
+  useValue(() => {
+    return { first: user$.first.get(), last: user$.last.get() };
+  });
+`,
+        errors: 1,
+      },
       {
         name: "an object literal selector",
         code: `import { useValue } from "@legendapp/state/react";
@@ -1043,6 +1060,17 @@ export default function Screen() {
   "no-peek-in-selector": {
     valid: [
       {
+        name: "a computed member named like the method is a different method",
+        code: `import { useValue } from "@legendapp/state/react";
+import { count$, cache } from "../stores/counter";
+
+const peek = "peek";
+const warm = () => cache.peek();
+
+export const useCount = () => useValue(() => count$[peek]());
+`,
+      },
+      {
         name: "get() inside a selector",
         code: `import { useValue } from "@legendapp/state/react";
 import { count$, other$ } from "../stores/counter";
@@ -1303,23 +1331,24 @@ export const useCount = () =>
           { message: "`count$.get()`", line: 9, column: 12 },
         ],
       },
-      {
-        name: "documents a REAL BUG: a computed member named peek is treated as a peek() call",
-        code: `import { useValue } from "@legendapp/state/react";
-import { count$, cache } from "../stores/counter";
-
-const peek = "peek";
-const warm = () => cache.peek();
-
-export const useCount = () => useValue(() => count$[peek]());
-`,
-        errors: [{ message: "Use `count$.get()`", line: 7, column: 46 }],
-      },
     ],
   },
 
   "no-react-mirror": {
     valid: [
+      {
+        name: "a computed member named like the method is a different method",
+        code: `import { useState } from "react";
+import { count$ } from "../stores/counter";
+
+const get = "get";
+
+export const Counter = () => {
+  const [count] = useState(count$[get]());
+  return count;
+};
+`,
+      },
       {
         name: "reading the observable with useValue",
         code: `import { useState } from "react";
@@ -1494,25 +1523,24 @@ export const Screen = () => {
           { line: 7, column: 19 },
         ],
       },
-      {
-        name: "documents a REAL BUG: a computed member named get is treated as a get() call",
-        code: `import { useState } from "react";
-import { count$ } from "../stores/counter";
-
-const get = "get";
-
-export const Counter = () => {
-  const [count] = useState(count$[get]());
-  return count;
-};
-`,
-        errors: [{ message: "Drop this `useState` mirror", line: 7, column: 19 }],
-      },
     ],
   },
 
   "no-untracked-get-in-jsx": {
     valid: [
+      {
+        name: "a computed member named like the method is a different method",
+        code: `import { Text } from "react-native";
+import { count$ } from "../stores/counter";
+
+const get = "get";
+
+export const Counter = () => {
+  const label = count$.get();
+  return <Text>{count$[get]()}</Text>;
+};
+`,
+      },
       {
         name: "reading through useValue at the top of the component",
         code: `import { Text } from "react-native";
@@ -1797,20 +1825,6 @@ export class Counter extends Component {
 }
 `,
         errors: [{ line: 7, column: 19 }],
-      },
-      {
-        name: "documents a REAL BUG: a computed member named get is treated as a get() call",
-        code: `import { Text } from "react-native";
-import { count$ } from "../stores/counter";
-
-const get = "get";
-
-export const Counter = () => {
-  const label = count$.get();
-  return <Text>{count$[get]()}</Text>;
-};
-`,
-        errors: [{ message: "Read it with `useValue(count$)`", line: 8, column: 17 }],
       },
     ],
   },

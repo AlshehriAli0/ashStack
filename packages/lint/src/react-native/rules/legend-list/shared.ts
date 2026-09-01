@@ -1,4 +1,4 @@
-import { attributeName, tagIdentifier } from "../../../lib/ast.js";
+import { attributeName, componentName } from "../../../lib/ast.js";
 import type { AstNode } from "../../../lib/types.js";
 
 /** A JSX element node, the only shape the list rules look at. */
@@ -10,8 +10,8 @@ type AttributeItem = Extract<AstNode, { type: "JSXAttribute" | "JSXSpreadAttribu
 
 export const LIST = "LegendList";
 
-export const isListElement = (node: AstNode): boolean =>
-  node.type === "JSXElement" && tagIdentifier(node.openingElement.name).endsWith(LIST);
+export const isListElement = (node: AstNode | null | undefined): boolean =>
+  node?.type === "JSXElement" && componentName(node.openingElement.name) === LIST;
 
 export const attributesOf = (node: AstNode): AttributeItem[] =>
   node.type === "JSXElement" ? node.openingElement.attributes : [];

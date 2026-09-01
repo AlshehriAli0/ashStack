@@ -1,5 +1,5 @@
 import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { availableParallelism, tmpdir } from "node:os";
 import { join, relative, sep } from "node:path";
 
 const repoRoot = join(import.meta.dir, "..");
@@ -11,7 +11,16 @@ const argument = (flag: string): string | undefined =>
   process.argv.find(value => value.startsWith(`${flag}=`))?.slice(flag.length + 1);
 
 const only = argument("--module");
-const workers = Number(argument("--workers") ?? 8);
+
+/**
+ * Quarter of the cores by default. A sweep is over a thousand test runs, each
+ * spawning oxlint, and it should leave the machine usable; CI raises it with
+ * `--workers` and splits the queue with `--shard`.
+ */
+const workers = Number(argument("--workers") ?? Math.max(1, Math.floor(availableParallelism() / 4)));
+
+/** `--shard=2/4` runs the second quarter, so CI can spread the sweep across jobs. */
+const [shardIndex = 1, shardCount = 1] = (argument("--shard") ?? "1/1").split("/").map(Number);
 
 /** A mutant that loops forever counts as killed: the tests never came back green. */
 const RUN_TIMEOUT = 60_000;
@@ -136,9 +145,11 @@ const targets = jsFilesUnder(distRoot)
   .filter(target => target.tests.length > 0)
   .filter(target => only === undefined || target.file.includes(only));
 
-const queue = targets.flatMap(({ file, tests }) =>
-  mutantsIn(relative(distRoot, file), readFileSync(file, "utf8")).map(mutant => ({ mutant, tests }))
-);
+const queue = targets
+  .flatMap(({ file, tests }) =>
+    mutantsIn(relative(distRoot, file), readFileSync(file, "utf8")).map(mutant => ({ mutant, tests }))
+  )
+  .filter((_, index) => index % shardCount === shardIndex - 1);
 
 if (queue.length === 0) {
   console.error(`no mutants to run${only === undefined ? "" : ` for --module=${only}`}`);
@@ -217,4 +228,5 @@ if (unexpected.length > 0) {
   );
   process.exit(1);
 }
-console.log(`mutants ok: ${queue.length} applied, ${score}% killed, ${allowed.size} known equivalent`);
+const shard = shardCount === 1 ? "" : ` (shard ${shardIndex}/${shardCount})`;
+console.log(`mutants ok${shard}: ${queue.length} applied, ${score}% killed, ${allowed.size} known equivalent`);
