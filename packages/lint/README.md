@@ -53,7 +53,7 @@ Off by default, since they need a team decision first: `@ashstack/core/no-commen
 
 ## Rule reference
 
-[RULES.md](./RULES.md) covers every rule, with options and examples. It ships in this package, generated from the rules and CI-checked.
+[RULES.md](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md) covers every rule, with options and examples. It is generated from the rules and CI-checked.
 
 ## License
 

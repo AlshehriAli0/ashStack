@@ -23,7 +23,8 @@ const die = (reason: string): never => {
 const tarballs: Record<string, string> = {};
 for (const pkg of ["lint", "fmt"]) {
   const dir = join(repoRoot, "packages", pkg);
-  const packed = run(["npm", "pack", "--pack-destination", workspace], dir);
+  // what: a global .npmrc may set ignore-scripts, which silently skips the prepack that builds dist
+  const packed = run(["npm", "pack", "--ignore-scripts=false", "--pack-destination", workspace], dir);
   if (!packed.ok) die(`npm pack failed for @ashstack/${pkg}: ${packed.err.slice(0, 300)}`);
   const { version } = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
   tarballs[pkg] = join(workspace, `ashstack-${pkg}-${version}.tgz`);

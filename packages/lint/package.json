@@ -42,8 +42,7 @@
     }
   },
   "files": [
-    "dist",
-    "RULES.md"
+    "dist"
   ],
   "publishConfig": {
     "access": "public"
@@ -61,7 +60,7 @@
     }
   },
   "scripts": {
-    "prepack": "rm -rf dist && tsc"
+    "prepack": "rm -rf dist && tsc && bun build $(find dist -name '*.js') --minify --target=node --root dist --outdir dist --no-bundle"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
