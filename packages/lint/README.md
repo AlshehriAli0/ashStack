@@ -4,6 +4,8 @@ Strict shared [oxlint](https://oxc.rs) config with 71 custom rules. Three entrie
 
 Rules for a library only ship when you actually depend on that library, so nothing fires about code you don't have.
 
+The strictness is aimed at agents. One will produce a hundred files in an hour, and the linter is the only thing that reads all of them. Every message names the fix rather than the symptom, so an agent can act on it without a second prompt.
+
 ## Install
 
 ```sh
