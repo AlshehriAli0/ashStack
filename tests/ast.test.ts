@@ -21,6 +21,7 @@ import {
   receiverName,
   subtreeHas,
   tagIdentifier,
+  tagPath,
 } from "../packages/lint/dist/lib/ast.js";
 import type { AstNode, RuleContext } from "../packages/lint/dist/lib/types.js";
 import { linked, node, ruleContext } from "./nodes.js";
@@ -327,6 +328,51 @@ describe("tagIdentifier", () => {
   it("is empty for null and undefined", () => {
     expect(tagIdentifier(null)).toBe("");
     expect(tagIdentifier(undefined)).toBe("");
+  });
+});
+
+describe("tagPath", () => {
+  const jsxIdentifier = (name: string) => node({ type: "JSXIdentifier", name });
+  const jsxMember = (object: AstNode, property: AstNode) => node({ type: "JSXMemberExpression", object, property });
+  const namespaced = node({
+    type: "JSXNamespacedName",
+    namespace: node({ type: "JSXIdentifier", name: "svg" }),
+    name: node({ type: "JSXIdentifier", name: "circle" }),
+  });
+
+  it("reads a plain tag whole", () => {
+    expect(tagPath(jsxIdentifier("View"))).toBe("View");
+  });
+
+  it("reads a plain Identifier tag whole", () => {
+    expect(tagPath(identifier("View"))).toBe("View");
+  });
+
+  it("keeps the object of a member tag, unlike tagIdentifier", () => {
+    expect(tagPath(jsxMember(jsxIdentifier("Animated"), jsxIdentifier("View")))).toBe("Animated.View");
+  });
+
+  it("keeps every segment of a nested member tag", () => {
+    expect(tagPath(jsxMember(jsxMember(jsxIdentifier("Ui"), jsxIdentifier("Layout")), jsxIdentifier("Row")))).toBe(
+      "Ui.Layout.Row"
+    );
+  });
+
+  it("is empty when the object is not a plain name", () => {
+    expect(tagPath(jsxMember(namespaced, jsxIdentifier("View")))).toBe("");
+  });
+
+  it("is empty when the property is not a plain name", () => {
+    expect(tagPath(jsxMember(jsxIdentifier("Animated"), namespaced))).toBe("");
+  });
+
+  it("is empty for a namespaced tag", () => {
+    expect(tagPath(namespaced)).toBe("");
+  });
+
+  it("is empty for null and undefined", () => {
+    expect(tagPath(null)).toBe("");
+    expect(tagPath(undefined)).toBe("");
   });
 });
 

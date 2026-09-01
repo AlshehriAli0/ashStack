@@ -780,6 +780,12 @@ const handlers = { "keyboardWillShow": onShow };
   "no-leaked-render": {
     valid: [
       {
+        name: "an or-chain on the left is not a length guard",
+        code: `import { View, Text } from "react-native";
+export const List = ({ items, ready }) => <View>{(ready || items.length) && <Text>Some</Text>}</View>;
+`,
+      },
+      {
         name: "an explicit length comparison",
         code: `
 import { View } from "react-native";

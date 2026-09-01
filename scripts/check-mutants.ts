@@ -13,6 +13,9 @@ const argument = (flag: string): string | undefined =>
 const only = argument("--module");
 const workers = Number(argument("--workers") ?? 8);
 
+/** A mutant that loops forever counts as killed: the tests never came back green. */
+const RUN_TIMEOUT = 60_000;
+
 /**
  * A swap that changes behaviour without changing shape. Applied one at a time
  * to the compiled rule, never to source, so no rebuild sits in the loop.
@@ -164,6 +167,8 @@ const survives = async (dir: string, { mutant, tests }: (typeof queue)[number]):
       cwd: dir,
       stdout: "ignore",
       stderr: "ignore",
+      timeout: RUN_TIMEOUT,
+      killSignal: "SIGKILL",
     });
     return (await run.exited) === 0;
   } finally {

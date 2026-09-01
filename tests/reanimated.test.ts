@@ -1381,6 +1381,36 @@ export const Row = () => <Animated.View entering={SlideInLeft.stiffness(120)} />
   "interpolate-needs-clamp": {
     valid: [
       {
+        name: "a computed fourth argument is not an extrapolation this rule reads",
+        code: `import { interpolate } from "react-native-reanimated";
+export const fade = (value, kind) => interpolate(value, [0, 1], [0, 1], modeFor(kind));
+`,
+      },
+      {
+        name: "a numeric fourth argument is not an extrapolation this rule reads",
+        code: `import { interpolate } from "react-native-reanimated";
+export const fade = (value) => interpolate(value, [0, 1], [0, 1], 0);
+`,
+      },
+      {
+        name: "a five-argument call is not the interpolate this rule knows",
+        code: `import { interpolate } from "react-native-reanimated";
+export const fade = (value) => interpolate(value, [0, 1], [0, 1], "clamp", extra);
+`,
+      },
+      {
+        name: "a spread argument hides the argument count",
+        code: `import { interpolate } from "react-native-reanimated";
+export const fade = (value, ranges) => interpolate(value, ...ranges);
+`,
+      },
+      {
+        name: "an empty config object clamps nothing but names nothing either",
+        code: `import { interpolate } from "react-native-reanimated";
+export const fade = (value) => interpolate(value, [0, 1], [0, 1], {});
+`,
+      },
+      {
         name: "four arguments with an explicit extrapolation",
         code: `import { Extrapolation, interpolate, useAnimatedStyle } from "react-native-reanimated";
 export const useHeader = (scroll) =>
@@ -1458,6 +1488,42 @@ export const tint = (value) => interpolateColor(value, [0, 1], ["#000", "#fff"])
       },
     ],
     invalid: [
+      {
+        name: "Extrapolation.EXTEND as the fourth argument",
+        code: `import { Extrapolation, interpolate } from "react-native-reanimated";
+export const fade = (value) => interpolate(value, [0, 1], [0, 1], Extrapolation.EXTEND);
+`,
+        errors: [{ message: "`EXTEND` and `IDENTITY`", line: 2, column: 67 }],
+      },
+      {
+        name: "Extrapolation.IDENTITY as the fourth argument",
+        code: `import { Extrapolation, interpolate } from "react-native-reanimated";
+export const fade = (value) => interpolate(value, [0, 1], [0, 1], Extrapolation.IDENTITY);
+`,
+        errors: 1,
+      },
+      {
+        name: "a bare EXTEND identifier as the fourth argument",
+        code: `import { EXTEND, interpolate } from "react-native-reanimated";
+export const fade = (value) => interpolate(value, [0, 1], [0, 1], EXTEND);
+`,
+        errors: 1,
+      },
+      {
+        name: "the string form of a non-clamping extrapolation",
+        code: `import { interpolate } from "react-native-reanimated";
+export const fade = (value) => interpolate(value, [0, 1], [0, 1], "extend");
+`,
+        errors: 1,
+      },
+      {
+        name: "a config object whose right end extends",
+        code: `import { Extrapolation, interpolate } from "react-native-reanimated";
+export const fade = (value) =>
+  interpolate(value, [0, 1], [0, 1], { extrapolateLeft: Extrapolation.CLAMP, extrapolateRight: Extrapolation.EXTEND });
+`,
+        errors: 1,
+      },
       {
         name: "three arguments inside an animated style",
         code: `import { interpolate, useAnimatedStyle } from "react-native-reanimated";
