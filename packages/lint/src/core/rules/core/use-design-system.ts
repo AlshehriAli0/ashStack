@@ -3,10 +3,12 @@ import { isAbsolute, join } from "node:path";
 
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
-// The design system is whatever sits in the UI directory, read from disk rather
-// than listed in config. A list would need editing every time a primitive is
-// added, and the failure mode of forgetting is a rule that quietly protects less
-// than it appears to.
+// Two ways to declare the design system, combinable:
+// - the scan: whatever sits in the UI directory is a primitive (a list would
+//   need editing every time a component is added, and the failure mode of
+//   forgetting is a rule that quietly protects less than it appears to)
+// - the `use` option: explicit replacements, for names the scan cannot infer
+//   (Input covering TextInput), other source modules, or paths off the alias
 const DESIGN_SYSTEM_DIR = "src/components/ui";
 const DESIGN_SYSTEM_ALIAS = "@/components/ui";
 const PLATFORM_SUFFIX = /\.(?:ios|android|native|web)$/;
@@ -19,6 +21,16 @@ const ALSO_COVERS: Record<string, string[]> = {
 interface Replacement {
   name: string;
   from: string;
+  reason?: string;
+}
+
+type UseEntry = string | string[] | { replaces: string | string[]; from?: string; path?: string; reason?: string };
+
+interface Options {
+  dir?: string;
+  alias?: string;
+  use?: Record<string, UseEntry>;
+  exempt?: string[];
 }
 
 const toPascalCase = (name: string): string =>
@@ -28,14 +40,23 @@ const toPascalCase = (name: string): string =>
     .map(part => (part[0] as string).toUpperCase() + part.slice(1))
     .join("");
 
-const readDesignSystem = (dir: string, alias: string): Map<string, Replacement> => {
-  const banned = new Map<string, Replacement>();
+const toKebabCase = (name: string): string => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 
+// source module -> banned import name -> replacement
+type Banned = Map<string, Map<string, Replacement>>;
+
+const addBan = (banned: Banned, source: string, imported: string, replacement: Replacement): void => {
+  const bySource = banned.get(source) ?? new Map<string, Replacement>();
+  bySource.set(imported, replacement);
+  banned.set(source, bySource);
+};
+
+const scanDesignSystem = (banned: Banned, dir: string, alias: string): void => {
   let files: string[];
   try {
     files = readdirSync(isAbsolute(dir) ? dir : join(process.cwd(), dir));
   } catch {
-    return banned;
+    return;
   }
 
   for (const file of files) {
@@ -47,23 +68,41 @@ const readDesignSystem = (dir: string, alias: string): Map<string, Replacement> 
     const name = toPascalCase(base);
     const from = `${alias}/${base}`;
 
-    banned.set(name, { name, from });
-    for (const alternative of ALSO_COVERS[name] ?? []) banned.set(alternative, { name, from });
+    addBan(banned, "react-native", name, { name, from });
+    for (const alternative of ALSO_COVERS[name] ?? []) addBan(banned, "react-native", alternative, { name, from });
   }
-
-  return banned;
 };
 
-const designSystems = new Map<string, Map<string, Replacement>>();
+const applyUse = (banned: Banned, alias: string, use: Record<string, UseEntry>): void => {
+  for (const [component, entry] of Object.entries(use)) {
+    const config = typeof entry === "string" || Array.isArray(entry) ? { replaces: entry } : entry;
+    const replacement: Replacement = {
+      name: component,
+      from: config.path ?? `${alias}/${toKebabCase(component)}`,
+      reason: config.reason,
+    };
+    for (const imported of [config.replaces].flat()) {
+      addBan(banned, config.from ?? "react-native", imported, replacement);
+    }
+  }
+};
 
-const designSystemFor = (dir: string, alias: string): Map<string, Replacement> => {
-  const cacheKey = `${dir} ${alias}`;
+const designSystems = new Map<string, Banned>();
+
+const designSystemFor = (options: Options): { banned: Banned; exempt: string[] } => {
+  const dir = options.dir ?? DESIGN_SYSTEM_DIR;
+  const alias = options.alias ?? DESIGN_SYSTEM_ALIAS;
+  const exempt = options.exempt ?? [dir];
+
+  const cacheKey = JSON.stringify([dir, alias, options.use]);
   let banned = designSystems.get(cacheKey);
   if (banned === undefined) {
-    banned = readDesignSystem(dir, alias);
+    banned = new Map();
+    scanDesignSystem(banned, dir, alias);
+    if (options.use) applyUse(banned, alias, options.use);
     designSystems.set(cacheKey, banned);
   }
-  return banned;
+  return { banned, exempt };
 };
 
 export const useDesignSystem: Rule = {
@@ -71,38 +110,51 @@ export const useDesignSystem: Rule = {
     type: "problem",
     docs: {
       description:
-        "Bans a react-native import whose name matches a component file in the project's own design-system directory.",
+        "Bans importing a raw primitive your design system already wraps. Wrapped components come from scanning the design-system directory, plus the explicit `use` map for names, paths and source modules the scan cannot infer. Files under the design-system directory (or `exempt`) are skipped.",
     },
     schema: [
       {
         type: "object",
-        properties: { dir: { type: "string" }, alias: { type: "string" } },
+        properties: {
+          dir: { type: "string" },
+          alias: { type: "string" },
+          use: { type: "object" },
+          exempt: { type: "array", items: { type: "string" } },
+        },
         additionalProperties: false,
       },
     ],
     defaultOff: true,
   },
   createOnce(context: RuleContext) {
-    let banned = new Map<string, Replacement>();
+    let banned: Banned = new Map();
     return {
       before() {
-        const options = (context.options?.[0] as { dir?: string; alias?: string } | undefined) ?? {};
-        banned = designSystemFor(options.dir ?? DESIGN_SYSTEM_DIR, options.alias ?? DESIGN_SYSTEM_ALIAS);
-        return banned.size > 0;
+        const options = (context.options?.[0] as Options | undefined) ?? {};
+        const designSystem = designSystemFor(options);
+        banned = designSystem.banned;
+        if (banned.size === 0) return false;
+        // the design-system files wrap the raw primitives; they are exempt
+        const filename = (context.filename ?? context.physicalFilename) as string | undefined;
+        if (filename && designSystem.exempt.some(fragment => filename.includes(fragment))) return false;
+        return true;
       },
       ImportDeclaration(node: AstNode) {
-        if ((node.source as AstNode | undefined)?.value !== "react-native") return;
+        const source = (node.source as AstNode | undefined)?.value as string | undefined;
+        const bySource = source === undefined ? undefined : banned.get(source);
+        if (bySource === undefined) return;
 
         for (const specifier of (node.specifiers as AstNode[] | undefined) ?? []) {
           if (specifier.type !== "ImportSpecifier") continue;
 
           const imported = (specifier.imported as AstNode | undefined)?.name as string | undefined;
-          const replacement = imported === undefined ? undefined : banned.get(imported);
+          const replacement = imported === undefined ? undefined : bySource.get(imported);
           if (replacement === undefined) continue;
 
+          const reason = replacement.reason ? ` ${replacement.reason}` : "";
           context.report({
             node: specifier,
-            message: `Import \`${replacement.name}\` from "${replacement.from}" instead of \`${imported}\` from react-native. That wrapper carries the theme colours, the typography tokens and the font-scaling cap, so the raw primitive renders unthemed.`,
+            message: `Import \`${replacement.name}\` from "${replacement.from}" instead of \`${imported}\` from ${source}. The wrapper is where the theme tokens and app behavior live.${reason}`,
           });
         }
       },

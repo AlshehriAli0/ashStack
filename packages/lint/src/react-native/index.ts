@@ -26,7 +26,7 @@ export const reactNativeModules = [
 ];
 
 // Import bans gated on a library, with no rules of their own.
-const BAN_GROUPS: BanGroup[] = [
+export const banGroups: BanGroup[] = [
   {
     packages: ["react-native-gesture-handler"],
     restrictedImports: {
@@ -91,7 +91,7 @@ const BAN_GROUPS: BanGroup[] = [
  * `rules` block always overrides.
  */
 const reactNative = (options: ReactNativeOptions = {}): OxlintConfig => {
-  const composed = composeModules(reactNativeModules, options as Record<string, boolean | undefined>, BAN_GROUPS);
+  const composed = composeModules(reactNativeModules, options as Record<string, boolean | undefined>, banGroups);
 
   return mergeConfigs(react(options), {
     jsPlugins: composed.jsPlugins,

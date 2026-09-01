@@ -40,7 +40,13 @@ expectFired("@ashstack/reanimated/no-shared-value-dot-value");
 expectFired("@ashstack/react-native/no-leaked-render");
 expectFired("@ashstack/query/no-inline-keys");
 expectFired("@ashstack/i18n/no-bare-text");
-expectFired("no-restricted-imports"); // FlatList ban ships with the forced-on legend-list module
+expectFired("no-restricted-imports"); // FlatList ban ships with the legend-list module
+expectFired("@ashstack/core/use-design-system"); // opt-in rule configured with a `use` map
+
+// the design-system dir is exempt from its own rule (it wraps the raw primitives)
+if (diagnostics.some(d => d.filename?.includes("components/ui/") && d.code?.includes("use-design-system"))) {
+  failures.push("design-system exemption failed: use-design-system fired inside components/ui/");
+}
 
 // consumer per-rule override of a custom rule must win
 if (codes.includes("@ashstack/unistyles/no-margin") || codes.includes("@ashstack/unistyles(no-margin)")) {

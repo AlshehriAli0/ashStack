@@ -12,5 +12,18 @@ export default defineConfig({
     // consumer overrides always win: one built-in, one custom rule
     "no-nested-ternary": "off",
     "@ashstack/unistyles/no-margin": "off",
+    // opt-in rule, configured in place: raw imports get banned with a pointer
+    // to your component; files under src/components/ui stay exempt
+    "@ashstack/core/use-design-system": [
+      "error",
+      {
+        alias: "@/components/ui",
+        use: {
+          Text: "Text",
+          Pressable: ["Pressable", "TouchableOpacity"],
+          Input: { replaces: "TextInput", reason: "It owns focus and keyboard handling." },
+        },
+      },
+    ],
   },
 });
