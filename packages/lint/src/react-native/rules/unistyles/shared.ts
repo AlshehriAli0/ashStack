@@ -1,5 +1,3 @@
-// Helpers two or more unistyles rules need. Anything a single rule uses lives
-// in that rule's own file.
 import { calleeName, findInSubtree, gate, problem, subtreeHas } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext, Visitor } from "../../../lib/types.js";
 
@@ -42,21 +40,24 @@ export const memberPath = (node: AstNode | null | undefined): string => {
   return parts.join(".");
 };
 
-// The object literal a create() call ultimately returns, through either form:
-// create({...}), create(theme => ({...})), or create(theme => { return {...} }).
+const themeFunctionBody = (factory: AstNode): AstNode | undefined =>
+  factory.type === "ArrowFunctionExpression" || factory.type === "FunctionExpression"
+    ? (factory.body as AstNode | undefined)
+    : undefined;
+
+const objectReturnedFrom = (body: AstNode | undefined): AstNode | null => {
+  if (body?.type === "ObjectExpression") return body;
+  const expression = body?.expression as AstNode | undefined;
+  if (body?.type === "ParenthesizedExpression" && expression?.type === "ObjectExpression") return expression;
+  return findInSubtree(body, current => current.type === "ObjectExpression");
+};
+
+/** The styles object a `StyleSheet.create` argument holds: a literal, or the one its theme function returns. */
 export const stylesObjectOf = (factory: AstNode | null | undefined): AstNode | null => {
   if (!factory) return null;
   if (factory.type === "ObjectExpression") return factory;
-  if (factory.type === "ArrowFunctionExpression" || factory.type === "FunctionExpression") {
-    const body = factory.body as AstNode | undefined;
-    if (body?.type === "ObjectExpression") return body;
-    const expression = body?.expression as AstNode | undefined;
-    if (body?.type === "ParenthesizedExpression" && expression?.type === "ObjectExpression") {
-      return expression;
-    }
-    return findInSubtree(body, current => current.type === "ObjectExpression");
-  }
-  return null;
+  const body = themeFunctionBody(factory);
+  return body === undefined ? null : objectReturnedFrom(body);
 };
 
 export const declaresUseUnistylesTheme = (scope: AstNode): boolean =>
@@ -75,29 +76,32 @@ export const declaresUseUnistylesTheme = (scope: AstNode): boolean =>
 export const readsTheme = (node: AstNode): boolean =>
   subtreeHas(node, current => current.type === "MemberExpression" && memberPath(current).startsWith("theme."));
 
-// Depth tracking shared by the rules that only apply inside StyleSheet.create().
-// Depth resets per file in before(), which also runs the text gate.
+/**
+ * Builds a rule whose visitors only fire inside `StyleSheet.create(...)`, by tracking how deeply
+ * nested the traversal currently is in such a call. The depth resets per file in `before()`, which
+ * also runs the text gate.
+ */
 export const inCreate = (description: string, visit: (context: GateContext, inside: () => boolean) => Visitor): Rule =>
   problem(description, {
     createOnce(context: GateContext) {
-      let depth = 0;
-      const inside = () => depth > 0;
+      let createDepth = 0;
+      const inside = () => createDepth > 0;
       const visitors = visit(context, inside);
       const enter: ((node: AstNode) => void) | undefined = visitors.CallExpression;
       const exit: ((node: AstNode) => void) | undefined = visitors["CallExpression:exit"];
       return {
         ...visitors,
         before() {
-          depth = 0;
+          createDepth = 0;
           return gate(context, CREATE_MARKER);
         },
         CallExpression(node) {
-          if (isStyleSheetCreate(node)) depth += 1;
+          if (isStyleSheetCreate(node)) createDepth += 1;
           enter?.(node);
         },
         "CallExpression:exit"(node) {
           exit?.(node);
-          if (isStyleSheetCreate(node)) depth -= 1;
+          if (isStyleSheetCreate(node)) createDepth -= 1;
         },
       };
     },

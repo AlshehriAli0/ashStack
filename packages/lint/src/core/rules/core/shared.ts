@@ -1,5 +1,3 @@
-// Comment plumbing shared by no-comments and comment-escape-hatch: both walk
-// the same filtered comment list, they only disagree about what to report.
 import type { AstNode, RuleContext } from "../../../lib/types.js";
 
 /** oxlint's comment token — not an AST node, but reportable as one. */
@@ -57,3 +55,25 @@ export const isDirective = (body: string): boolean => COMMENT_DIRECTIVES.some(pr
 export const allComments = (context: CommentContext): Comment[] => context.sourceCode?.getAllComments?.() ?? [];
 
 export const commentNode = (comment: Comment): AstNode => comment as unknown as AstNode;
+
+export interface ReviewedComment {
+  comment: Comment;
+  body: string;
+}
+
+/**
+ * The one filtered list every comment rule judges: each comment in the file
+ * except shebangs and tooling directives, paired with its body text stripped of
+ * `//`, `/*` and leading `*` decoration. The rules share this walk and disagree
+ * only about what they report from it.
+ */
+export const reviewedComments = (context: CommentContext): ReviewedComment[] => {
+  const reviewed: ReviewedComment[] = [];
+  for (const comment of allComments(context)) {
+    if (IGNORED_COMMENT_TYPES.has(comment.type)) continue;
+    const body = commentBody(comment);
+    if (isDirective(body)) continue;
+    reviewed.push({ comment, body });
+  }
+  return reviewed;
+};

@@ -2,6 +2,12 @@ import { gate, isFunction, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
 import type { GateContext } from "./shared.js";
 
+const literalKind = (node: AstNode): "object" | "array" | null => {
+  if (node.type === "ObjectExpression") return "object";
+  if (node.type === "ArrayExpression") return "array";
+  return null;
+};
+
 export const noObjectSelector: Rule = problem(
   "A `useValue` selector that builds a new object or array returns a fresh identity every run. The component then re-renders on every store change.",
   {
@@ -18,7 +24,7 @@ export const noObjectSelector: Rule = problem(
 
           const body = argument.body as AstNode | undefined;
           if (!body) return;
-          const kind = body.type === "ObjectExpression" ? "object" : body.type === "ArrayExpression" ? "array" : null;
+          const kind = literalKind(body);
           if (kind === null) return;
 
           context.report({

@@ -1,14 +1,11 @@
 import type { Rule } from "../../../lib/types.js";
 import {
-  allComments,
   BLOCK_COMMENT_TYPES,
   type Comment,
-  commentBody,
   type CommentContext,
   commentNode,
   ESCAPE_HATCH,
-  IGNORED_COMMENT_TYPES,
-  isDirective,
+  reviewedComments,
 } from "./shared.js";
 
 const HATCH_MIN_FACT = 10;
@@ -23,6 +20,57 @@ const HATCH_MESSAGES = {
   tooLong: `Trim this \`what:\` line under ${HATCH_MAX_LENGTH} characters, moving what is left into names in the code.`,
   stacked:
     "Keep one `what:` line here — the single irreducible fact — and refactor what the others explain into named values and functions.",
+};
+
+const LINE_BREAK = /[\n\r]/;
+
+const hatchFact = (body: string): string | undefined => body.match(ESCAPE_HATCH)?.groups?.fact;
+
+const shapeViolation = (comment: Comment, body: string, fact: string): string | null => {
+  if (BLOCK_COMMENT_TYPES.has(comment.type)) return HATCH_MESSAGES.block;
+  if (LINE_BREAK.test(comment.value)) return HATCH_MESSAGES.multiline;
+  if (fact.trim().length < HATCH_MIN_FACT) return HATCH_MESSAGES.shortFact;
+  if (body.length > HATCH_MAX_LENGTH) return HATCH_MESSAGES.tooLong;
+  return null;
+};
+
+const budgetOf = (context: CommentContext): number =>
+  (context.options?.[0] as { budget?: number } | undefined)?.budget ?? HATCH_DEFAULT_BUDGET;
+
+const sourceText = (context: CommentContext): string => context.sourceCode?.getText?.() ?? "";
+
+const isStackedOn = (source: string, previous: Comment, comment: Comment): boolean =>
+  source.slice(previous.end, comment.start).trim() === "";
+
+const wellShapedHatches = (context: CommentContext): Comment[] => {
+  const accepted: Comment[] = [];
+  for (const { comment, body } of reviewedComments(context)) {
+    const fact = hatchFact(body);
+    if (fact === undefined) continue;
+    const violation = shapeViolation(comment, body, fact);
+    if (violation === null) accepted.push(comment);
+    else context.report({ node: commentNode(comment), message: violation });
+  }
+  return accepted;
+};
+
+const reportStacked = (context: CommentContext, accepted: Comment[]): void => {
+  const source = sourceText(context);
+  for (const [index, comment] of accepted.entries()) {
+    const previous = accepted[index - 1];
+    if (previous && isStackedOn(source, previous, comment)) {
+      context.report({ node: commentNode(comment), message: HATCH_MESSAGES.stacked });
+    }
+  }
+};
+
+const reportOverBudget = (context: CommentContext, accepted: Comment[]): void => {
+  const budget = budgetOf(context);
+  if (accepted.length <= budget) return;
+  context.report({
+    node: commentNode(accepted[budget] as Comment),
+    message: `Delete \`what:\` comments from this file until at most ${budget} remain (it has ${accepted.length}): move the logic each one annotates into a function whose name carries what the comment says.`,
+  });
 };
 
 export const commentEscapeHatch: Rule = {
@@ -43,47 +91,9 @@ export const commentEscapeHatch: Rule = {
   createOnce(context: CommentContext) {
     return {
       "Program:exit"() {
-        const comments = allComments(context);
-        if (comments.length === 0) return;
-
-        const budget = (context.options?.[0] as { budget?: number } | undefined)?.budget ?? HATCH_DEFAULT_BUDGET;
-        const source = context.sourceCode?.getText?.() ?? "";
-        const accepted: Comment[] = [];
-
-        for (const comment of comments) {
-          if (IGNORED_COMMENT_TYPES.has(comment.type)) continue;
-          const body = commentBody(comment);
-          if (isDirective(body)) continue;
-
-          const fact = body.match(ESCAPE_HATCH)?.groups?.fact;
-          if (fact === undefined) continue;
-
-          if (BLOCK_COMMENT_TYPES.has(comment.type)) {
-            context.report({ node: commentNode(comment), message: HATCH_MESSAGES.block });
-          } else if (/[\n\r]/.test(comment.value)) {
-            context.report({ node: commentNode(comment), message: HATCH_MESSAGES.multiline });
-          } else if (fact.trim().length < HATCH_MIN_FACT) {
-            context.report({ node: commentNode(comment), message: HATCH_MESSAGES.shortFact });
-          } else if (body.length > HATCH_MAX_LENGTH) {
-            context.report({ node: commentNode(comment), message: HATCH_MESSAGES.tooLong });
-          } else {
-            accepted.push(comment);
-          }
-        }
-
-        for (const [index, comment] of accepted.entries()) {
-          const previous = accepted[index - 1];
-          if (previous && source.slice(previous.end, comment.start).trim() === "") {
-            context.report({ node: commentNode(comment), message: HATCH_MESSAGES.stacked });
-          }
-        }
-
-        if (accepted.length > budget) {
-          context.report({
-            node: commentNode(accepted[budget] as Comment),
-            message: `Delete \`what:\` comments from this file until at most ${budget} remain (it has ${accepted.length}): move the logic each one annotates into a function whose name carries what the comment says.`,
-          });
-        }
+        const accepted = wellShapedHatches(context);
+        reportStacked(context, accepted);
+        reportOverBudget(context, accepted);
       },
     };
   },

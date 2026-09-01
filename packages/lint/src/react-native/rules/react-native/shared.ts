@@ -1,5 +1,3 @@
-// Only what more than one rule in this module genuinely needs: the AST field
-// narrowers, and the slice of oxlint's `SourceCode` these rules reach for.
 import type { AstNode, RuleContext } from "../../../lib/types.js";
 
 /** Narrow a loosely-typed AST field to a node. */

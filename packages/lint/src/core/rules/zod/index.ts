@@ -1,4 +1,3 @@
-// @ashstack/lint — Zod conventions.
 import { defineModule } from "../../../lib/module.js";
 import { preferEnum } from "./prefer-enum.js";
 

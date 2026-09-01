@@ -1,6 +1,3 @@
-// @ashstack/lint — react-native entry. Extends react with the RN modules; each
-// module manifest carries its own rules, detection packages, and import bans,
-// so this file only composes them and adds the ban-only groups.
 import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
 import type { BanGroup, OxlintConfig, ReactNativeOptions } from "../lib/types.js";
@@ -25,7 +22,6 @@ export const reactNativeModules = [
   keyboardModule,
 ];
 
-// Import bans gated on a library, with no rules of their own.
 export const banGroups: BanGroup[] = [
   {
     packages: ["react-native-gesture-handler"],
@@ -84,6 +80,17 @@ export const banGroups: BanGroup[] = [
   },
 ];
 
+const FORBID_EMPTY_NOOP_HANDLERS = {
+  "eslint/no-empty": "error",
+  "eslint/no-empty-function": "error",
+} as const;
+
+const ALLOW_GESTURE_AND_ANIMATION_EFFECTS = {
+  "react-effect/no-event-handler": "off",
+} as const;
+
+const TEST_FILES = ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx", "**/__tests__/**"];
+
 /**
  * React Native / Expo entry — everything in react plus generic RN rules, with
  * per-library modules (unistyles, legendList, legendState, reanimated,
@@ -97,18 +104,15 @@ const reactNative = (options: ReactNativeOptions = {}): OxlintConfig => {
     jsPlugins: composed.jsPlugins,
     globals: { __DEV__: "readonly" },
     rules: {
-      // noop handlers exemption is web-only; RN goes back to strict
-      "eslint/no-empty": "error",
-      "eslint/no-empty-function": "error",
-      // fires on every RN gesture/animation effect; the pattern is idiomatic there
-      "react-effect/no-event-handler": "off",
+      ...FORBID_EMPTY_NOOP_HANDLERS,
+      ...ALLOW_GESTURE_AND_ANIMATION_EFFECTS,
       "no-restricted-imports": ["error", composed.restricted],
       ...composed.rules,
     },
     ignorePatterns: ["**/.expo/**", "**/android/**", "**/ios/**"],
     overrides: [
       {
-        files: ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx", "**/__tests__/**"],
+        files: TEST_FILES,
         rules: {
           "@ashstack/react-native/no-dynamic-import": "off",
           "@ashstack/react-native/hoist-stateless-function": "off",

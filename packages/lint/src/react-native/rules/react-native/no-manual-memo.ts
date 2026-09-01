@@ -1,51 +1,62 @@
 import { gate, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
-import { asNode, type RnContext } from "./shared.js";
+import { asNode, type Comment, type RnContext } from "./shared.js";
 
-const MEMO_HOOKS = new Set(["useMemo", "useCallback"]);
+const MEMO_APIS = new Set(["useMemo", "useCallback", "memo"]);
 
 const REACT_COMPILER_PACKAGES = ["babel-plugin-react-compiler", "react-compiler-runtime", "react-compiler-marker"];
 
-// `memo` only from a bare call or off `React`, so a `cache.memo(...)` on some
-// unrelated object is not mistaken for the React one.
-const memoCalleeName = (node: AstNode): string | null => {
-  const callee = asNode(node.callee);
-  if (callee?.type === "Identifier") {
-    const name = callee.name as string;
-    if (MEMO_HOOKS.has(name) || name === "memo") return name;
-    return null;
-  }
-  if (callee?.type !== "MemberExpression" || callee.computed === true) return null;
+const WHY_COMMENT = /^why:/i;
+
+const NEWLINE = 10;
+
+const bareMemoName = (callee: AstNode): string | null => {
+  const name = callee.name as string;
+  return MEMO_APIS.has(name) ? name : null;
+};
+
+const reactNamespacedMemoName = (callee: AstNode): string | null => {
+  if (callee.computed === true) return null;
   if (asNode(callee.object)?.name !== "React") return null;
   const property = asNode(callee.property)?.name as string | undefined;
-  return property !== undefined && (MEMO_HOOKS.has(property) || property === "memo") ? property : null;
+  return property !== undefined && MEMO_APIS.has(property) ? property : null;
 };
 
-// One pass over the source, then a binary search per call site, so a large file
-// with several memos does not re-scan itself once per report.
-const lineFinder = (text: string) => {
+const memoCalleeName = (node: AstNode): string | null => {
+  const callee = asNode(node.callee);
+  if (callee?.type === "Identifier") return bareMemoName(callee);
+  if (callee?.type === "MemberExpression") return reactNamespacedMemoName(callee);
+  return null;
+};
+
+const lineStartOffsets = (text: string): number[] => {
   const starts = [0];
   for (let index = 0; index < text.length; index++) {
-    if (text.charCodeAt(index) === 10) starts.push(index + 1);
+    if (text.charCodeAt(index) === NEWLINE) starts.push(index + 1);
   }
-
-  return (offset: number) => {
-    let low = 0;
-    let high = starts.length - 1;
-    while (low < high) {
-      const mid = (low + high + 1) >> 1;
-      if ((starts[mid] ?? 0) <= offset) low = mid;
-      else high = mid - 1;
-    }
-    return low;
-  };
+  return starts;
 };
 
-// The React Compiler memoises everything it can, so a hand-written memo is
-// normally either redundant or a fight with it. The compiler cannot see two
-// things, which is why this is not a flat ban: how many times a list row will
-// render, and what is expensive. Both are claims a person makes, so the rule
-// asks for the claim in writing.
+const lineContaining = (starts: number[], offset: number): number => {
+  let low = 0;
+  let high = starts.length - 1;
+  while (low < high) {
+    const middle = Math.floor((low + high + 1) / 2);
+    if ((starts[middle] ?? 0) <= offset) low = middle;
+    else high = middle - 1;
+  }
+  return low;
+};
+
+const linesCoveredByWhyComments = (comments: Comment[], lineOf: (offset: number) => number): Set<number> => {
+  const covered = new Set<number>();
+  for (const comment of comments) {
+    if (!WHY_COMMENT.test((comment.value ?? "").trim())) continue;
+    for (let line = lineOf(comment.start); line <= lineOf(comment.end); line++) covered.add(line);
+  }
+  return covered;
+};
+
 export const noManualMemo: Rule = problem(
   "Bans `useMemo`, `useCallback` and `memo` unless a `why:` comment on the line above states the case the React Compiler cannot see: something rendered per list row, or a cost that was measured.",
   {
@@ -64,14 +75,9 @@ export const noManualMemo: Rule = problem(
         "Program:exit"() {
           if (calls.length === 0) return;
 
-          const text = context.sourceCode?.getText?.() ?? "";
-          const lineOf = lineFinder(text);
-          const justified = new Set<number>();
-
-          for (const comment of context.sourceCode?.getAllComments?.() ?? []) {
-            if (!/^why:/i.test((comment.value ?? "").trim())) continue;
-            for (let line = lineOf(comment.start); line <= lineOf(comment.end); line++) justified.add(line);
-          }
+          const lineStarts = lineStartOffsets(context.sourceCode?.getText?.() ?? "");
+          const lineOf = (offset: number) => lineContaining(lineStarts, offset);
+          const justified = linesCoveredByWhyComments(context.sourceCode?.getAllComments?.() ?? [], lineOf);
 
           for (const { node, name } of calls) {
             const line = lineOf(node.start as number);

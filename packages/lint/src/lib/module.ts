@@ -17,10 +17,28 @@ export interface Composed {
   restricted: Required<RestrictedImports>;
 }
 
+const isModuleEnabled = (module: ModuleManifest, options: Record<string, boolean | undefined>): boolean =>
+  detect(module.option === undefined ? undefined : options[module.option], module.packages);
+
+const enabledRuleIds = (module: ModuleManifest): string[] => {
+  const ids: string[] = [];
+  for (const [name, rule] of Object.entries<Rule>(module.rules)) {
+    if (rule.meta.defaultOff) continue;
+    if (rule.meta.packages && !detect(undefined, rule.meta.packages)) continue;
+    ids.push(`${module.meta.name}/${name}`);
+  }
+  return ids;
+};
+
+const addRestrictedImports = (into: Required<RestrictedImports>, from: RestrictedImports | undefined): void => {
+  into.paths.push(...(from?.paths ?? []));
+  into.patterns.push(...(from?.patterns ?? []));
+};
+
 /**
  * Turn manifests + options into the config fragments an entry spreads in:
- * which plugin files to load, which rules to enable (skipping defaultOff and
- * package-gated rules whose package is absent), and the merged import bans.
+ * which plugin files to load, which rules to enable, and the merged import
+ * bans from the enabled modules plus the enabled ban-only groups.
  */
 export const composeModules = (
   modules: ModuleManifest[],
@@ -30,23 +48,16 @@ export const composeModules = (
   const composed: Composed = { jsPlugins: [], rules: {}, restricted: { paths: [], patterns: [] } };
 
   for (const module of modules) {
-    const enabled = detect(module.option === undefined ? undefined : options[module.option], module.packages);
-    if (!enabled) continue;
+    if (!isModuleEnabled(module, options)) continue;
 
     composed.jsPlugins.push(fileURLToPath(module.url));
-    for (const [name, rule] of Object.entries<Rule>(module.rules)) {
-      if (rule.meta.defaultOff) continue;
-      if (rule.meta.packages && !detect(undefined, rule.meta.packages)) continue;
-      composed.rules[`${module.meta.name}/${name}`] = "error";
-    }
-    composed.restricted.paths.push(...(module.restrictedImports?.paths ?? []));
-    composed.restricted.patterns.push(...(module.restrictedImports?.patterns ?? []));
+    for (const id of enabledRuleIds(module)) composed.rules[id] = "error";
+    addRestrictedImports(composed.restricted, module.restrictedImports);
   }
 
   for (const group of banGroups) {
     if (!detect(undefined, group.packages)) continue;
-    composed.restricted.paths.push(...(group.restrictedImports.paths ?? []));
-    composed.restricted.patterns.push(...(group.restrictedImports.patterns ?? []));
+    addRestrictedImports(composed.restricted, group.restrictedImports);
   }
 
   return composed;

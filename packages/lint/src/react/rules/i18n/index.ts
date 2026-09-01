@@ -1,4 +1,3 @@
-// @ashstack/lint — i18n conventions. Every user-visible string goes through t().
 import { defineModule } from "../../../lib/module.js";
 import { noBareAttrs } from "./no-bare-attrs.js";
 import { noBareText } from "./no-bare-text.js";

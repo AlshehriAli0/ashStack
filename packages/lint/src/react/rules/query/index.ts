@@ -1,4 +1,3 @@
-// @ashstack/lint — TanStack Query conventions.
 import { defineModule } from "../../../lib/module.js";
 import { nextPageParamUndefined } from "./next-page-param-undefined.js";
 import { noDeprecatedFilters } from "./no-deprecated-filters.js";

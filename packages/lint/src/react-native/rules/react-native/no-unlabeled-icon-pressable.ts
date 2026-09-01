@@ -11,6 +11,30 @@ const MESSAGES = {
     "Add a `label`, or an `accessibilityLabel(...)` modifier, so this icon-only Expo UI `<Button>` has an accessible name.",
 };
 
+const hasAccessibleName = (attributes: AstNode[]): boolean =>
+  attributes.some(attribute => {
+    const name = asNode(attribute.name)?.name;
+    return attribute.type === "JSXAttribute" && (name === "accessibilityLabel" || name === "accessibilityHint");
+  });
+
+interface ChildKinds {
+  hasIcon: boolean;
+  hasText: boolean;
+  hasExpression: boolean;
+}
+
+const childKinds = (children: AstNode[]): ChildKinds => {
+  const kinds: ChildKinds = { hasIcon: false, hasText: false, hasExpression: false };
+  for (const child of children) {
+    if (child.type === "JSXExpressionContainer") kinds.hasExpression = true;
+    if (child.type !== "JSXElement") continue;
+    const childTag = tagIdentifier(asNode(asNode(child.openingElement)?.name));
+    if (childTag === "Text") kinds.hasText = true;
+    if (childTag.endsWith("Icon")) kinds.hasIcon = true;
+  }
+  return kinds;
+};
+
 export const noUnlabeledIconPressable: Rule = problem(
   "Requires an accessible name on an icon-only touchable or an icon-only Expo UI `<Button>`. Without a label, hint or visible text, a screen reader cannot reach the control.",
   {
@@ -20,23 +44,8 @@ export const noUnlabeledIconPressable: Rule = problem(
           const opening = asNode(node.openingElement);
           const tag = tagIdentifier(asNode(opening?.name));
           if (!TOUCHABLES.has(tag)) return;
-          const attributes = asNodes(opening?.attributes);
-          const labelled = attributes.some(attribute => {
-            const name = asNode(attribute.name)?.name;
-            return attribute.type === "JSXAttribute" && (name === "accessibilityLabel" || name === "accessibilityHint");
-          });
-          if (labelled) return;
-          const children = asNodes(node.children);
-          let hasIcon = false;
-          let hasText = false;
-          let hasExpression = false;
-          for (const child of children) {
-            if (child.type === "JSXExpressionContainer") hasExpression = true;
-            if (child.type !== "JSXElement") continue;
-            const childTag = tagIdentifier(asNode(asNode(child.openingElement)?.name));
-            if (childTag === "Text") hasText = true;
-            if (childTag.endsWith("Icon")) hasIcon = true;
-          }
+          if (hasAccessibleName(asNodes(opening?.attributes))) return;
+          const { hasIcon, hasText, hasExpression } = childKinds(asNodes(node.children));
           if (!hasIcon || hasText || hasExpression) return;
           context.report({ node: asNode(opening?.name) as AstNode, message: MESSAGES.touchable });
         },

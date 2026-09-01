@@ -7,14 +7,16 @@
     "examples/*"
   ],
   "scripts": {
+    "build": "tsc -p packages/lint",
     "check:fixtures": "bun run build && bun scripts/check-fixtures.ts",
     "check:smoke": "bun run build && bun scripts/check-smoke.ts",
-    "format": "oxfmt .",
-    "format:check": "oxfmt --check .",
-    "release": "changeset publish",
     "docs:rules": "bun run build && bun scripts/generate-rule-docs.ts",
     "docs:rules:check": "bun run build && bun scripts/generate-rule-docs.ts --check",
-    "build": "tsc -p packages/lint"
+    "format": "oxfmt .",
+    "format:check": "oxfmt --check .",
+    "lint": "bun run build && oxlint --disable-nested-config .",
+    "lint:fix": "bun run build && oxlint --disable-nested-config --fix .",
+    "release": "changeset publish"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.0",
@@ -23,6 +25,7 @@
     "oxlint": "^1.80.0",
     "oxlint-tsgolint": "^7.0.2001",
     "typescript": "^7.0.2",
-    "@ashstack/fmt": "workspace:*"
+    "@ashstack/fmt": "workspace:*",
+    "@ashstack/lint": "workspace:*"
   }
 }

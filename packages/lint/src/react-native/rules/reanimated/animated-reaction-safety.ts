@@ -21,24 +21,57 @@ const MESSAGES = {
 
 const REACTION_HOOKS = new Set(["useAnimatedReaction"]);
 
+const NOT_EQUAL_OPERATORS = new Set(["!==", "!="]);
+
+const identifierName = (node: AstNode | undefined): string | null =>
+  node?.type === "Identifier" ? (node.name as string) : null;
+
+const comparesWithNotEqual = (test: AstNode, first: string, second: string): boolean => {
+  if (test.type !== "BinaryExpression" || !NOT_EQUAL_OPERATORS.has(test.operator as string)) return false;
+  const left = (test.left as AstNode | undefined)?.name;
+  const right = (test.right as AstNode | undefined)?.name;
+  return (left === first && right === second) || (left === second && right === first);
+};
+
+const comparesWithNegatedIs = (test: AstNode, first: string, second: string): boolean => {
+  if (test.type !== "UnaryExpression" || test.operator !== "!") return false;
+  const argument = test.argument as AstNode | undefined;
+  if (calleeName(argument) !== "is") return false;
+  const compared = (argument?.arguments as AstNode[] | undefined) ?? [];
+  return compared.some(entry => entry.name === first) && compared.some(entry => entry.name === second);
+};
+
 /** True when an enclosing `if` tests the two callback parameters against each other. */
 const guardsComparison = (node: AstNode, first: string | null, second: string | null): boolean => {
   if (!first || !second) return false;
-  const compares = (test: AstNode | undefined): boolean => {
+  return hasAncestor(node, current => {
+    if (current.type !== "IfStatement") return false;
+    const test = current.test as AstNode | undefined;
     if (!test) return false;
-    if (test.type === "BinaryExpression" && (test.operator === "!==" || test.operator === "!=")) {
-      const left = (test.left as AstNode | undefined)?.name;
-      const right = (test.right as AstNode | undefined)?.name;
-      return (left === first && right === second) || (left === second && right === first);
-    }
-    const argument = test.argument as AstNode | undefined;
-    if (test.type === "UnaryExpression" && test.operator === "!" && calleeName(argument) === "is") {
-      const names = (argument?.arguments as AstNode[] | undefined) ?? [];
-      return names.some(entry => entry.name === first) && names.some(entry => entry.name === second);
-    }
-    return false;
-  };
-  return hasAncestor(node, current => current.type === "IfStatement" && compares(current.test as AstNode | undefined));
+    return comparesWithNotEqual(test, first, second) || comparesWithNegatedIs(test, first, second);
+  });
+};
+
+/** True when a `.set()`/`.modify()` in the result callback writes what the prepare callback reads. */
+const feedsOwnInput = (node: AstNode, reaction: AstNode): boolean => {
+  if ((node.callee as AstNode | undefined)?.type !== "MemberExpression") return false;
+  const shared = receiverName(node);
+  if (!shared) return false;
+  const args = (reaction.arguments as AstNode[] | undefined) ?? [];
+  const prepare = args[0];
+  const react = args[1];
+  if (!prepare || !react || !isWithin(node, react)) return false;
+  return subtreeHas(prepare, current => isMemberCall(current, "get") && receiverName(current) === shared);
+};
+
+/** What is wrong with a `scheduleOnRN` inside a reaction, or null when it is guarded. */
+const hotBridgeProblem = (node: AstNode, reaction: AstNode): string | null => {
+  const callback = ((reaction.arguments as AstNode[] | undefined) ?? [])[1];
+  if (!callback || !FUNCTION_TYPES.has(callback.type)) return null;
+  const params = (callback.params as AstNode[] | undefined) ?? [];
+  const previous = identifierName(params[1]);
+  if (!previous) return MESSAGES.hotBridgeNoPrevious;
+  return guardsComparison(node, identifierName(params[0]), previous) ? null : MESSAGES.hotBridgeUnguarded;
 };
 
 export const animatedReactionSafety: Rule = problem(
@@ -57,21 +90,10 @@ export const animatedReactionSafety: Rule = problem(
             stack.push(node);
             return;
           }
-          const reaction = stack.length > 0 ? stack[stack.length - 1] : null;
+          const reaction = stack.at(-1);
           if (!reaction) return;
-          const args = (reaction.arguments as AstNode[] | undefined) ?? [];
           if (name === "set" || name === "modify") {
-            if ((node.callee as AstNode | undefined)?.type !== "MemberExpression") return;
-            const shared = receiverName(node);
-            if (!shared) return;
-            const prepare = args[0];
-            const react = args[1];
-            if (!prepare || !react || !isWithin(node, react)) return;
-            const readsShared = subtreeHas(
-              prepare,
-              current => isMemberCall(current, "get") && receiverName(current) === shared
-            );
-            if (!readsShared) return;
+            if (!feedsOwnInput(node, reaction)) return;
             context.report({
               node,
               message: `Have this result callback ${
@@ -81,17 +103,8 @@ export const animatedReactionSafety: Rule = problem(
             return;
           }
           if (name !== "scheduleOnRN") return;
-          const callback = args[1];
-          if (!callback || !FUNCTION_TYPES.has(callback.type)) return;
-          const params = (callback.params as AstNode[] | undefined) ?? [];
-          const current = params[0]?.type === "Identifier" ? (params[0].name as string) : null;
-          const previous = params[1]?.type === "Identifier" ? (params[1].name as string) : null;
-          if (!previous) {
-            context.report({ node, message: MESSAGES.hotBridgeNoPrevious });
-            return;
-          }
-          if (guardsComparison(node, current, previous)) return;
-          context.report({ node, message: MESSAGES.hotBridgeUnguarded });
+          const problemMessage = hotBridgeProblem(node, reaction);
+          if (problemMessage !== null) context.report({ node, message: problemMessage });
         },
         "CallExpression:exit"(node) {
           if (REACTION_HOOKS.has(calleeName(node))) stack.pop();

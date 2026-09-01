@@ -1,11 +1,7 @@
-// Library detection: a rule group ships enabled only when the consumer actually
-// depends on that library. Reads every package.json from cwd up to the nearest
-// repo boundary (a directory containing .git), so monorepos work — the app
-// package, the workspace root, or both. Cached per starting directory.
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 
-const depsAt = (dir: string): string[] => {
+const dependencyNamesIn = (dir: string): string[] => {
   try {
     const pkg = JSON.parse(readFileSync(join(dir, "package.json"), "utf8"));
     return Object.keys({ ...pkg.dependencies, ...pkg.devDependencies, ...pkg.peerDependencies });
@@ -14,27 +10,35 @@ const depsAt = (dir: string): string[] => {
   }
 };
 
-const caches = new Map<string, Set<string>>();
+const isRepoBoundary = (dir: string): boolean => existsSync(join(dir, ".git"));
 
-const allDeps = (): Set<string> => {
+const dependenciesByStartDir = new Map<string, Set<string>>();
+
+const dependenciesUpToRepoBoundary = (): Set<string> => {
   const start = process.cwd();
-  const cached = caches.get(start);
+  const cached = dependenciesByStartDir.get(start);
   if (cached) return cached;
 
-  const deps = new Set<string>();
+  const dependencies = new Set<string>();
   let dir = start;
   for (;;) {
-    for (const name of depsAt(dir)) deps.add(name);
-    // stop at the repo boundary so a stray ~/package.json can't enable rules
-    if (existsSync(join(dir, ".git"))) break;
+    for (const name of dependencyNamesIn(dir)) dependencies.add(name);
+    if (isRepoBoundary(dir)) break;
     const parent = dirname(dir);
     if (parent === dir) break;
     dir = parent;
   }
-  caches.set(start, deps);
-  return deps;
+  dependenciesByStartDir.set(start, dependencies);
+  return dependencies;
 };
 
-/** explicit option wins; otherwise on iff one of the packages is a dependency */
+/**
+ * Should this rule group ship enabled? An explicit option wins; otherwise the
+ * group is on when one of `packages` is a dependency, and always on when
+ * `packages` is absent. Dependencies come from every package.json between the
+ * current working directory and the repo boundary — the directory holding
+ * `.git` — so in a monorepo the app package, the workspace root, or both
+ * count, and a stray package.json above the repo cannot enable anything.
+ */
 export const detect = (option: boolean | undefined, packages: string[] | undefined): boolean =>
-  option ?? (packages === undefined || packages.some(name => allDeps().has(name)));
+  option ?? (packages === undefined || packages.some(name => dependenciesUpToRepoBoundary().has(name)));

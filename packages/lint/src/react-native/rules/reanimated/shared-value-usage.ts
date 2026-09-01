@@ -40,6 +40,26 @@ const MUTATING_METHODS = new Set([
 
 const JSX_HOSTS = new Set(["JSXExpressionContainer", "JSXAttribute"]);
 
+/** True for `sv.get().push(...)` and friends — a mutation of the collection `get()` handed back. */
+const mutatesWhatGetReturned = (node: AstNode): boolean => {
+  const callee = node.callee as AstNode | undefined;
+  const property = callee?.property as AstNode | undefined;
+  return (
+    callee?.type === "MemberExpression" &&
+    property?.type === "Identifier" &&
+    MUTATING_METHODS.has(property.name as string) &&
+    isMemberCall(callee.object as AstNode | undefined, "get")
+  );
+};
+
+/** True when the call is evaluated as JSX is built, rather than inside a callback JSX only passes along. */
+const runsWhileJsxEvaluates = (node: AstNode): boolean => {
+  const host = closestAncestor(node, JSX_HOSTS);
+  if (!host) return false;
+  if (crossesFunctionBefore(node, host, FUNCTION_TYPES)) return false;
+  return !subtreeHas(host, current => FUNCTION_TYPES.has(current.type));
+};
+
 interface Candidate {
   node: AstNode;
   shared: string;
@@ -81,26 +101,15 @@ export const sharedValueUsage: Rule = problem(
           context.report({ node, message: MESSAGES.nestedProperty });
         },
         CallExpression(node) {
-          const callee = node.callee as AstNode | undefined;
-          const property = callee?.property as AstNode | undefined;
-          if (
-            callee?.type === "MemberExpression" &&
-            property?.type === "Identifier" &&
-            MUTATING_METHODS.has(property.name as string) &&
-            isMemberCall(callee.object as AstNode | undefined, "get")
-          ) {
+          if (mutatesWhatGetReturned(node)) {
             context.report({ node, message: MESSAGES.nestedCollection });
             return;
           }
           const isGet = isMemberCall(node, "get") && ((node.arguments as AstNode[] | undefined) ?? []).length === 0;
-          const isSet = isMemberCall(node, "set");
-          if (!isGet && !isSet) return;
+          if (!isGet && !isMemberCall(node, "set")) return;
           const shared = receiverName(node);
           if (!shared) return;
-          const host = closestAncestor(node, JSX_HOSTS);
-          if (!host) return;
-          if (crossesFunctionBefore(node, host, FUNCTION_TYPES)) return;
-          if (subtreeHas(host, current => FUNCTION_TYPES.has(current.type))) return;
+          if (!runsWhileJsxEvaluates(node)) return;
           candidates.push({ node, shared, isGet });
         },
         "Program:exit"() {

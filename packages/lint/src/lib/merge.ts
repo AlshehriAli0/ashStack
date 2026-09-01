@@ -1,19 +1,29 @@
-// Deterministic layering for config entries (react = merge(core, reactDelta), etc.).
-// We compose ourselves instead of relying on oxlint's `extends` so every entry is
-// one flat, inspectable object and consumer overrides stay trivial.
-// Invariants: `rules` last-wins per rule, plugin arrays union, `overrides` append.
 import type { OxlintConfig } from "./types.js";
 
-const uniq = <T>(arr: T[]): T[] => [...new Set(arr)];
+const append = (base: unknown, delta: unknown): unknown[] => [
+  ...((base as unknown[] | undefined) ?? []),
+  ...((delta as unknown[] | undefined) ?? []),
+];
 
+const union = (base: unknown, delta: unknown): unknown[] => [...new Set(append(base, delta))];
+
+const lastWins = (base: unknown, delta: unknown): object => ({ ...(base as object), ...(delta as object) });
+
+/**
+ * Layer `delta` over `base` into one flat config — the way `react` is built
+ * from `core` plus a react delta. Plugin lists union, `overrides` append,
+ * `rules` and the other keyed blocks are last-wins per key. Entries compose
+ * with this rather than oxlint's `extends` so every entry is a single
+ * inspectable object and a consumer's own overrides stay trivial.
+ */
 export const mergeConfigs = (base: OxlintConfig, delta: OxlintConfig): OxlintConfig => ({
   ...base,
   ...delta,
-  plugins: uniq([...((base.plugins as unknown[]) ?? []), ...((delta.plugins as unknown[]) ?? [])]),
-  jsPlugins: uniq([...((base.jsPlugins as unknown[]) ?? []), ...((delta.jsPlugins as unknown[]) ?? [])]),
-  env: { ...(base.env as object), ...(delta.env as object) },
-  globals: { ...(base.globals as object), ...(delta.globals as object) },
-  categories: { ...(base.categories as object), ...(delta.categories as object) },
-  rules: { ...(base.rules as object), ...(delta.rules as object) },
-  overrides: [...((base.overrides as unknown[]) ?? []), ...((delta.overrides as unknown[]) ?? [])],
+  plugins: union(base.plugins, delta.plugins),
+  jsPlugins: union(base.jsPlugins, delta.jsPlugins),
+  env: lastWins(base.env, delta.env),
+  globals: lastWins(base.globals, delta.globals),
+  categories: lastWins(base.categories, delta.categories),
+  rules: lastWins(base.rules, delta.rules),
+  overrides: append(base.overrides, delta.overrides),
 });

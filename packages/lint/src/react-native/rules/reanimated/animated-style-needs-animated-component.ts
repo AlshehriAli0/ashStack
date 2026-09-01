@@ -18,6 +18,16 @@ const jsxTagName = (node: AstNode | undefined): string | null => {
   return null;
 };
 
+/** The identifiers a `style` prop value names, whether it holds one style or an array of them. */
+const referencedStyleNames = (value: AstNode | undefined): string[] => {
+  const expression = value?.type === "JSXExpressionContainer" ? (value.expression as AstNode | undefined) : undefined;
+  if (expression?.type === "Identifier") return [expression.name as string];
+  if (expression?.type !== "ArrayExpression") return [];
+  return ((expression.elements as AstNode[] | undefined) ?? [])
+    .filter(element => element?.type === "Identifier")
+    .map(element => element.name as string);
+};
+
 interface Candidate {
   node: AstNode;
   tag: string;
@@ -67,17 +77,7 @@ export const animatedStyleNeedsAnimatedComponent: Rule = problem(
           const tag = jsxTagName(node.parent ?? undefined);
           if (tag === null || tag.startsWith("Animated")) return;
 
-          const value = node.value as AstNode | undefined;
-          const expression =
-            value?.type === "JSXExpressionContainer" ? (value.expression as AstNode | undefined) : null;
-          const referenced =
-            expression?.type === "Identifier"
-              ? [expression.name as string]
-              : expression?.type === "ArrayExpression"
-                ? ((expression.elements as AstNode[] | undefined) ?? [])
-                    .filter(element => element?.type === "Identifier")
-                    .map(element => element.name as string)
-                : [];
+          const referenced = referencedStyleNames(node.value as AstNode | undefined);
           if (referenced.length === 0) return;
           candidates.push({ node, tag, referenced });
         },

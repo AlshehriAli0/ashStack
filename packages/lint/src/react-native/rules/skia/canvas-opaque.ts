@@ -22,7 +22,7 @@ export const canvasOpaque: Rule = problem(
             if (specifier.type !== "ImportSpecifier") continue;
             const imported = (specifier.imported as AstNode | undefined)?.name;
             const local = (specifier.local as AstNode | undefined)?.name as string | undefined;
-            if (imported === "Canvas" && /Canvas$/.test(local ?? "")) canvasLocals.add(local as string);
+            if (imported === "Canvas" && (local ?? "").endsWith("Canvas")) canvasLocals.add(local as string);
           }
         },
         JSXOpeningElement(node) {

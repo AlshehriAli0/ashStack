@@ -1,6 +1,8 @@
-// Pragmatic structural types for oxlint JS plugins. The AST is oxlint's
-// (estree-shaped with `parent` links); we type it loosely on purpose — rules
-// poke at many node shapes and a full estree typing would fight every visitor.
+/**
+ * A node in oxlint's AST: estree-shaped, with a `parent` link. Typed loosely
+ * on purpose — rules poke at many node shapes, and a full estree typing would
+ * fight every visitor.
+ */
 export interface AstNode {
   type: string;
   parent?: AstNode | null;

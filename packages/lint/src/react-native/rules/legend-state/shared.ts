@@ -1,5 +1,3 @@
-// Helpers two or more Legend State rules need. Anything a single rule uses
-// lives in that rule's own file.
 import type { AstNode, RuleContext } from "../../../lib/types.js";
 
 /** oxlint's context, narrowed to the source text `gate` and the messages read. */
@@ -12,7 +10,7 @@ export const OBSERVABLE_FACTORIES = new Set(["observable", "useObservable"]);
 /** The trailing `$` that marks an observable binding. */
 export const OBS = /\$$/;
 
-// `count$` or `settings$.theme.color` — anything rooted at a $-suffixed name.
+/** The identifier a member chain is rooted at: `count$`, or the `settings$` of `settings$.theme.color`. */
 const rootName = (node: AstNode | null | undefined): string | null => {
   let current: AstNode | undefined = node ?? undefined;
   while (current?.type === "MemberExpression") current = current.object as AstNode | undefined;

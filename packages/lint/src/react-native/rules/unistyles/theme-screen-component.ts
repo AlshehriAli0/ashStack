@@ -1,6 +1,8 @@
 import { closestAncestor, hasAncestor, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule } from "../../../lib/types.js";
+import type { Rule } from "../../../lib/types.js";
 import { declaresUseUnistylesTheme, isStyleSheetCreate, memberPath } from "./shared.js";
+
+const THEME_SCREEN_PREFIX = "theme.screen.";
 
 const MESSAGE =
   "Read current screen values from `useUnistyles().rt.screen` or `useWindowDimensions()` instead of the theme's module-initialization snapshot.";
@@ -11,7 +13,7 @@ export const themeScreenComponent: Rule = problem(
     createOnce(context) {
       return {
         MemberExpression(node) {
-          if (!/^theme\.screen\./.test(memberPath(node))) return;
+          if (!memberPath(node).startsWith(THEME_SCREEN_PREFIX)) return;
           const parent = node.parent;
           if (parent?.type === "MemberExpression" && parent.object === node) return;
           if (hasAncestor(node, isStyleSheetCreate)) return;

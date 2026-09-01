@@ -7,20 +7,28 @@ const BOOLEAN_OPERATORS = new Set(["===", "!==", "==", "!=", "<", ">", "<=", ">=
 const MESSAGE =
   'Compare explicitly (`list.length > 0 &&`), coerce with `!!`, or use a ternary ending in `null`. A falsy left operand leaks into the tree: `0` renders a bare zero, which crashes React Native with "Text strings must be rendered within a <Text> component".';
 
+const isNegation = (node: AstNode): boolean => node.type === "UnaryExpression" && node.operator === "!";
+
+const isBooleanCast = (node: AstNode): boolean => {
+  const callee = asNode(node.callee);
+  return node.type === "CallExpression" && callee?.type === "Identifier" && callee.name === "Boolean";
+};
+
+const isTypeOnlyWrapper = (node: AstNode): boolean =>
+  node.type === "TSAsExpression" || node.type === "TSNonNullExpression";
+
+const isBooleanCombination = (node: AstNode): boolean =>
+  node.type === "LogicalExpression" &&
+  (node.operator === "&&" || node.operator === "||") &&
+  isDefinitelyBoolean(asNode(node.left)) &&
+  isDefinitelyBoolean(asNode(node.right));
+
 const isDefinitelyBoolean = (node: AstNode | undefined): boolean => {
   if (!node) return false;
-  if (node.type === "UnaryExpression" && node.operator === "!") return true;
+  if (isTypeOnlyWrapper(node)) return isDefinitelyBoolean(asNode(node.expression));
   if (node.type === "BinaryExpression") return BOOLEAN_OPERATORS.has(node.operator as string);
   if (node.type === "Literal") return typeof node.value === "boolean";
-  const callee = asNode(node.callee);
-  if (node.type === "CallExpression" && callee?.type === "Identifier" && callee.name === "Boolean") return true;
-  if (node.type === "LogicalExpression" && (node.operator === "&&" || node.operator === "||")) {
-    return isDefinitelyBoolean(asNode(node.left)) && isDefinitelyBoolean(asNode(node.right));
-  }
-  if (node.type === "TSAsExpression" || node.type === "TSNonNullExpression") {
-    return isDefinitelyBoolean(asNode(node.expression));
-  }
-  return false;
+  return isNegation(node) || isBooleanCast(node) || isBooleanCombination(node);
 };
 
 const isLengthGuard = (node: AstNode | undefined): boolean => {

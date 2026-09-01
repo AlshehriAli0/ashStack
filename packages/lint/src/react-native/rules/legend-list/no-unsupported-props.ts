@@ -2,8 +2,6 @@ import { attributeName, gate, problem } from "../../../lib/ast.js";
 import type { Rule } from "../../../lib/types.js";
 import { attributesOf, isListElement, LIST, type GateContext } from "./shared.js";
 
-// FlashList / FlatList props that do not exist on Legend List v3. Passing one is
-// silently ignored, which reads as "the feature is broken".
 const UNSUPPORTED_PROPS = new Set([
   "masonry",
   "optimizeItemArrangement",

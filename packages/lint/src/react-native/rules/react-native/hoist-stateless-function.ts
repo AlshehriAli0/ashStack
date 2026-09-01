@@ -25,6 +25,15 @@ const scopeContains = (scope: Scope | null | undefined, ancestor: Scope): boolea
   return false;
 };
 
+const scopeOf = (context: RnContext, node: AstNode): Scope | null => context.sourceCode?.getScope?.(node) ?? null;
+
+const readsComponentScope = (scope: Scope, componentScope: Scope): boolean => {
+  for (const reference of scope.through ?? []) {
+    if (scopeContains(reference.resolved?.scope, componentScope)) return true;
+  }
+  return false;
+};
+
 export const hoistStatelessFunction: Rule = problem(
   "Requires module scope for a non-component function that reads nothing from the component around it. Out there it is created once, keeps a stable identity, and can be tested without rendering.",
   {
@@ -36,13 +45,10 @@ export const hoistStatelessFunction: Rule = problem(
         const component = enclosingReactFunction(node);
         if (component === null) return;
 
-        const scope = context.sourceCode?.getScope?.(node);
-        const componentScope = context.sourceCode?.getScope?.(component);
-        if (scope === null || scope === undefined || componentScope === null || componentScope === undefined) return;
-
-        for (const reference of scope.through ?? []) {
-          if (scopeContains(reference.resolved?.scope, componentScope)) return;
-        }
+        const scope = scopeOf(context, node);
+        const componentScope = scopeOf(context, component);
+        if (scope === null || componentScope === null) return;
+        if (readsComponentScope(scope, componentScope)) return;
 
         context.report({
           node,

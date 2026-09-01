@@ -11,6 +11,18 @@ const MESSAGES = {
 const STORE_MODULE = /^(?:@\/stores\/|(?:\.\.?\/)+stores\/)[^"']*-store$/;
 const STORE_HOOK = /^use[A-Za-z0-9_$]*Store$/;
 
+const importSource = (node: AstNode): string | null => {
+  const value = (node.source as AstNode | undefined)?.value;
+  return typeof value === "string" ? value : null;
+};
+
+const storeHookLocalName = (specifier: AstNode): string | null => {
+  if (specifier.type !== "ImportSpecifier") return null;
+  const imported = ((specifier.imported as AstNode | undefined)?.name as string | undefined) ?? "";
+  const local = ((specifier.local as AstNode | undefined)?.name as string | undefined) ?? "";
+  return STORE_HOOK.test(imported) || STORE_HOOK.test(local) ? local : null;
+};
+
 export const requireSelector: Rule = problem(
   "Reports a store hook called with no arguments, or with `undefined` where the selector belongs.",
   {
@@ -23,13 +35,11 @@ export const requireSelector: Rule = problem(
           calls.length = 0;
         },
         ImportDeclaration(node: AstNode) {
-          const source = (node.source as AstNode | undefined)?.value;
-          if (typeof source !== "string" || !STORE_MODULE.test(source)) return;
+          const source = importSource(node);
+          if (source === null || !STORE_MODULE.test(source)) return;
           for (const specifier of (node.specifiers as AstNode[] | undefined) ?? []) {
-            if (specifier.type !== "ImportSpecifier") continue;
-            const imported = ((specifier.imported as AstNode | undefined)?.name as string | undefined) ?? "";
-            const local = ((specifier.local as AstNode | undefined)?.name as string | undefined) ?? "";
-            if (STORE_HOOK.test(imported) || STORE_HOOK.test(local)) hooks.add(local);
+            const local = storeHookLocalName(specifier);
+            if (local !== null) hooks.add(local);
           }
         },
         CallExpression(node: AstNode) {

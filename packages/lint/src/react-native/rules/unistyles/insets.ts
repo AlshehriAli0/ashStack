@@ -20,18 +20,31 @@ type InsetsContext = GateContext & {
   getSourceCode(): SourceCode;
 };
 
+const boundNames = (id: AstNode | undefined): string[] => {
+  if (id?.type === "Identifier") return [id.name as string];
+  if (id?.type !== "ObjectPattern") return [];
+  const names: string[] = [];
+  for (const property of (id.properties as AstNode[] | undefined) ?? []) {
+    const value = property.value as AstNode | undefined;
+    const key = property.key as AstNode | undefined;
+    if (value?.type === "Identifier") names.push(value.name as string);
+    else if (key?.type === "Identifier") names.push(key.name as string);
+  }
+  return names;
+};
+
 export const insets: Rule = problem(
   "Disallow passing `useSafeAreaInsets()` values into a dynamic style function or an inline JSX style object. Read `rt.insets` inside `StyleSheet.create` instead.",
   {
     createOnce(context: InsetsContext) {
-      const bindings = new Set<string>();
+      const insetBindings = new Set<string>();
       const sheets = new Set<string>();
       const styleCalls: { node: AstNode; receiver: string }[] = [];
       const styleAttributes: AstNode[] = [];
       const source = (): SourceCode => context.sourceCode ?? context.getSourceCode();
       return {
         before() {
-          bindings.clear();
+          insetBindings.clear();
           sheets.clear();
           styleCalls.length = 0;
           styleAttributes.length = 0;
@@ -45,15 +58,7 @@ export const insets: Rule = problem(
             return;
           }
           if (calleeName(init) !== "useSafeAreaInsets") return;
-          if (id?.type === "Identifier") bindings.add(id.name as string);
-          else if (id?.type === "ObjectPattern") {
-            for (const property of (id.properties as AstNode[] | undefined) ?? []) {
-              const value = property.value as AstNode | undefined;
-              const key = property.key as AstNode | undefined;
-              if (value?.type === "Identifier") bindings.add(value.name as string);
-              else if (key?.type === "Identifier") bindings.add(key.name as string);
-            }
-          }
+          for (const name of boundNames(id)) insetBindings.add(name);
         },
         CallExpression(node) {
           const callee = node.callee as AstNode | undefined;
@@ -70,7 +75,7 @@ export const insets: Rule = problem(
         },
         "Program:exit"() {
           const referencesBinding = (node: AstNode): boolean =>
-            subtreeHas(node, current => current.type === "Identifier" && bindings.has(current.name as string));
+            subtreeHas(node, current => current.type === "Identifier" && insetBindings.has(current.name as string));
           for (const entry of styleCalls) {
             if (!sheets.has(entry.receiver)) continue;
             const text = source().getText(entry.node);
@@ -86,7 +91,7 @@ export const insets: Rule = problem(
               return (
                 current.type === "MemberExpression" &&
                 object?.type === "Identifier" &&
-                bindings.has(object.name as string)
+                insetBindings.has(object.name as string)
               );
             });
             if (!usesInsetsMember) continue;

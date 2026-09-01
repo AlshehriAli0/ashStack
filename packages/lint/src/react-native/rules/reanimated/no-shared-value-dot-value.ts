@@ -15,12 +15,15 @@ const COMPOUND_OPERATORS = new Map([
   ["/=", "/"],
 ]);
 
-const isDotValue = (node: AstNode | null | undefined): boolean => {
-  if (node?.type !== "MemberExpression") return false;
-  if (node.optional === true || node.computed === true) return false;
+/** The identifier a plain `x.value` reads from, or null when the node is not one. */
+const dotValueOwner = (node: AstNode | null | undefined): string | null => {
+  if (node?.type !== "MemberExpression") return null;
+  if (node.optional === true || node.computed === true) return null;
   const object = node.object as AstNode | undefined;
   const property = node.property as AstNode | undefined;
-  return object?.type === "Identifier" && property?.type === "Identifier" && property.name === "value";
+  if (object?.type !== "Identifier") return null;
+  if (property?.type !== "Identifier" || property.name !== "value") return null;
+  return object.name as string;
 };
 
 interface Candidate {
@@ -65,21 +68,17 @@ export const noSharedValueDotValue: Rule = {
         }
       },
       AssignmentExpression(node) {
-        const left = node.left as AstNode | undefined;
-        if (!isDotValue(left)) return;
+        const name = dotValueOwner(node.left as AstNode | undefined);
+        if (name === null) return;
         const operator = COMPOUND_OPERATORS.get(node.operator as string);
         if (!operator && node.operator !== "=") return;
-        candidates.push({
-          node,
-          kind: operator ? "compound" : "write",
-          operator,
-          name: (left?.object as AstNode).name as string,
-        });
+        candidates.push({ node, kind: operator ? "compound" : "write", operator, name });
       },
       MemberExpression(node) {
-        if (!isDotValue(node)) return;
+        const name = dotValueOwner(node);
+        if (name === null) return;
         if (node.parent?.type === "AssignmentExpression" && node.parent.left === node) return;
-        candidates.push({ node, kind: "read", name: (node.object as AstNode).name as string });
+        candidates.push({ node, kind: "read", name });
       },
       "Program:exit"() {
         for (const candidate of candidates) {

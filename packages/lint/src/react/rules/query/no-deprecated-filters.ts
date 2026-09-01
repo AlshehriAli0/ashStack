@@ -18,6 +18,32 @@ interface Fixer {
 
 type FilterContext = SourceContext & { getSourceCode?: () => SourceContext["sourceCode"] };
 
+const isFilterMethodCall = (node: AstNode): boolean => {
+  const callee = node.callee as AstNode | undefined;
+  if (callee?.type !== "MemberExpression") return false;
+  const method = ((callee.property as AstNode | undefined)?.name as string | undefined) ?? "";
+  return FILTER_METHODS.has(method);
+};
+
+const onlyArgument = (node: AstNode): AstNode | undefined => {
+  const args = (node.arguments as AstNode[] | undefined) ?? [];
+  if (args.length !== 1) return undefined;
+  return args[0] as AstNode | undefined;
+};
+
+const isStringLiteral = (node: AstNode): boolean => node.type === "Literal" && typeof node.value === "string";
+
+const textOf = (context: FilterContext, node: AstNode): string => {
+  const source = context.sourceCode ?? context.getSourceCode?.();
+  return source?.getText?.(node) ?? "";
+};
+
+const filterObjectFor = (context: FilterContext, argument: AstNode): string | null => {
+  if (argument.type === "ArrayExpression") return `{ queryKey: ${textOf(context, argument)} }`;
+  if (isStringLiteral(argument)) return `{ queryKey: [${textOf(context, argument)}] }`;
+  return null;
+};
+
 export const noDeprecatedFilters: Rule = {
   meta: {
     type: "problem",
@@ -30,40 +56,21 @@ export const noDeprecatedFilters: Rule = {
   createOnce(context: FilterContext) {
     return {
       CallExpression(node: AstNode) {
-        const callee = node.callee as AstNode | undefined;
-        if (callee?.type !== "MemberExpression") return;
-        if (!FILTER_METHODS.has(((callee.property as AstNode | undefined)?.name as string | undefined) ?? "")) return;
-        const args = (node.arguments as AstNode[] | undefined) ?? [];
-        const argument = args[0];
-        if (!argument || args.length !== 1) return;
-        const source = context.sourceCode ?? context.getSourceCode?.();
-        if (argument.type === "ArrayExpression") {
-          const text = source?.getText?.(argument) ?? "";
-          context.report({
-            node: argument,
-            message: DEPRECATED_FILTERS,
-            suggest: [
-              {
-                desc: "Wrap in a filter object",
-                fix: (fixer: Fixer) => fixer.replaceText(argument, `{ queryKey: ${text} }`),
-              },
-            ],
-          });
-          return;
-        }
-        if (argument.type === "Literal" && typeof argument.value === "string") {
-          const text = source?.getText?.(argument) ?? "";
-          context.report({
-            node: argument,
-            message: DEPRECATED_FILTERS,
-            suggest: [
-              {
-                desc: "Wrap in a filter object",
-                fix: (fixer: Fixer) => fixer.replaceText(argument, `{ queryKey: [${text}] }`),
-              },
-            ],
-          });
-        }
+        if (!isFilterMethodCall(node)) return;
+        const argument = onlyArgument(node);
+        if (argument === undefined) return;
+        const filterObject = filterObjectFor(context, argument);
+        if (filterObject === null) return;
+        context.report({
+          node: argument,
+          message: DEPRECATED_FILTERS,
+          suggest: [
+            {
+              desc: "Wrap in a filter object",
+              fix: (fixer: Fixer) => fixer.replaceText(argument, filterObject),
+            },
+          ],
+        });
       },
     };
   },

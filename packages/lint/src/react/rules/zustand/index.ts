@@ -1,4 +1,3 @@
-// @ashstack/lint — Zustand conventions.
 import { defineModule } from "../../../lib/module.js";
 import { requireSelector } from "./require-selector.js";
 

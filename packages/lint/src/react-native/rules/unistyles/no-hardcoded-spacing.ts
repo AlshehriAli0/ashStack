@@ -2,11 +2,7 @@ import { findInSubtree, hasAncestor, subtreeHas } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
 import { inCreate, memberPath, propertyName } from "./shared.js";
 
-// Spacing and type scale only. Everything else a style holds numerically —
-// flex, opacity, zIndex, borderWidth, aspectRatio — has no token and no reason
-// for one. paddingLeft/paddingRight are excluded: in-sheet already rejects the
-// physical direction, and the logical replacement lands back in this set.
-const TOKEN_SPACING = new Set([
+const SPACING_AND_TYPE_SCALE = new Set([
   "padding",
   "paddingTop",
   "paddingBottom",
@@ -72,7 +68,7 @@ export const noHardcodedSpacing: Rule = inCreate(
     Property(node) {
       if (!inside()) return;
       const name = propertyName(node);
-      if (!TOKEN_SPACING.has(name)) return;
+      if (!SPACING_AND_TYPE_SCALE.has(name)) return;
       if (isTokenDerived(node.value)) return;
       const rawNumber = findInSubtree(node.value, current => {
         const argument = current.argument as AstNode | undefined;

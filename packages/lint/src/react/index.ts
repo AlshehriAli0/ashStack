@@ -1,6 +1,3 @@
-// @ashstack/lint — react entry. Extends core with react, jsx-a11y, React Compiler,
-// you-might-not-need-an-effect, and the auto-detected library modules
-// (query, zustand, i18n).
 import { fileURLToPath } from "node:url";
 
 import core from "../core/index.js";
@@ -13,10 +10,40 @@ import zustandModule from "./rules/zustand/index.js";
 
 export const reactModules = [queryModule, zustandModule, i18nModule];
 
-const REACT_RULES = {
-  // web/react apps live on noop callbacks and empty default handlers
+const ALLOW_EMPTY_NOOP_HANDLERS = {
   "eslint/no-empty": "off",
   "eslint/no-empty-function": "off",
+} as const;
+
+const REACT_COMPILER_RULES = {
+  "react/error-boundaries": "error",
+  "react/globals": "error",
+  "react/immutability": "error",
+  "react/incompatible-library": "error",
+  "react/preserve-manual-memoization": "error",
+  "react/purity": "error",
+  "react/refs": "error",
+  "react/set-state-in-effect": "error",
+  "react/set-state-in-render": "error",
+  "react/static-components": "error",
+  "react/use-memo": "error",
+  "react/void-use-memo": "error",
+  "react/capitalized-calls": "error",
+  "react/exhaustive-effect-dependencies": "error",
+  "react/hooks": "error",
+  "react/memo-dependencies": "error",
+  "react/no-deriving-state-in-effects": "error",
+  "react/invariant": "error",
+  "react/rule-suppression": "error",
+  "react/syntax": "error",
+  "react/todo": "error",
+  "react/unsupported-syntax": "error",
+} as const;
+
+const FILE_BASED_ROUTER_FILES = ["**/routes/**", "**/src/app/**", "**/app/**/_layout.tsx", "**/app/**/+*.tsx"];
+
+const REACT_RULES = {
+  ...ALLOW_EMPTY_NOOP_HANDLERS,
   "max-lines-per-function": ["error", { max: 120, skipBlankLines: true, skipComments: true }],
   "react/react-in-jsx-scope": "off",
   "react/style-prop-object": "off",
@@ -48,29 +75,7 @@ const REACT_RULES = {
   "react/require-render-return": "error",
   "react/self-closing-comp": "error",
   "react/void-dom-elements-no-children": "error",
-  // React Compiler diagnostics (oxlint react plugin, Aug 2026)
-  "react/error-boundaries": "error",
-  "react/globals": "error",
-  "react/immutability": "error",
-  "react/incompatible-library": "error",
-  "react/preserve-manual-memoization": "error",
-  "react/purity": "error",
-  "react/refs": "error",
-  "react/set-state-in-effect": "error",
-  "react/set-state-in-render": "error",
-  "react/static-components": "error",
-  "react/use-memo": "error",
-  "react/void-use-memo": "error",
-  "react/capitalized-calls": "error",
-  "react/exhaustive-effect-dependencies": "error",
-  "react/hooks": "error",
-  "react/memo-dependencies": "error",
-  "react/no-deriving-state-in-effects": "error",
-  "react/invariant": "error",
-  "react/rule-suppression": "error",
-  "react/syntax": "error",
-  "react/todo": "error",
-  "react/unsupported-syntax": "error",
+  ...REACT_COMPILER_RULES,
   "jsx-a11y/alt-text": "error",
   "jsx-a11y/anchor-has-content": "error",
   "jsx-a11y/anchor-is-valid": "error",
@@ -121,8 +126,7 @@ const react = (options: ReactOptions = {}): OxlintConfig => {
     rules: { ...REACT_RULES, ...composed.rules },
     overrides: [
       {
-        // file-based routers own their filename conventions
-        files: ["**/routes/**", "**/src/app/**", "**/app/**/_layout.tsx", "**/app/**/+*.tsx"],
+        files: FILE_BASED_ROUTER_FILES,
         rules: { "unicorn/filename-case": "off" },
       },
     ],

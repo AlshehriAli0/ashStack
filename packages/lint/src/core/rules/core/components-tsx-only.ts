@@ -11,9 +11,6 @@ const isBarrel = (program: AstNode): boolean =>
       (statement.type === "ExportNamedDeclaration" && statement.declaration == null)
   );
 
-// Scope this with an override on the components glob. It fires on a file that
-// renders no JSX and is not a barrel, so a component file is never flagged even
-// when the rule is left on everywhere.
 export const componentsTsxOnly: Rule = {
   meta: {
     type: "problem",
@@ -23,19 +20,19 @@ export const componentsTsxOnly: Rule = {
     defaultOff: true,
   },
   createOnce(context: RuleContext) {
-    let sawJsx = false;
+    let rendersJsx = false;
     return {
       before() {
-        sawJsx = false;
+        rendersJsx = false;
       },
       JSXElement() {
-        sawJsx = true;
+        rendersJsx = true;
       },
       JSXFragment() {
-        sawJsx = true;
+        rendersJsx = true;
       },
       "Program:exit"(node: AstNode) {
-        if (sawJsx || isBarrel(node)) return;
+        if (rendersJsx || isBarrel(node)) return;
         context.report({ node, message: COMPONENTS_TSX_ONLY });
       },
     };

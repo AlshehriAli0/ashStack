@@ -1,6 +1,6 @@
 import { gate, problem, tagIdentifier } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
-import { type GateContext } from "./shared.js";
+import type { GateContext } from "./shared.js";
 
 export const noScrollviewMap: Rule = problem(
   "A `ScrollView` mounts every child up front, so a mapped collection does not belong in its children.",

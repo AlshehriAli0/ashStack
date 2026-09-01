@@ -1,10 +1,3 @@
-// @ashstack/lint — Legend State v3 conventions.
-//
-// The rule that matters most is no-assignment: writing to an observable with `=`
-// is a silent no-op. The code looks right, the linter used to say nothing, and
-// the value never changes.
-//
-// Gates fail OPEN — if the source text is unavailable the rule still runs.
 import { defineModule } from "../../../lib/module.js";
 import { naming } from "./naming.js";
 import { noAssignment } from "./no-assignment.js";

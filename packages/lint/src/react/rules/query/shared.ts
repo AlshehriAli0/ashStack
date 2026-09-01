@@ -1,7 +1,9 @@
-// Bits two or more query rules need: the source-text view used to gate a file
-// and to read a property value back as text, plus property-key naming.
 import type { AstNode, RuleContext } from "../../../lib/types.js";
 
+/**
+ * A rule context that can read source text: `text` is the whole file, which
+ * `gate()` scans to skip files outright, and `getText` reads one node back.
+ */
 export type SourceContext = RuleContext & {
   sourceCode?: { text?: string; getText?: (node?: AstNode) => string };
 };

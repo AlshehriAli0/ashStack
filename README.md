@@ -82,8 +82,10 @@ Shipped but **off by default** (opt in): `@ashstack/core/no-comments`, `@ashstac
 
 ```sh
 bun install
+bun run lint             # this repo lints itself with core()
 bun run check:fixtures   # every custom rule: bad fixture fires, good fixture doesn't
 bun run check:smoke      # consumer-style end-to-end check
+bun run docs:rules       # regenerate RULES.md
 ```
 
 Releases: [changesets](https://github.com/changesets/changesets) — add one per PR, CI publishes on merge.

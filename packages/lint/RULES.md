@@ -2,34 +2,211 @@
 
 # @ashstack/lint — rules
 
-Everything this package ships, generated from the modules' own metadata, the entries, and the fixtures.
+Every rule these entries turn on, generated from the entries, the module manifests and the fixtures. Built-in oxlint rules link to their upstream page; the modules' own rules are documented in full here.
 
-Disable any rule by its full id in your `rules` block, e.g. `"@ashstack/unistyles/no-margin": "off"`.
+Disable any rule by its id in your `rules` block, e.g. `"@ashstack/unistyles/no-margin": "off"`. Each entry contains the one before it, so its table lists only what it changes.
 
-- [`@ashstack/core`](#ashstackcore) — 6 rules
-- [`@ashstack/zod`](#ashstackzod) — 1 rule
-- [`@ashstack/query`](#ashstackquery) — 5 rules
-- [`@ashstack/zustand`](#ashstackzustand) — 1 rule
-- [`@ashstack/i18n`](#ashstacki18n) — 3 rules
-- [`@ashstack/react-native`](#ashstackreactnative) — 11 rules
-- [`@ashstack/unistyles`](#ashstackunistyles) — 12 rules
-- [`@ashstack/legend-list`](#ashstacklegendlist) — 11 rules
-- [`@ashstack/legend-state`](#ashstacklegendstate) — 8 rules
-- [`@ashstack/reanimated`](#ashstackreanimated) — 11 rules
-- [`@ashstack/turbo-image`](#ashstackturboimage) — 2 rules
-- [`@ashstack/skia`](#ashstackskia) — 2 rules
-- [`@ashstack/keyboard`](#ashstackkeyboard) — 1 rule
-- [Entry configuration (built-in rules)](#entry-configuration-built-in-rules)
+- [`core()`](#core)
+  - [`@ashstack/core`](#ashstackcore) — 6 rules
+  - [`@ashstack/zod`](#ashstackzod) — 1 rule
+- [`react()`](#react)
+  - [`@ashstack/query`](#ashstackquery) — 5 rules
+  - [`@ashstack/zustand`](#ashstackzustand) — 1 rule
+  - [`@ashstack/i18n`](#ashstacki18n) — 3 rules
+- [`react-native()`](#react-native)
+  - [`@ashstack/react-native`](#ashstackreact-native) — 11 rules
+  - [`@ashstack/unistyles`](#ashstackunistyles) — 12 rules
+  - [`@ashstack/legend-list`](#ashstacklegend-list) — 11 rules
+  - [`@ashstack/legend-state`](#ashstacklegend-state) — 8 rules
+  - [`@ashstack/reanimated`](#ashstackreanimated) — 11 rules
+  - [`@ashstack/turbo-image`](#ashstackturbo-image) — 2 rules
+  - [`@ashstack/skia`](#ashstackskia) — 2 rules
+  - [`@ashstack/keyboard`](#ashstackkeyboard) — 1 rule
 
-## `@ashstack/core`
+## `core()`
+
+Any TypeScript project — backend, CLI, library.
+
+Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`.
+
+### Built-in rules
+
+| Rule | Setting |
+| --- | --- |
+| [`array-callback-return`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/array-callback-return.html) | `"error"` |
+| [`constructor-super`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/constructor-super.html) | `"error"` |
+| [`default-param-last`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/default-param-last.html) | `"error"` |
+| [`eqeqeq`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/eqeqeq.html) | `["error","always",{"null":"ignore"}]` |
+| [`for-direction`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/for-direction.html) | `"error"` |
+| [`getter-return`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/getter-return.html) | `"error"` |
+| [`func-style`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/func-style.html) | `["error","expression"]` |
+| [`no-array-constructor`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-array-constructor.html) | `"error"` |
+| [`no-async-promise-executor`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-async-promise-executor.html) | `"error"` |
+| [`no-case-declarations`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-case-declarations.html) | `"error"` |
+| [`no-class-assign`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-class-assign.html) | `"error"` |
+| [`no-compare-neg-zero`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-compare-neg-zero.html) | `"error"` |
+| [`no-cond-assign`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-cond-assign.html) | `"error"` |
+| [`no-const-assign`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-const-assign.html) | `"error"` |
+| [`no-constant-condition`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-constant-condition.html) | `"error"` |
+| [`no-control-regex`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-control-regex.html) | `"error"` |
+| [`no-debugger`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-debugger.html) | `"error"` |
+| [`no-dupe-class-members`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-dupe-class-members.html) | `"error"` |
+| [`no-dupe-else-if`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-dupe-else-if.html) | `"error"` |
+| [`no-dupe-keys`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-dupe-keys.html) | `"error"` |
+| [`no-duplicate-case`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-duplicate-case.html) | `"error"` |
+| [`no-empty`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-empty.html) | `"error"` |
+| [`no-empty-character-class`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-empty-character-class.html) | `"error"` |
+| [`no-empty-pattern`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-empty-pattern.html) | `"error"` |
+| [`no-ex-assign`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-ex-assign.html) | `"error"` |
+| [`no-extra-boolean-cast`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-extra-boolean-cast.html) | `"error"` |
+| [`no-fallthrough`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-fallthrough.html) | `"error"` |
+| [`no-func-assign`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-func-assign.html) | `"error"` |
+| [`no-global-assign`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-global-assign.html) | `"error"` |
+| [`no-import-assign`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-import-assign.html) | `"error"` |
+| [`no-irregular-whitespace`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-irregular-whitespace.html) | `"error"` |
+| [`no-loss-of-precision`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-loss-of-precision.html) | `"error"` |
+| [`no-misleading-character-class`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-misleading-character-class.html) | `"error"` |
+| [`no-negated-condition`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-negated-condition.html) | `"error"` |
+| [`no-nested-ternary`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-nested-ternary.html) | `"error"` |
+| [`no-new-native-nonconstructor`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-new-native-nonconstructor.html) | `"error"` |
+| [`no-nonoctal-decimal-escape`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-nonoctal-decimal-escape.html) | `"error"` |
+| [`no-obj-calls`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-obj-calls.html) | `"error"` |
+| [`no-param-reassign`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-param-reassign.html) | `"error"` |
+| [`no-prototype-builtins`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-prototype-builtins.html) | `"error"` |
+| [`no-redeclare`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-redeclare.html) | `"off"` |
+| [`no-regex-spaces`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-regex-spaces.html) | `"error"` |
+| [`no-self-assign`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-self-assign.html) | `"error"` |
+| [`no-setter-return`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-setter-return.html) | `"error"` |
+| [`no-shadow-restricted-names`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-shadow-restricted-names.html) | `"error"` |
+| [`no-sparse-arrays`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-sparse-arrays.html) | `"error"` |
+| [`no-this-before-super`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-this-before-super.html) | `"error"` |
+| [`no-undef`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-undef.html) | `"off"` |
+| [`no-unreachable`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-unreachable.html) | `"error"` |
+| [`no-unsafe-finally`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-unsafe-finally.html) | `"error"` |
+| [`no-unsafe-negation`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-unsafe-negation.html) | `"error"` |
+| [`no-unsafe-optional-chaining`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-unsafe-optional-chaining.html) | `"error"` |
+| [`no-unused-labels`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-unused-labels.html) | `"error"` |
+| [`no-unused-private-class-members`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-unused-private-class-members.html) | `"error"` |
+| [`no-useless-catch`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-useless-catch.html) | `"error"` |
+| [`no-useless-constructor`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-useless-constructor.html) | `"error"` |
+| [`no-useless-escape`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-useless-escape.html) | `"error"` |
+| [`no-var`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-var.html) | `"error"` |
+| [`no-with`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-with.html) | `"error"` |
+| [`object-shorthand`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/object-shorthand.html) | `["error","methods"]` |
+| [`prefer-rest-params`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/prefer-rest-params.html) | `"error"` |
+| [`require-yield`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/require-yield.html) | `"error"` |
+| [`use-isnan`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/use-isnan.html) | `"error"` |
+| [`valid-typeof`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/valid-typeof.html) | `"error"` |
+| [`no-unused-vars`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-unused-vars.html) | `["error",{"args":"after-used","argsIgnorePattern":"^_","caughtErrors":"all","caughtErrorsIgnorePattern":"^_","varsIgnorePattern":"^_","destructuredArrayIgnorePattern":"^_","ignoreRestSiblings":true,"fix":{"imports":"safe-fix"}}]` |
+| [`no-use-before-define`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-use-before-define.html) | `"off"` |
+| [`complexity`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/complexity.html) | `["error",{"max":12}]` |
+| [`max-depth`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/max-depth.html) | `["error",3]` |
+| [`max-params`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/max-params.html) | `["error",4]` |
+| [`max-lines`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/max-lines.html) | `["error",{"max":300,"skipBlankLines":true,"skipComments":true}]` |
+| [`max-lines-per-function`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/max-lines-per-function.html) | `["error",{"max":250,"skipBlankLines":true,"skipComments":true}]` |
+| [`eslint/no-await-in-loop`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-await-in-loop.html) | `"error"` |
+| [`eslint/no-console`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-console.html) | `"off"` |
+| [`eslint/no-constant-binary-expression`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-constant-binary-expression.html) | `"off"` |
+| [`eslint/no-control-regex`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-control-regex.html) | `"error"` |
+| [`eslint/no-else-return`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-else-return.html) | `"error"` |
+| [`eslint/no-empty`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-empty.html) | `"error"` |
+| [`eslint/no-empty-function`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-empty-function.html) | `"error"` |
+| [`eslint/no-new`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-new.html) | `"off"` |
+| [`eslint/no-self-compare`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-self-compare.html) | `"error"` |
+| [`eslint/no-shadow`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-shadow.html) | `"error"` |
+| [`eslint/no-template-curly-in-string`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-template-curly-in-string.html) | `"error"` |
+| [`eslint/no-unassigned-vars`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-unassigned-vars.html) | `"off"` |
+| [`eslint/no-underscore-dangle`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-underscore-dangle.html) | `"off"` |
+| [`eslint/no-unmodified-loop-condition`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-unmodified-loop-condition.html) | `"off"` |
+| [`eslint/no-unused-expressions`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-unused-expressions.html) | `"off"` |
+| [`eslint/no-useless-concat`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-useless-concat.html) | `"off"` |
+| [`eslint/preserve-caught-error`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/preserve-caught-error.html) | `"off"` |
+| [`eslint/prefer-arrow-callback`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/prefer-arrow-callback.html) | `"error"` |
+| [`eslint/prefer-const`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/prefer-const.html) | `"error"` |
+| [`eslint/prefer-template`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/prefer-template.html) | `"error"` |
+| [`typescript/consistent-type-imports`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/consistent-type-imports.html) | `"error"` |
+| [`typescript/dot-notation`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/dot-notation.html) | `"error"` |
+| [`typescript/no-confusing-void-expression`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-confusing-void-expression.html) | `"error"` |
+| [`typescript/no-empty-object-type`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-empty-object-type.html) | `["error",{"allowInterfaces":"with-single-extends"}]` |
+| [`typescript/no-explicit-any`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-explicit-any.html) | `"error"` |
+| [`typescript/no-extra-non-null-assertion`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-extra-non-null-assertion.html) | `"error"` |
+| [`typescript/no-extraneous-class`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-extraneous-class.html) | `"error"` |
+| [`typescript/no-floating-promises`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-floating-promises.html) | `"error"` |
+| [`typescript/no-import-type-side-effects`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-import-type-side-effects.html) | `"error"` |
+| [`typescript/no-misused-new`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-misused-new.html) | `"error"` |
+| [`typescript/no-misused-promises`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-misused-promises.html) | `["error",{"checksVoidReturn":false}]` |
+| [`typescript/no-namespace`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-namespace.html) | `"error"` |
+| [`typescript/no-non-null-asserted-optional-chain`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-non-null-asserted-optional-chain.html) | `"error"` |
+| [`typescript/no-non-null-assertion`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-non-null-assertion.html) | `"error"` |
+| [`typescript/no-unnecessary-boolean-literal-compare`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-unnecessary-boolean-literal-compare.html) | `"error"` |
+| [`typescript/no-unnecessary-condition`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-unnecessary-condition.html) | `"error"` |
+| [`typescript/no-unnecessary-type-assertion`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-unnecessary-type-assertion.html) | `"error"` |
+| [`typescript/no-unnecessary-type-constraint`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-unnecessary-type-constraint.html) | `"error"` |
+| [`typescript/no-unsafe-declaration-merging`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-unsafe-declaration-merging.html) | `"error"` |
+| [`typescript/no-unsafe-function-type`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-unsafe-function-type.html) | `"error"` |
+| [`typescript/no-unsafe-type-assertion`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-unsafe-type-assertion.html) | `"error"` |
+| [`typescript/no-wrapper-object-types`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-wrapper-object-types.html) | `"error"` |
+| [`typescript/prefer-as-const`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/prefer-as-const.html) | `"error"` |
+| [`typescript/prefer-namespace-keyword`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/prefer-namespace-keyword.html) | `"error"` |
+| [`typescript/prefer-nullish-coalescing`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/prefer-nullish-coalescing.html) | `"error"` |
+| [`typescript/require-await`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/require-await.html) | `"error"` |
+| [`typescript/switch-exhaustiveness-check`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/switch-exhaustiveness-check.html) | `"error"` |
+| [`import/no-commonjs`](https://oxc.rs/docs/guide/usage/linter/rules/import/no-commonjs.html) | `"off"` |
+| [`import/no-cycle`](https://oxc.rs/docs/guide/usage/linter/rules/import/no-cycle.html) | `"error"` |
+| [`import/no-duplicates`](https://oxc.rs/docs/guide/usage/linter/rules/import/no-duplicates.html) | `"error"` |
+| [`import/no-named-as-default`](https://oxc.rs/docs/guide/usage/linter/rules/import/no-named-as-default.html) | `"off"` |
+| [`import/no-named-as-default-member`](https://oxc.rs/docs/guide/usage/linter/rules/import/no-named-as-default-member.html) | `"off"` |
+| [`import/no-self-import`](https://oxc.rs/docs/guide/usage/linter/rules/import/no-self-import.html) | `"off"` |
+| [`import/no-unassigned-import`](https://oxc.rs/docs/guide/usage/linter/rules/import/no-unassigned-import.html) | `"off"` |
+| [`unicorn/consistent-function-scoping`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/consistent-function-scoping.html) | `"off"` |
+| [`unicorn/no-array-reverse`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-array-reverse.html) | `"off"` |
+| [`unicorn/no-array-sort`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-array-sort.html) | `"off"` |
+| [`unicorn/no-empty-file`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-empty-file.html) | `"off"` |
+| [`unicorn/no-new-array`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-new-array.html) | `"off"` |
+| [`unicorn/no-useless-fallback-in-spread`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-useless-fallback-in-spread.html) | `"off"` |
+| [`unicorn/no-useless-spread`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/no-useless-spread.html) | `"off"` |
+| [`unicorn/prefer-add-event-listener`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-add-event-listener.html) | `"off"` |
+| [`unicorn/prefer-array-flat-map`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-array-flat-map.html) | `"error"` |
+| [`unicorn/prefer-date-now`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-date-now.html) | `"error"` |
+| [`unicorn/prefer-logical-operator-over-ternary`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-logical-operator-over-ternary.html) | `"error"` |
+| [`unicorn/prefer-node-protocol`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-node-protocol.html) | `"error"` |
+| [`unicorn/prefer-optional-catch-binding`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/prefer-optional-catch-binding.html) | `"error"` |
+| [`unicorn/require-module-specifiers`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/require-module-specifiers.html) | `"off"` |
+| [`unicorn/throw-new-error`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/throw-new-error.html) | `"error"` |
+| [`promise/always-return`](https://oxc.rs/docs/guide/usage/linter/rules/promise/always-return.html) | `"off"` |
+| [`promise/no-callback-in-promise`](https://oxc.rs/docs/guide/usage/linter/rules/promise/no-callback-in-promise.html) | `"off"` |
+| [`promise/no-multiple-resolved`](https://oxc.rs/docs/guide/usage/linter/rules/promise/no-multiple-resolved.html) | `"off"` |
+| [`promise/no-promise-in-callback`](https://oxc.rs/docs/guide/usage/linter/rules/promise/no-promise-in-callback.html) | `"off"` |
+| [`oxc/no-async-endpoint-handlers`](https://oxc.rs/docs/guide/usage/linter/rules/oxc/no-async-endpoint-handlers.html) | `"off"` |
+
+### `@ashstack/core`
 
 _always on via `core()` and every entry above it (opt-in rules noted per rule)._
 
-### `@ashstack/core/no-comments`
+#### `@ashstack/core/no-comments`
 
-Reports every comment that is neither a `// what: <fact>` line nor a tooling directive.
+Reports every comment that is neither a `// what: <fact>` line nor a tooling directive. The message names the refactoring that removes it — Rename, Extract Function, Guard Clause — and holds the `// what:` hatch to facts that outlive the code, such as a platform bug or a measured number. With `jsdoc: "allow"`, a `/** */` block documenting the declaration directly beneath it is kept, while a floating one still reports.
 
 > Off by default — opt in per project.
+
+**Options**
+
+```jsonc
+[
+  {
+    "type": "object",
+    "properties": {
+      "jsdoc": {
+        "enum": [
+          "allow",
+          "report"
+        ]
+      }
+    },
+    "additionalProperties": false
+  }
+]
+```
 
 **Fails**
 
@@ -37,7 +214,11 @@ Reports every comment that is neither a `// what: <fact>` line nor a tooling dir
 import { View } from "react-native";
 
 // this panel is the one the settings screen renders
-export const Panel = () => <View />;
+export const Panel = () => {
+  /** the flag that decides whether the footer shows */
+  const flag = true;
+  return <View>{flag}</View>;
+};
 ```
 
 **Passes**
@@ -45,10 +226,15 @@ export const Panel = () => <View />;
 ```tsx
 import { View } from "react-native";
 
-export const SettingsPanel = () => <View />;
+/** Renders the settings screen's panel. */
+export const SettingsPanel = () => {
+  // what: Android fires this layout pass twice below API 31.
+  const showsFooter = true;
+  return <View>{showsFooter}</View>;
+};
 ```
 
-### `@ashstack/core/comment-escape-hatch`
+#### `@ashstack/core/comment-escape-hatch`
 
 Checks each `// what:` comment for the allowed one-line shape and length, and reports the ones past the per-file budget.
 
@@ -96,7 +282,7 @@ export const first = 1;
 export const Panel = () => <View />;
 ```
 
-### `@ashstack/core/no-naming-convention`
+#### `@ashstack/core/no-naming-convention`
 
 Flags a variable, object property, type member or enum member whose name misses the casings allowed for its kind.
 
@@ -137,7 +323,7 @@ export const styles = {
 export const Panel = () => <View />;
 ```
 
-### `@ashstack/core/use-design-system`
+#### `@ashstack/core/use-design-system`
 
 Bans importing a raw primitive your design system already wraps. Wrapped components come from scanning the design-system directory, plus the explicit `use` map for names, paths and source modules the scan cannot infer. Files under the design-system directory (or `exempt`) are skipped.
 
@@ -197,7 +383,7 @@ export const Panel = () => (
 );
 ```
 
-### `@ashstack/core/components-tsx-only`
+#### `@ashstack/core/components-tsx-only`
 
 Reports a file that renders no JSX and is not a re-export barrel. Scope it to `components/`.
 
@@ -217,7 +403,7 @@ import { View } from "react-native";
 export const Panel = () => <View />;
 ```
 
-### `@ashstack/core/hoist-intl`
+#### `@ashstack/core/hoist-intl`
 
 Fires on `new Intl.*` inside a function that renders JSX, unless the call already sits in `useMemo` or `useCallback`.
 
@@ -242,11 +428,11 @@ const formatter = new Intl.NumberFormat("en-US");
 export const Price = () => <View accessibilityValue={{ text: formatter.format(10) }} />;
 ```
 
-## `@ashstack/zod`
+### `@ashstack/zod`
 
 _auto-enabled when `zod` is a dependency._
 
-### `@ashstack/zod/prefer-enum`
+#### `@ashstack/zod/prefer-enum`
 
 Matches `z.nativeEnum()` calls and any `z.union()` whose members are all `z.literal()` strings.
 
@@ -288,11 +474,105 @@ export const mixedUnion = z.union([z.literal("manual"), z.number()]);
 export const Panel = () => <View />;
 ```
 
-## `@ashstack/query`
+## `react()`
+
+React on the web. Adds the you-might-not-need-an-effect plugin (`react-effect/`) alongside oxlint's own.
+
+Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`, `jsx-a11y`.
+
+### Built-in rules
+
+| Rule | Setting |
+| --- | --- |
+| [`max-lines-per-function`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/max-lines-per-function.html) | `["error",{"max":120,"skipBlankLines":true,"skipComments":true}]` |
+| [`eslint/no-empty`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-empty.html) | `"off"` |
+| [`eslint/no-empty-function`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-empty-function.html) | `"off"` |
+| [`react/react-in-jsx-scope`](https://oxc.rs/docs/guide/usage/linter/rules/react/react-in-jsx-scope.html) | `"off"` |
+| [`react/style-prop-object`](https://oxc.rs/docs/guide/usage/linter/rules/react/style-prop-object.html) | `"off"` |
+| [`react/only-export-components`](https://oxc.rs/docs/guide/usage/linter/rules/react/only-export-components.html) | `"off"` |
+| [`react/rules-of-hooks`](https://oxc.rs/docs/guide/usage/linter/rules/react/rules-of-hooks.html) | `"error"` |
+| [`react/exhaustive-deps`](https://oxc.rs/docs/guide/usage/linter/rules/react/exhaustive-deps.html) | `"error"` |
+| [`react/button-has-type`](https://oxc.rs/docs/guide/usage/linter/rules/react/button-has-type.html) | `"error"` |
+| [`react/checked-requires-onchange-or-readonly`](https://oxc.rs/docs/guide/usage/linter/rules/react/checked-requires-onchange-or-readonly.html) | `"error"` |
+| [`react/iframe-missing-sandbox`](https://oxc.rs/docs/guide/usage/linter/rules/react/iframe-missing-sandbox.html) | `"error"` |
+| [`react/jsx-boolean-value`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-boolean-value.html) | `"error"` |
+| [`react/jsx-key`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-key.html) | `"error"` |
+| [`react/jsx-no-comment-textnodes`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-no-comment-textnodes.html) | `"error"` |
+| [`react/jsx-no-constructed-context-values`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-no-constructed-context-values.html) | `"error"` |
+| [`react/jsx-no-duplicate-props`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-no-duplicate-props.html) | `"error"` |
+| [`react/jsx-no-target-blank`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-no-target-blank.html) | `"error"` |
+| [`react/jsx-no-useless-fragment`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-no-useless-fragment.html) | `"error"` |
+| [`react/no-array-index-key`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-array-index-key.html) | `"error"` |
+| [`react/no-children-prop`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-children-prop.html) | `"error"` |
+| [`react/no-danger`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-danger.html) | `"error"` |
+| [`react/no-danger-with-children`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-danger-with-children.html) | `"error"` |
+| [`react/no-direct-mutation-state`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-direct-mutation-state.html) | `"error"` |
+| [`react/no-is-mounted`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-is-mounted.html) | `"error"` |
+| [`react/no-render-return-value`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-render-return-value.html) | `"error"` |
+| [`react/no-string-refs`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-string-refs.html) | `"error"` |
+| [`react/no-this-in-sfc`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-this-in-sfc.html) | `"error"` |
+| [`react/no-unsafe`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-unsafe.html) | `"error"` |
+| [`react/no-unescaped-entities`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-unescaped-entities.html) | `"error"` |
+| [`react/no-unstable-nested-components`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-unstable-nested-components.html) | `["error",{"allowAsProps":true}]` |
+| [`react/require-render-return`](https://oxc.rs/docs/guide/usage/linter/rules/react/require-render-return.html) | `"error"` |
+| [`react/self-closing-comp`](https://oxc.rs/docs/guide/usage/linter/rules/react/self-closing-comp.html) | `"error"` |
+| [`react/void-dom-elements-no-children`](https://oxc.rs/docs/guide/usage/linter/rules/react/void-dom-elements-no-children.html) | `"error"` |
+| [`react/error-boundaries`](https://oxc.rs/docs/guide/usage/linter/rules/react/error-boundaries.html) | `"error"` |
+| [`react/globals`](https://oxc.rs/docs/guide/usage/linter/rules/react/globals.html) | `"error"` |
+| [`react/immutability`](https://oxc.rs/docs/guide/usage/linter/rules/react/immutability.html) | `"error"` |
+| [`react/incompatible-library`](https://oxc.rs/docs/guide/usage/linter/rules/react/incompatible-library.html) | `"error"` |
+| [`react/preserve-manual-memoization`](https://oxc.rs/docs/guide/usage/linter/rules/react/preserve-manual-memoization.html) | `"error"` |
+| [`react/purity`](https://oxc.rs/docs/guide/usage/linter/rules/react/purity.html) | `"error"` |
+| [`react/refs`](https://oxc.rs/docs/guide/usage/linter/rules/react/refs.html) | `"error"` |
+| [`react/set-state-in-effect`](https://oxc.rs/docs/guide/usage/linter/rules/react/set-state-in-effect.html) | `"error"` |
+| [`react/set-state-in-render`](https://oxc.rs/docs/guide/usage/linter/rules/react/set-state-in-render.html) | `"error"` |
+| [`react/static-components`](https://oxc.rs/docs/guide/usage/linter/rules/react/static-components.html) | `"error"` |
+| [`react/use-memo`](https://oxc.rs/docs/guide/usage/linter/rules/react/use-memo.html) | `"error"` |
+| [`react/void-use-memo`](https://oxc.rs/docs/guide/usage/linter/rules/react/void-use-memo.html) | `"error"` |
+| [`react/capitalized-calls`](https://oxc.rs/docs/guide/usage/linter/rules/react/capitalized-calls.html) | `"error"` |
+| [`react/exhaustive-effect-dependencies`](https://oxc.rs/docs/guide/usage/linter/rules/react/exhaustive-effect-dependencies.html) | `"error"` |
+| [`react/hooks`](https://oxc.rs/docs/guide/usage/linter/rules/react/hooks.html) | `"error"` |
+| [`react/memo-dependencies`](https://oxc.rs/docs/guide/usage/linter/rules/react/memo-dependencies.html) | `"error"` |
+| [`react/no-deriving-state-in-effects`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-deriving-state-in-effects.html) | `"error"` |
+| [`react/invariant`](https://oxc.rs/docs/guide/usage/linter/rules/react/invariant.html) | `"error"` |
+| [`react/rule-suppression`](https://oxc.rs/docs/guide/usage/linter/rules/react/rule-suppression.html) | `"error"` |
+| [`react/syntax`](https://oxc.rs/docs/guide/usage/linter/rules/react/syntax.html) | `"error"` |
+| [`react/todo`](https://oxc.rs/docs/guide/usage/linter/rules/react/todo.html) | `"error"` |
+| [`react/unsupported-syntax`](https://oxc.rs/docs/guide/usage/linter/rules/react/unsupported-syntax.html) | `"error"` |
+| [`jsx-a11y/alt-text`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/alt-text.html) | `"error"` |
+| [`jsx-a11y/anchor-has-content`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/anchor-has-content.html) | `"error"` |
+| [`jsx-a11y/anchor-is-valid`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/anchor-is-valid.html) | `"error"` |
+| [`jsx-a11y/click-events-have-key-events`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/click-events-have-key-events.html) | `"off"` |
+| [`jsx-a11y/control-has-associated-label`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/control-has-associated-label.html) | `"off"` |
+| [`jsx-a11y/heading-has-content`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/heading-has-content.html) | `"error"` |
+| [`jsx-a11y/img-redundant-alt`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/img-redundant-alt.html) | `"error"` |
+| [`jsx-a11y/interactive-supports-focus`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/interactive-supports-focus.html) | `"error"` |
+| [`jsx-a11y/label-has-associated-control`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/label-has-associated-control.html) | `"error"` |
+| [`jsx-a11y/no-aria-hidden-on-focusable`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/no-aria-hidden-on-focusable.html) | `"error"` |
+| [`jsx-a11y/no-autofocus`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/no-autofocus.html) | `["error",{"ignoreNonDOM":true}]` |
+| [`jsx-a11y/no-noninteractive-element-interactions`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/no-noninteractive-element-interactions.html) | `"off"` |
+| [`jsx-a11y/no-noninteractive-tabindex`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/no-noninteractive-tabindex.html) | `"error"` |
+| [`jsx-a11y/no-redundant-roles`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/no-redundant-roles.html) | `"error"` |
+| [`jsx-a11y/no-static-element-interactions`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/no-static-element-interactions.html) | `"error"` |
+| [`jsx-a11y/prefer-tag-over-role`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/prefer-tag-over-role.html) | `"off"` |
+| [`jsx-a11y/role-has-required-aria-props`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/role-has-required-aria-props.html) | `"error"` |
+| [`jsx-a11y/role-supports-aria-props`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/role-supports-aria-props.html) | `"error"` |
+| [`react-effect/no-derived-state`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
+| [`react-effect/no-chain-state-updates`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
+| [`react-effect/no-event-handler`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
+| [`react-effect/no-adjust-state-on-prop-change`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
+| [`react-effect/no-reset-all-state-on-prop-change`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
+| [`react-effect/no-pass-live-state-to-parent`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
+| [`react-effect/no-pass-data-to-parent`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
+| [`react-effect/no-external-store-subscription`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
+| [`react-effect/no-initialize-state`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
+| [`unicorn/filename-case`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/filename-case.html) | `["error",{"cases":{"kebabCase":true,"pascalCase":true}}]` |
+
+### `@ashstack/query`
 
 _auto-enabled by `react()` when `@tanstack/react-query` is a dependency._
 
-### `@ashstack/query/no-inline-keys`
+#### `@ashstack/query/no-inline-keys`
 
 Fires when a query key is written as an array literal at the call site instead of coming from a keys factory.
 
@@ -325,7 +605,7 @@ export const PostList = () => {
 };
 ```
 
-### `@ashstack/query/no-deprecated-filters`
+#### `@ashstack/query/no-deprecated-filters`
 
 Catches the positional key argument that TanStack Query v5 removed from `invalidateQueries` and its sibling methods. Suggests the filter-object form.
 
@@ -357,7 +637,7 @@ export const RefreshPanel = () => {
 };
 ```
 
-### `@ashstack/query/require-destructured-hooks`
+#### `@ashstack/query/require-destructured-hooks`
 
 Reports a hook imported from an `@/api/*.queries` or `@/api/*.mutations` module whose result is bound to one name instead of destructured.
 
@@ -387,7 +667,7 @@ export const PostList = () => {
 };
 ```
 
-### `@ashstack/query/no-fetch-in-query-fn`
+#### `@ashstack/query/no-fetch-in-query-fn`
 
 Looks inside every `queryFn` and `mutationFn` for a bare `fetch(`.
 
@@ -423,7 +703,7 @@ export const PostList = () => {
 };
 ```
 
-### `@ashstack/query/next-page-param-undefined`
+#### `@ashstack/query/next-page-param-undefined`
 
 Fires when the body of a `getNextPageParam` contains `return null`.
 
@@ -473,11 +753,11 @@ export const PostFeed = () => {
 };
 ```
 
-## `@ashstack/zustand`
+### `@ashstack/zustand`
 
 _auto-enabled by `react()` when `zustand` is a dependency._
 
-### `@ashstack/zustand/require-selector`
+#### `@ashstack/zustand/require-selector`
 
 Reports a store hook called with no arguments, or with `undefined` where the selector belongs.
 
@@ -507,11 +787,11 @@ export const Panel = () => {
 };
 ```
 
-## `@ashstack/i18n`
+### `@ashstack/i18n`
 
 _auto-enabled by `react()` when an i18n library (i18next, lingui, react-intl, use-intl, next-intl, expo-localization) is a dependency._
 
-### `@ashstack/i18n/no-bare-text`
+#### `@ashstack/i18n/no-bare-text`
 
 Fires when a JSX element carries no attributes and its single child is plain literal text.
 
@@ -536,7 +816,7 @@ export const Greeting = () => {
 };
 ```
 
-### `@ashstack/i18n/no-bare-attrs`
+#### `@ashstack/i18n/no-bare-attrs`
 
 Checks a configurable list of user-visible JSX attributes for a plain string literal value. It defaults to placeholder, accessibilityLabel, accessibilityHint and title.
 
@@ -579,7 +859,7 @@ export const NameField = () => {
 };
 ```
 
-### `@ashstack/i18n/no-bare-toast`
+#### `@ashstack/i18n/no-bare-toast`
 
 Matches a `toast.*` call whose only argument is a string literal.
 
@@ -607,7 +887,21 @@ export const SaveButton = () => {
 };
 ```
 
-## `@ashstack/react-native`
+## `react-native()`
+
+Expo and React Native.
+
+Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`, `jsx-a11y`.
+
+### Built-in rules
+
+| Rule | Setting |
+| --- | --- |
+| [`eslint/no-empty`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-empty.html) | `"error"` |
+| [`eslint/no-empty-function`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-empty-function.html) | `"error"` |
+| [`react-effect/no-event-handler`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"off"` |
+
+### `@ashstack/react-native`
 
 _always on via `reactNative()`._
 
@@ -617,7 +911,7 @@ _always on via `reactNative()`._
 - `useContext` from `react`
 - any import of `expo-linear-gradient`, `react-native-linear-gradient`
 
-### `@ashstack/react-native/no-keyboard-will-events`
+#### `@ashstack/react-native/no-keyboard-will-events`
 
 Bans the `keyboardWill*` event names. They are iOS-only, so on Android the listener registers and never fires.
 
@@ -645,7 +939,7 @@ export function subscribeGood() {
 }
 ```
 
-### `@ashstack/react-native/no-scroll-position-state`
+#### `@ashstack/react-native/no-scroll-position-state`
 
 Bans a React state setter inside a scroll handler prop. Scroll fires every frame, and so would the re-render.
 
@@ -675,7 +969,7 @@ export function GoodScroll() {
 }
 ```
 
-### `@ashstack/react-native/no-conditional-style-array`
+#### `@ashstack/react-native/no-conditional-style-array`
 
 Bans conditional and logical entries inside a JSX `style` array. A falsy entry leaves a hole that breaks the Unistyles C++ proxy.
 
@@ -707,7 +1001,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-### `@ashstack/react-native/no-leaked-render`
+#### `@ashstack/react-native/no-leaked-render`
 
 Bans a `&&` guard on a `.length` expression in JSX. The falsy left operand leaks into the output, and a bare `0` crashes React Native with "Text strings must be rendered within a <Text> component".
 
@@ -731,7 +1025,7 @@ export function GoodLeakedRender({ items }: { items: string[] }) {
 }
 ```
 
-### `@ashstack/react-native/no-rn-image-network-source`
+#### `@ashstack/react-native/no-rn-image-network-source`
 
 Bans a react-native `<Image>` with a network `{ uri }` source. It has no disk cache and no decode sizing, so the image re-downloads at full size on every cold start.
 
@@ -762,7 +1056,7 @@ export function GoodNetworkImage({ uri }: { uri: string }) {
 }
 ```
 
-### `@ashstack/react-native/no-redundant-view-nesting`
+#### `@ashstack/react-native/no-redundant-view-nesting`
 
 Bans a View or Animated.View that wraps an identical view when neither carries anything but a style. Every extra host view is a real node in the native tree.
 
@@ -800,7 +1094,7 @@ export function GoodNesting() {
 const styles = StyleSheet.create({ merged: {} });
 ```
 
-### `@ashstack/react-native/no-rn-namespace-import`
+#### `@ashstack/react-native/no-rn-namespace-import`
 
 Bans a namespace import of react-native and a re-export of its `Platform`. Both defeat Metro's platform shaking, so dead `Platform.OS` branches ship in both bundles.
 
@@ -820,7 +1114,7 @@ import { View } from "react-native";
 export const GoodNamespace = () => <View />;
 ```
 
-### `@ashstack/react-native/no-unlabeled-icon-pressable`
+#### `@ashstack/react-native/no-unlabeled-icon-pressable`
 
 Requires an accessible name on an icon-only touchable or an icon-only Expo UI `<Button>`. Without a label, hint or visible text, a screen reader cannot reach the control.
 
@@ -854,7 +1148,7 @@ export function GoodIconButton({ onPress }: { onPress: () => void }) {
 }
 ```
 
-### `@ashstack/react-native/hoist-stateless-function`
+#### `@ashstack/react-native/hoist-stateless-function`
 
 Requires module scope for a non-component function that reads nothing from the component around it. Out there it is created once, keeps a stable identity, and can be tested without rendering.
 
@@ -882,7 +1176,7 @@ export function GoodHoist({ count }: { count: number }) {
 }
 ```
 
-### `@ashstack/react-native/no-manual-memo`
+#### `@ashstack/react-native/no-manual-memo`
 
 Bans `useMemo`, `useCallback` and `memo` unless a `why:` comment on the line above states the case the React Compiler cannot see: something rendered per list row, or a cost that was measured.
 
@@ -909,7 +1203,7 @@ export function useGoodTotal(items: number[]) {
 }
 ```
 
-### `@ashstack/react-native/no-dynamic-import`
+#### `@ashstack/react-native/no-dynamic-import`
 
 Bans dynamic `import()` outside a `React.lazy` or `dynamic` wrapper. Metro inlines it into the same bundle, so nothing is deferred and the module is hidden from the typechecker.
 
@@ -934,7 +1228,7 @@ export const Details = lazy(() => import("./details"));
 export const Panel = () => <View />;
 ```
 
-## `@ashstack/unistyles`
+### `@ashstack/unistyles`
 
 _auto-enabled when `react-native-unistyles` is a dependency._
 
@@ -945,7 +1239,7 @@ _auto-enabled when `react-native-unistyles` is a dependency._
 - `SafeAreaView` from `react-native`
 - `useSafeAreaInsets`, `useSafeAreaFrame`, `SafeAreaView` from `react-native-safe-area-context`
 
-### `@ashstack/unistyles/animated-theme`
+#### `@ashstack/unistyles/animated-theme`
 
 A Reanimated worklet hook cannot see `useUnistyles()` theme changes on the UI thread. Read the shared value from `useAnimatedTheme()` there instead.
 
@@ -977,7 +1271,7 @@ export function Fade() {
 }
 ```
 
-### `@ashstack/unistyles/content-container`
+#### `@ashstack/unistyles/content-container`
 
 A raw component never subscribes its `contentContainerStyle` to theme or `rt` updates. Wrap the component with `withUnistyles` when the style depends on either.
 
@@ -1013,7 +1307,7 @@ const styles = StyleSheet.create((theme, rt) => ({
 }));
 ```
 
-### `@ashstack/unistyles/in-sheet`
+#### `@ashstack/unistyles/in-sheet`
 
 Inside `StyleSheet.create`, require `rt` and theme values rather than Dimensions, PixelRatio, Appearance, I18nManager, StatusBar or `UnistylesRuntime`. It also covers logical spacing, `boxShadow`, `borderCurve` and a redundant `as const`.
 
@@ -1055,7 +1349,7 @@ export const styles = StyleSheet.create((theme, rt) => ({
 }));
 ```
 
-### `@ashstack/unistyles/insets`
+#### `@ashstack/unistyles/insets`
 
 Disallow passing `useSafeAreaInsets()` values into a dynamic style function or an inline JSX style object. Read `rt.insets` inside `StyleSheet.create` instead.
 
@@ -1092,7 +1386,7 @@ const styles = StyleSheet.create((theme, rt) => ({
 }));
 ```
 
-### `@ashstack/unistyles/no-hardcoded-color`
+#### `@ashstack/unistyles/no-hardcoded-color`
 
 Disallow hex and CSS-function colors inside `StyleSheet.create`. A raw color skips dark mode and never changes with the theme.
 
@@ -1118,7 +1412,7 @@ export const styles = StyleSheet.create(theme => ({
 }));
 ```
 
-### `@ashstack/unistyles/no-hardcoded-spacing`
+#### `@ashstack/unistyles/no-hardcoded-spacing`
 
 Require `theme.spacing` or `theme.sizing.scale` for spacing, radius and type values inside `StyleSheet.create`, instead of raw numbers.
 
@@ -1158,7 +1452,7 @@ export const styles = StyleSheet.create(theme => ({
 }));
 ```
 
-### `@ashstack/unistyles/no-margin`
+#### `@ashstack/unistyles/no-margin`
 
 Disallow non-negative `margin` inside `StyleSheet.create`; `gap` on the parent or `padding` on the element spaces children without leaving a hole when one is removed.
 
@@ -1186,7 +1480,7 @@ export const styles = StyleSheet.create(theme => ({
 }));
 ```
 
-### `@ashstack/unistyles/no-style-spread`
+#### `@ashstack/unistyles/no-style-spread`
 
 Disallow spreading a stylesheet style into another object. The spread reads through the Unistyles C++ proxy once, so the result stops reacting to the theme.
 
@@ -1221,7 +1515,7 @@ const styles = StyleSheet.create(theme => ({
 }));
 ```
 
-### `@ashstack/unistyles/no-unused-styles`
+#### `@ashstack/unistyles/no-unused-styles`
 
 Report stylesheet keys that nothing in the file reads. A computed key, a computed read, or a sheet that leaves the module skips the whole file.
 
@@ -1256,7 +1550,7 @@ const styles = StyleSheet.create(theme => ({
 }));
 ```
 
-### `@ashstack/unistyles/rtl-style-call`
+#### `@ashstack/unistyles/rtl-style-call`
 
 Disallow passing `I18nManager.isRTL` from JSX into a dynamic style function. Unistyles tracks the dependency itself once the style reads `rt.rtl`.
 
@@ -1290,7 +1584,7 @@ const styles = StyleSheet.create((theme, rt) => ({
 }));
 ```
 
-### `@ashstack/unistyles/theme-screen-component`
+#### `@ashstack/unistyles/theme-screen-component`
 
 `theme.screen.*` is a snapshot taken at module initialization, so a component that reads it never sees the current size. `useUnistyles().rt.screen` and `useWindowDimensions` do.
 
@@ -1320,7 +1614,7 @@ export function Panel() {
 }
 ```
 
-### `@ashstack/unistyles/theme-style-attr`
+#### `@ashstack/unistyles/theme-style-attr`
 
 Theme-dependent values belong in `StyleSheet.create`, not in a JSX `style` prop that reads a `useUnistyles()` theme.
 
@@ -1352,7 +1646,7 @@ const styles = StyleSheet.create(theme => ({
 }));
 ```
 
-## `@ashstack/legend-list`
+### `@ashstack/legend-list`
 
 _auto-enabled when `@legendapp/list` is a dependency._
 
@@ -1362,7 +1656,7 @@ _auto-enabled when `@legendapp/list` is a dependency._
 - `*` from `@shopify/flash-list`
 - any import of `@legendapp/list`
 
-### `@ashstack/legend-list/required-props`
+#### `@ashstack/legend-list/required-props`
 
 Require `keyExtractor` and an explicit `recycleItems` on a Legend List. Without a key extractor the list keys its rows by index.
 
@@ -1399,7 +1693,7 @@ export const NoRecycle = () => (
 );
 ```
 
-### `@ashstack/legend-list/no-index-key-extractor`
+#### `@ashstack/legend-list/no-index-key-extractor`
 
 Disallow a `keyExtractor` that uses its index parameter. Cached sizes and recycled row state hang off the key, so a prepend points every measurement at the wrong item.
 
@@ -1436,7 +1730,7 @@ export const Good = () => (
 );
 ```
 
-### `@ashstack/legend-list/no-remount-key`
+#### `@ashstack/legend-list/no-remount-key`
 
 Disallow `key` on a Legend List, which remounts on any key change and loses its measurements and scroll position. Pass `dataKey` instead.
 
@@ -1472,7 +1766,7 @@ export const Good = () => (
 );
 ```
 
-### `@ashstack/legend-list/no-inline-data`
+#### `@ashstack/legend-list/no-inline-data`
 
 Disallow building a Legend List's `data` inline. Each render produces a new array reference, and the list re-diffs, re-keys and drops what it had cached.
 
@@ -1512,7 +1806,7 @@ export const Good = () => {
 };
 ```
 
-### `@ashstack/legend-list/no-inline-extra-data`
+#### `@ashstack/legend-list/no-inline-extra-data`
 
 An inline object or array as `extraData` takes a new identity on every parent render, and every mounted row re-evaluates with it.
 
@@ -1553,7 +1847,7 @@ export const Good = () => (
 );
 ```
 
-### `@ashstack/legend-list/no-inline-render-item-props`
+#### `@ashstack/legend-list/no-inline-render-item-props`
 
 Disallow inline object and array literals on props nested inside `renderItem`. A row whose props take a new identity every render can never be skipped.
 
@@ -1595,7 +1889,7 @@ export const Good = () => (
 );
 ```
 
-### `@ashstack/legend-list/no-mixed-children`
+#### `@ashstack/legend-list/no-mixed-children`
 
 Disallow passing both `data` and real children to a Legend List. The combination is unsupported and one of the two is dropped without a warning.
 
@@ -1641,7 +1935,7 @@ export const ChildrenMode = () => (
 );
 ```
 
-### `@ashstack/legend-list/no-flex-in-content-container`
+#### `@ashstack/legend-list/no-flex-in-content-container`
 
 Disallow `flex` in a Legend List's `contentContainerStyle`, where it sizes the scrolled content to the viewport and the list ends up measuring zero height.
 
@@ -1699,7 +1993,7 @@ const styles = StyleSheet.create({
 });
 ```
 
-### `@ashstack/legend-list/typed-items-need-item-type`
+#### `@ashstack/legend-list/typed-items-need-item-type`
 
 Require `getItemType` when a row branches on `item.type`. Without it every layout shares one recycling pool and one size average.
 
@@ -1743,7 +2037,7 @@ export const Good = () => (
 );
 ```
 
-### `@ashstack/legend-list/no-scrollview-map`
+#### `@ashstack/legend-list/no-scrollview-map`
 
 A `ScrollView` mounts every child up front, so a mapped collection does not belong in its children.
 
@@ -1781,7 +2075,7 @@ export const Good = () => (
 );
 ```
 
-### `@ashstack/legend-list/no-unsupported-props`
+#### `@ashstack/legend-list/no-unsupported-props`
 
 Disallow FlashList and FlatList props that Legend List v3 does not have. It ignores them rather than rejecting them, so the feature looks broken.
 
@@ -1822,7 +2116,7 @@ export const Good = () => (
 );
 ```
 
-## `@ashstack/legend-state`
+### `@ashstack/legend-state`
 
 _auto-enabled when `@legendapp/state` is a dependency._
 
@@ -1830,7 +2124,7 @@ _auto-enabled when `@legendapp/state` is a dependency._
 
 - `use$`, `useSelector` from `@legendapp/state/react`
 
-### `@ashstack/legend-state/no-assignment`
+#### `@ashstack/legend-state/no-assignment`
 
 Write an observable with `.set(...)` or `.assign({...})`. Assigning or incrementing it with an operator is a silent no-op.
 
@@ -1866,7 +2160,7 @@ export const bump = () => {
 };
 ```
 
-### `@ashstack/legend-state/naming`
+#### `@ashstack/legend-state/naming`
 
 A variable initialized from `observable()` or `useObservable()` needs a trailing `$`. The other rules in this module key off that suffix.
 
@@ -1886,7 +2180,7 @@ import { observable } from "@legendapp/state";
 export const counter$ = observable(0);
 ```
 
-### `@ashstack/legend-state/no-nested-observable`
+#### `@ashstack/legend-state/no-nested-observable`
 
 Never pass an observable to `observable()` or `useObservable()`. The wrapper is a second node, and reads and writes on it never reach the original.
 
@@ -1910,7 +2204,7 @@ export const count$ = observable(0);
 export const doubled$ = observable(() => count$.get() * 2);
 ```
 
-### `@ashstack/legend-state/no-react-mirror`
+#### `@ashstack/legend-state/no-react-mirror`
 
 Seeding `useState` from an observable's `get()` or `peek()` gives the value two owners. Read it with `useValue(...)` where it renders.
 
@@ -1939,7 +2233,7 @@ const count$ = observable(0);
 export const useCounter = () => useValue(count$);
 ```
 
-### `@ashstack/legend-state/no-untracked-get-in-jsx`
+#### `@ashstack/legend-state/no-untracked-get-in-jsx`
 
 A `get()` placed directly in a JSX expression container is a plain read. The value renders once and never updates.
 
@@ -1970,7 +2264,7 @@ export const Counter = () => (
 );
 ```
 
-### `@ashstack/legend-state/no-peek-in-selector`
+#### `@ashstack/legend-state/no-peek-in-selector`
 
 `peek()` never subscribes, so a selector or tracking callback that uses it never re-runs. Call `get()` there and keep `peek()` for handlers.
 
@@ -1998,7 +2292,7 @@ export const useTheme = () => useValue(() => settings$.theme.get());
 export const readThemeOnce = () => settings$.theme.peek();
 ```
 
-### `@ashstack/legend-state/no-object-selector`
+#### `@ashstack/legend-state/no-object-selector`
 
 A `useValue` selector that builds a new object or array returns a fresh identity every run. The component then re-renders on every store change.
 
@@ -2027,7 +2321,7 @@ export const useTheme = () => useValue(() => settings$.theme.get());
 export const useLocale = () => useValue(() => settings$.locale.get());
 ```
 
-### `@ashstack/legend-state/no-observable-in-component`
+#### `@ashstack/legend-state/no-observable-in-component`
 
 Calling `observable()` inside a component or hook makes a new observable on every render. Use `useObservable()` or a module-level store instead.
 
@@ -2055,7 +2349,7 @@ export const Counter = () => {
 };
 ```
 
-## `@ashstack/reanimated`
+### `@ashstack/reanimated`
 
 _auto-enabled when `react-native-reanimated` is a dependency._
 
@@ -2065,7 +2359,7 @@ _auto-enabled when `react-native-reanimated` is a dependency._
 - `runOnJS`, `runOnUI` from `react-native-reanimated`
 - `runOnJS`, `runOnUI` from `react-native-worklets`
 
-### `@ashstack/reanimated/animated-reaction-safety`
+#### `@ashstack/reanimated/animated-reaction-safety`
 
 A `useAnimatedReaction` result callback loops forever if it writes a shared value the prepare callback reads. Guard `scheduleOnRN` there on the current result differing from the previous one.
 
@@ -2118,7 +2412,7 @@ export function GoodReaction() {
 }
 ```
 
-### `@ashstack/reanimated/animated-style-needs-animated-component`
+#### `@ashstack/reanimated/animated-style-needs-animated-component`
 
 An animated style only takes effect on an `Animated.*` component. A plain element applies it once at mount and then never updates.
 
@@ -2147,7 +2441,7 @@ export function GoodAnimatedStyleHost() {
 }
 ```
 
-### `@ashstack/reanimated/animated-updater-purity`
+#### `@ashstack/reanimated/animated-updater-purity`
 
 An updater passed to `useAnimatedStyle` or `useAnimatedProps` must stay pure, so it may not write a shared value or call `scheduleOnRN`.
 
@@ -2181,7 +2475,7 @@ export function useGoodUpdater() {
 }
 ```
 
-### `@ashstack/reanimated/gpu-properties-only`
+#### `@ashstack/reanimated/gpu-properties-only`
 
 Animate `transform` and `opacity` in `useAnimatedStyle` and `useAnimatedProps`. Layout properties such as `width` or `margin` recalculate layout every frame.
 
@@ -2212,7 +2506,7 @@ export function GoodGpu() {
 }
 ```
 
-### `@ashstack/reanimated/hoist-layout-animation-builder`
+#### `@ashstack/reanimated/hoist-layout-animation-builder`
 
 A layout animation belongs at module scope, or inside a memo when it depends on component values. The `entering`/`exiting`/`layout` props otherwise rebuild it on every render.
 
@@ -2238,7 +2532,7 @@ export function GoodLayoutBuilder() {
 }
 ```
 
-### `@ashstack/reanimated/interpolate-needs-clamp`
+#### `@ashstack/reanimated/interpolate-needs-clamp`
 
 Give `interpolate()` an explicit `Extrapolation.CLAMP` fourth argument. Without it the output keeps going past the ends of the input range.
 
@@ -2268,7 +2562,7 @@ export function GoodInterpolate() {
 }
 ```
 
-### `@ashstack/reanimated/no-shared-value-dot-value`
+#### `@ashstack/reanimated/no-shared-value-dot-value`
 
 Shared values are read with `.get()` and written with `.set(...)`, never through `.value`. React Compiler cannot track a `.value` access.
 
@@ -2296,7 +2590,7 @@ export function useGoodDotValue() {
 }
 ```
 
-### `@ashstack/reanimated/no-react-state-from-continuous-worklet`
+#### `@ashstack/reanimated/no-react-state-from-continuous-worklet`
 
 A worklet that runs every frame must not send a React state setter through `scheduleOnRN`. That puts a Fabric commit on an animation frame.
 
@@ -2334,7 +2628,7 @@ export function GoodWorkletState() {
 }
 ```
 
-### `@ashstack/reanimated/prefer-lazy-shared-value-initializer`
+#### `@ashstack/reanimated/prefer-lazy-shared-value-initializer`
 
 Pass a computed `useSharedValue` initial value as a function. An eager call runs on every render while only the first result is kept.
 
@@ -2362,7 +2656,7 @@ export function useGoodInitializer() {
 }
 ```
 
-### `@ashstack/reanimated/schedule-on-rn-scope`
+#### `@ashstack/reanimated/schedule-on-rn-scope`
 
 `scheduleOnRN` takes a function declared in RN Runtime scope. An inline callback can end up created on the wrong runtime.
 
@@ -2396,7 +2690,7 @@ export function useGoodSchedule() {
 }
 ```
 
-### `@ashstack/reanimated/shared-value-usage`
+#### `@ashstack/reanimated/shared-value-usage`
 
 Destructuring a shared value or mutating what its `get()` returned detaches it from Reanimated reactivity. Reading or writing one while JSX evaluates also makes render impure.
 
@@ -2429,11 +2723,11 @@ export function GoodSharedValueUsage() {
 }
 ```
 
-## `@ashstack/turbo-image`
+### `@ashstack/turbo-image`
 
 _auto-enabled when `react-native-turbo-image` is a dependency._
 
-### `@ashstack/turbo-image/require-resize`
+#### `@ashstack/turbo-image/require-resize`
 
 Requires `resize` on a TurboImage so the native decoder downsamples before the bitmap reaches memory. A full-resolution decode wastes tens of megabytes and stalls the first frame.
 
@@ -2457,7 +2751,7 @@ export function GoodTurboResize({ uri }: { uri: string }) {
 }
 ```
 
-### `@ashstack/turbo-image/require-cache-policy`
+#### `@ashstack/turbo-image/require-cache-policy`
 
 Requires `cachePolicy` on a TurboImage. Without one the image is re-fetched over the network on every cold start, so an already-scrolled feed costs its bandwidth again.
 
@@ -2481,11 +2775,11 @@ export function GoodTurboCache({ uri }: { uri: string }) {
 }
 ```
 
-## `@ashstack/skia`
+### `@ashstack/skia`
 
 _auto-enabled when `@shopify/react-native-skia` is a dependency._
 
-### `@ashstack/skia/canvas-opaque`
+#### `@ashstack/skia/canvas-opaque`
 
 Requires an explicit `opaque` prop on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.
 
@@ -2510,7 +2804,7 @@ export function GoodCanvas() {
 }
 ```
 
-### `@ashstack/skia/no-legacy-path-hooks`
+#### `@ashstack/skia/no-legacy-path-hooks`
 
 Bans the `usePathValue` and `usePathInterpolation` imports. Both self-dirty Reanimated mappers and re-record idle canvases.
 
@@ -2546,11 +2840,11 @@ export function useGoodPath(width: SharedValue<number>) {
 }
 ```
 
-## `@ashstack/keyboard`
+### `@ashstack/keyboard`
 
 _auto-enabled when `react-native-keyboard-controller` is a dependency._
 
-### `@ashstack/keyboard/avoiding-view-source`
+#### `@ashstack/keyboard/avoiding-view-source`
 
 Bans `KeyboardAvoidingView` imported from react-native. It waits on `keyboardDidShow` and never subscribes to WindowInsetsAnimationCallback, so under edge-to-edge Android the input sits under the keyboard.
 
@@ -2583,263 +2877,22 @@ export function GoodKeyboardHost() {
 }
 ```
 
-## Entry configuration (built-in rules)
+### Import bans without a module
 
-What each entry sets beyond the custom modules — oxlint built-ins are documented at https://oxc.rs/docs/guide/usage/linter/rules.html. Each table shows only what changed relative to the previous entry.
+_Auto-detected from your dependencies; these carry no rules of their own._
 
-### `core()`
+**`react-native-gesture-handler` installed**
 
-Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`. Categories: `{"correctness":"error","suspicious":"error","perf":"error","pedantic":"off","style":"off","restriction":"off","nursery":"off"}`.
+- `Pressable`, `TouchableOpacity`, `TouchableHighlight`, `TouchableWithoutFeedback`, `TouchableNativeFeedback` from `react-native`
 
-| Rule | Setting |
-| --- | --- |
-| `array-callback-return` | `"error"` |
-| `constructor-super` | `"error"` |
-| `default-param-last` | `"error"` |
-| `eqeqeq` | `["error","always",{"null":"ignore"}]` |
-| `for-direction` | `"error"` |
-| `getter-return` | `"error"` |
-| `func-style` | `["error","expression"]` |
-| `no-array-constructor` | `"error"` |
-| `no-async-promise-executor` | `"error"` |
-| `no-case-declarations` | `"error"` |
-| `no-class-assign` | `"error"` |
-| `no-compare-neg-zero` | `"error"` |
-| `no-cond-assign` | `"error"` |
-| `no-const-assign` | `"error"` |
-| `no-constant-condition` | `"error"` |
-| `no-control-regex` | `"error"` |
-| `no-debugger` | `"error"` |
-| `no-dupe-class-members` | `"error"` |
-| `no-dupe-else-if` | `"error"` |
-| `no-dupe-keys` | `"error"` |
-| `no-duplicate-case` | `"error"` |
-| `no-empty` | `"error"` |
-| `no-empty-character-class` | `"error"` |
-| `no-empty-pattern` | `"error"` |
-| `no-ex-assign` | `"error"` |
-| `no-extra-boolean-cast` | `"error"` |
-| `no-fallthrough` | `"error"` |
-| `no-func-assign` | `"error"` |
-| `no-global-assign` | `"error"` |
-| `no-import-assign` | `"error"` |
-| `no-irregular-whitespace` | `"error"` |
-| `no-loss-of-precision` | `"error"` |
-| `no-misleading-character-class` | `"error"` |
-| `no-negated-condition` | `"error"` |
-| `no-nested-ternary` | `"error"` |
-| `no-new-native-nonconstructor` | `"error"` |
-| `no-nonoctal-decimal-escape` | `"error"` |
-| `no-obj-calls` | `"error"` |
-| `no-param-reassign` | `"error"` |
-| `no-prototype-builtins` | `"error"` |
-| `no-redeclare` | `"off"` |
-| `no-regex-spaces` | `"error"` |
-| `no-self-assign` | `"error"` |
-| `no-setter-return` | `"error"` |
-| `no-shadow-restricted-names` | `"error"` |
-| `no-sparse-arrays` | `"error"` |
-| `no-this-before-super` | `"error"` |
-| `no-undef` | `"off"` |
-| `no-unreachable` | `"error"` |
-| `no-unsafe-finally` | `"error"` |
-| `no-unsafe-negation` | `"error"` |
-| `no-unsafe-optional-chaining` | `"error"` |
-| `no-unused-labels` | `"error"` |
-| `no-unused-private-class-members` | `"error"` |
-| `no-useless-catch` | `"error"` |
-| `no-useless-constructor` | `"error"` |
-| `no-useless-escape` | `"error"` |
-| `no-var` | `"error"` |
-| `no-with` | `"error"` |
-| `object-shorthand` | `["error","methods"]` |
-| `prefer-rest-params` | `"error"` |
-| `require-yield` | `"error"` |
-| `use-isnan` | `"error"` |
-| `valid-typeof` | `"error"` |
-| `no-unused-vars` | `["error",{"args":"after-used","argsIgnorePattern":"^_","caughtErrors":"all","caughtErrorsIgnorePattern":"^_","varsIgnorePattern":"^_","destructuredArrayIgnorePattern":"^_","ignoreRestSiblings":true,"fix":{"imports":"safe-fix"}}]` |
-| `no-use-before-define` | `"off"` |
-| `complexity` | `["error",{"max":12}]` |
-| `max-depth` | `["error",3]` |
-| `max-params` | `["error",4]` |
-| `max-lines` | `["error",{"max":300,"skipBlankLines":true,"skipComments":true}]` |
-| `max-lines-per-function` | `["error",{"max":250,"skipBlankLines":true,"skipComments":true}]` |
-| `eslint/no-await-in-loop` | `"error"` |
-| `eslint/no-console` | `"off"` |
-| `eslint/no-constant-binary-expression` | `"off"` |
-| `eslint/no-control-regex` | `"error"` |
-| `eslint/no-else-return` | `"error"` |
-| `eslint/no-empty` | `"error"` |
-| `eslint/no-empty-function` | `"error"` |
-| `eslint/no-new` | `"off"` |
-| `eslint/no-self-compare` | `"error"` |
-| `eslint/no-shadow` | `"error"` |
-| `eslint/no-template-curly-in-string` | `"error"` |
-| `eslint/no-unassigned-vars` | `"off"` |
-| `eslint/no-underscore-dangle` | `"off"` |
-| `eslint/no-unmodified-loop-condition` | `"off"` |
-| `eslint/no-unused-expressions` | `"off"` |
-| `eslint/no-useless-concat` | `"off"` |
-| `eslint/preserve-caught-error` | `"off"` |
-| `eslint/prefer-arrow-callback` | `"error"` |
-| `eslint/prefer-const` | `"error"` |
-| `eslint/prefer-template` | `"error"` |
-| `typescript/consistent-type-imports` | `"error"` |
-| `typescript/dot-notation` | `"error"` |
-| `typescript/no-confusing-void-expression` | `"error"` |
-| `typescript/no-empty-object-type` | `["error",{"allowInterfaces":"with-single-extends"}]` |
-| `typescript/no-explicit-any` | `"error"` |
-| `typescript/no-extra-non-null-assertion` | `"error"` |
-| `typescript/no-extraneous-class` | `"error"` |
-| `typescript/no-floating-promises` | `"error"` |
-| `typescript/no-import-type-side-effects` | `"error"` |
-| `typescript/no-misused-new` | `"error"` |
-| `typescript/no-misused-promises` | `["error",{"checksVoidReturn":false}]` |
-| `typescript/no-namespace` | `"error"` |
-| `typescript/no-non-null-asserted-optional-chain` | `"error"` |
-| `typescript/no-non-null-assertion` | `"error"` |
-| `typescript/no-unnecessary-boolean-literal-compare` | `"error"` |
-| `typescript/no-unnecessary-condition` | `"error"` |
-| `typescript/no-unnecessary-type-assertion` | `"error"` |
-| `typescript/no-unnecessary-type-constraint` | `"error"` |
-| `typescript/no-unsafe-declaration-merging` | `"error"` |
-| `typescript/no-unsafe-function-type` | `"error"` |
-| `typescript/no-unsafe-type-assertion` | `"error"` |
-| `typescript/no-wrapper-object-types` | `"error"` |
-| `typescript/prefer-as-const` | `"error"` |
-| `typescript/prefer-namespace-keyword` | `"error"` |
-| `typescript/prefer-nullish-coalescing` | `"error"` |
-| `typescript/require-await` | `"error"` |
-| `typescript/switch-exhaustiveness-check` | `"error"` |
-| `import/no-commonjs` | `"off"` |
-| `import/no-cycle` | `"error"` |
-| `import/no-duplicates` | `"error"` |
-| `import/no-named-as-default` | `"off"` |
-| `import/no-named-as-default-member` | `"off"` |
-| `import/no-self-import` | `"off"` |
-| `import/no-unassigned-import` | `"off"` |
-| `unicorn/consistent-function-scoping` | `"off"` |
-| `unicorn/no-array-reverse` | `"off"` |
-| `unicorn/no-array-sort` | `"off"` |
-| `unicorn/no-empty-file` | `"off"` |
-| `unicorn/no-new-array` | `"off"` |
-| `unicorn/no-useless-fallback-in-spread` | `"off"` |
-| `unicorn/no-useless-spread` | `"off"` |
-| `unicorn/prefer-add-event-listener` | `"off"` |
-| `unicorn/prefer-array-flat-map` | `"error"` |
-| `unicorn/prefer-date-now` | `"error"` |
-| `unicorn/prefer-logical-operator-over-ternary` | `"error"` |
-| `unicorn/prefer-node-protocol` | `"error"` |
-| `unicorn/prefer-optional-catch-binding` | `"error"` |
-| `unicorn/require-module-specifiers` | `"off"` |
-| `unicorn/throw-new-error` | `"error"` |
-| `promise/always-return` | `"off"` |
-| `promise/no-callback-in-promise` | `"off"` |
-| `promise/no-multiple-resolved` | `"off"` |
-| `promise/no-promise-in-callback` | `"off"` |
-| `oxc/no-async-endpoint-handlers` | `"off"` |
+**`expo-router` installed**
 
-### `react()` — changes on top of `core()`
+- any import of `@react-navigation/stack`, `@react-navigation/bottom-tabs`
 
-Adds plugins: `react`, `jsx-a11y`, plus the you-might-not-need-an-effect js-plugin (`react-effect/`).
+**`expo-font` installed**
 
-| Rule | Setting |
-| --- | --- |
-| `max-lines-per-function` | `["error",{"max":120,"skipBlankLines":true,"skipComments":true}]` |
-| `eslint/no-empty` | `"off"` |
-| `eslint/no-empty-function` | `"off"` |
-| `react/react-in-jsx-scope` | `"off"` |
-| `react/style-prop-object` | `"off"` |
-| `react/only-export-components` | `"off"` |
-| `react/rules-of-hooks` | `"error"` |
-| `react/exhaustive-deps` | `"error"` |
-| `react/button-has-type` | `"error"` |
-| `react/checked-requires-onchange-or-readonly` | `"error"` |
-| `react/iframe-missing-sandbox` | `"error"` |
-| `react/jsx-boolean-value` | `"error"` |
-| `react/jsx-key` | `"error"` |
-| `react/jsx-no-comment-textnodes` | `"error"` |
-| `react/jsx-no-constructed-context-values` | `"error"` |
-| `react/jsx-no-duplicate-props` | `"error"` |
-| `react/jsx-no-target-blank` | `"error"` |
-| `react/jsx-no-useless-fragment` | `"error"` |
-| `react/no-array-index-key` | `"error"` |
-| `react/no-children-prop` | `"error"` |
-| `react/no-danger` | `"error"` |
-| `react/no-danger-with-children` | `"error"` |
-| `react/no-direct-mutation-state` | `"error"` |
-| `react/no-is-mounted` | `"error"` |
-| `react/no-render-return-value` | `"error"` |
-| `react/no-string-refs` | `"error"` |
-| `react/no-this-in-sfc` | `"error"` |
-| `react/no-unsafe` | `"error"` |
-| `react/no-unescaped-entities` | `"error"` |
-| `react/no-unstable-nested-components` | `["error",{"allowAsProps":true}]` |
-| `react/require-render-return` | `"error"` |
-| `react/self-closing-comp` | `"error"` |
-| `react/void-dom-elements-no-children` | `"error"` |
-| `react/error-boundaries` | `"error"` |
-| `react/globals` | `"error"` |
-| `react/immutability` | `"error"` |
-| `react/incompatible-library` | `"error"` |
-| `react/preserve-manual-memoization` | `"error"` |
-| `react/purity` | `"error"` |
-| `react/refs` | `"error"` |
-| `react/set-state-in-effect` | `"error"` |
-| `react/set-state-in-render` | `"error"` |
-| `react/static-components` | `"error"` |
-| `react/use-memo` | `"error"` |
-| `react/void-use-memo` | `"error"` |
-| `react/capitalized-calls` | `"error"` |
-| `react/exhaustive-effect-dependencies` | `"error"` |
-| `react/hooks` | `"error"` |
-| `react/memo-dependencies` | `"error"` |
-| `react/no-deriving-state-in-effects` | `"error"` |
-| `react/invariant` | `"error"` |
-| `react/rule-suppression` | `"error"` |
-| `react/syntax` | `"error"` |
-| `react/todo` | `"error"` |
-| `react/unsupported-syntax` | `"error"` |
-| `jsx-a11y/alt-text` | `"error"` |
-| `jsx-a11y/anchor-has-content` | `"error"` |
-| `jsx-a11y/anchor-is-valid` | `"error"` |
-| `jsx-a11y/click-events-have-key-events` | `"off"` |
-| `jsx-a11y/control-has-associated-label` | `"off"` |
-| `jsx-a11y/heading-has-content` | `"error"` |
-| `jsx-a11y/img-redundant-alt` | `"error"` |
-| `jsx-a11y/interactive-supports-focus` | `"error"` |
-| `jsx-a11y/label-has-associated-control` | `"error"` |
-| `jsx-a11y/no-aria-hidden-on-focusable` | `"error"` |
-| `jsx-a11y/no-autofocus` | `["error",{"ignoreNonDOM":true}]` |
-| `jsx-a11y/no-noninteractive-element-interactions` | `"off"` |
-| `jsx-a11y/no-noninteractive-tabindex` | `"error"` |
-| `jsx-a11y/no-redundant-roles` | `"error"` |
-| `jsx-a11y/no-static-element-interactions` | `"error"` |
-| `jsx-a11y/prefer-tag-over-role` | `"off"` |
-| `jsx-a11y/role-has-required-aria-props` | `"error"` |
-| `jsx-a11y/role-supports-aria-props` | `"error"` |
-| `react-effect/no-derived-state` | `"error"` |
-| `react-effect/no-chain-state-updates` | `"error"` |
-| `react-effect/no-event-handler` | `"error"` |
-| `react-effect/no-adjust-state-on-prop-change` | `"error"` |
-| `react-effect/no-reset-all-state-on-prop-change` | `"error"` |
-| `react-effect/no-pass-live-state-to-parent` | `"error"` |
-| `react-effect/no-pass-data-to-parent` | `"error"` |
-| `react-effect/no-external-store-subscription` | `"error"` |
-| `react-effect/no-initialize-state` | `"error"` |
-| `unicorn/filename-case` | `["error",{"cases":{"kebabCase":true,"pascalCase":true}}]` |
+- `useFonts`, `loadAsync` from `expo-font`
 
-### `react-native()` — changes on top of `react()`
+**`react-native-quick-crypto` installed**
 
-| Rule | Setting |
-| --- | --- |
-| `eslint/no-empty` | `"error"` |
-| `eslint/no-empty-function` | `"error"` |
-| `react-effect/no-event-handler` | `"off"` |
-
-### Auto-detected import bans (no module of their own)
-
-- when `react-native-gesture-handler` is a dependency: ban `Pressable`, `TouchableOpacity`, `TouchableHighlight`, `TouchableWithoutFeedback`, `TouchableNativeFeedback` from `react-native`
-- when `expo-router` is a dependency: ban any import of `@react-navigation/stack`, `@react-navigation/bottom-tabs`
-- when `expo-font` is a dependency: ban `useFonts`, `loadAsync` from `expo-font`
-- when `react-native-quick-crypto` is a dependency: ban `*` from `crypto-js`
+- `*` from `crypto-js`

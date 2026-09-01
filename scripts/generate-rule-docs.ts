@@ -1,148 +1,208 @@
-// Generates packages/lint/RULES.md from the built module registry: each rule's
-// meta.docs.description, meta.schema (options), activation, and its bad/good
-// fixtures as examples. Run with --check in CI to fail when the file is stale
-// or a rule is missing its description. Run `bun run build` first.
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { banGroups, core, react, reactNative } from "../packages/lint/dist/index.js";
-import { allModules, shortName } from "../packages/lint/dist/lib/registry.js";
+import {
+  banGroups,
+  core,
+  coreModules,
+  react,
+  reactModules,
+  reactNative,
+  reactNativeModules,
+} from "../packages/lint/dist/index.js";
+import { shortName } from "../packages/lint/dist/lib/module.js";
+import type {
+  BanGroup,
+  ModuleManifest,
+  OxlintConfig,
+  RestrictedImports,
+  Rule,
+} from "../packages/lint/dist/lib/types.js";
 
 const lintDir = join(import.meta.dir, "..", "packages", "lint");
 const outPath = join(lintDir, "RULES.md");
 const check = process.argv.includes("--check");
 
-const fixture = (module: string, rule: string, file: string) => {
-  for (const ext of [".tsx", ".ts"]) {
-    const p = join(lintDir, "fixtures", module, rule, `${file}${ext}`);
-    if (existsSync(p)) return readFileSync(p, "utf8").trim();
-  }
-  return null;
-};
+const OXLINT_RULE_DOCS = "https://oxc.rs/docs/guide/usage/linter/rules";
+const REACT_EFFECT_DOCS = "https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect";
+const EVERY_MODULE_OFF = Object.fromEntries(
+  [...coreModules, ...reactModules, ...reactNativeModules].filter(m => m.option).map(m => [m.option, false])
+);
 
 const failures: string[] = [];
-const toc: string[] = [];
-const body: string[] = [];
 
-for (const module of allModules) {
-  const dir = shortName(module);
-  const names = Object.keys(module.rules);
-  toc.push(
-    `- [\`${module.meta.name}\`](#${module.meta.name.replace(/[@/]/g, "").replace(/-/g, "")}) — ${names.length} rule${names.length > 1 ? "s" : ""}`
-  );
-  body.push(`## \`${module.meta.name}\`\n`, `_${module.docsWhen}._\n`);
+const linkedRuleId = (ruleId: string): string => {
+  const [plugin, rule] = ruleId.includes("/") ? ruleId.split("/") : ["eslint", ruleId];
+  if (plugin === "react-effect") return `[\`${ruleId}\`](${REACT_EFFECT_DOCS})`;
+  const pluginPath = (plugin as string).replace(/-/g, "_");
+  return `[\`${ruleId}\`](${OXLINT_RULE_DOCS}/${pluginPath}/${rule}.html)`;
+};
 
-  const bans = module.restrictedImports;
-  if (bans) {
-    const lines = [
-      ...(bans.paths ?? []).map(p => `- \`${(p.importNames ?? ["*"]).join("`, `")}\` from \`${p.name}\``),
-      ...(bans.patterns ?? []).map(p => `- any import of \`${p.group.join("`, `")}\``),
-    ];
-    body.push(`**Import bans that ship with this module**\n\n${lines.join("\n")}\n`);
-  }
-
-  for (const name of names) {
-    const rule = module.rules[name];
-    const description = rule.meta?.docs?.description;
-    if (!description) failures.push(`${module.meta.name}/${name}: missing meta.docs.description`);
-
-    body.push(`### \`${module.meta.name}/${name}\`\n`, `${description ?? "_undocumented_"}\n`);
-    if (rule.meta?.defaultOff) body.push(`> Off by default — opt in per project.\n`);
-    if (rule.meta?.packages) {
-      body.push(`> Enabled only when one of ${rule.meta.packages.map(p => `\`${p}\``).join(", ")} is a dependency.\n`);
-    }
-    if (rule.meta?.schema) {
-      body.push("**Options**\n\n```jsonc\n" + JSON.stringify(rule.meta.schema, null, 2) + "\n```\n");
-    }
-
-    const bad = fixture(dir, name, "bad");
-    const good = fixture(dir, name, "good");
-    if (bad) body.push(`**Fails**\n\n\`\`\`tsx\n${bad}\n\`\`\`\n`);
-    if (good) body.push(`**Passes**\n\n\`\`\`tsx\n${good}\n\`\`\`\n`);
-  }
-}
-
-// ---------------------------------------------------------------------------
-// Built-in configuration per entry, rendered as deltas (react() contains
-// core(), react-native() contains react()). Module toggles are forced off so
-// the tables stay deterministic regardless of this repo's own dependencies —
-// derived from the registry so a new module can't be forgotten here.
-const ALL_OFF = Object.fromEntries(allModules.filter(m => m.option).map(m => [m.option, false]));
-
-const builtinRules = (config: Record<string, unknown>): Record<string, unknown> =>
+const builtInRules = (config: OxlintConfig): Record<string, unknown> =>
   Object.fromEntries(
     Object.entries(config.rules as Record<string, unknown>).filter(
       ([id]) => !id.startsWith("@ashstack/") && id !== "no-restricted-imports"
     )
   );
 
-const settingsTable = (rules: Record<string, unknown>, baseline: Record<string, unknown>): string => {
-  const rows = Object.entries(rules)
-    .filter(([id, setting]) => JSON.stringify(baseline[id]) !== JSON.stringify(setting))
-    .map(([id, setting]) => `| \`${id}\` | \`${JSON.stringify(setting)}\` |`);
-  return ["| Rule | Setting |", "| --- | --- |", ...rows].join("\n");
+const builtInTable = (config: OxlintConfig, inherited: Record<string, unknown>): string[] => {
+  const rows = Object.entries(builtInRules(config))
+    .filter(([id, setting]) => JSON.stringify(inherited[id]) !== JSON.stringify(setting))
+    .map(([id, setting]) => `| ${linkedRuleId(id)} | \`${JSON.stringify(setting)}\` |`);
+  if (rows.length === 0) return ["_No built-in rule settings change here._", ""];
+  return ["| Rule | Setting |", "| --- | --- |", ...rows, ""];
 };
 
-const coreConfig = core(ALL_OFF);
-const reactConfig = react(ALL_OFF);
-const reactNativeConfig = reactNative(ALL_OFF);
+const banList = (bans: RestrictedImports): string[] => [
+  ...(bans.paths ?? []).map(p => `- \`${(p.importNames ?? ["*"]).join("`, `")}\` from \`${p.name}\``),
+  ...(bans.patterns ?? []).map(p => `- any import of \`${p.group.join("`, `")}\``),
+];
 
-const entrySections = [
-  "## Entry configuration (built-in rules)",
+const fixtureSource = (moduleDir: string, rule: string, fixture: "bad" | "good"): string | null => {
+  for (const extension of [".tsx", ".ts"]) {
+    const path = join(lintDir, "fixtures", moduleDir, rule, `${fixture}${extension}`);
+    if (existsSync(path)) return readFileSync(path, "utf8").trim();
+  }
+  return null;
+};
+
+const activationNotes = (meta: Rule["meta"] | undefined): string[] => {
+  const notes: string[] = [];
+  if (meta?.defaultOff) notes.push("> Off by default — opt in per project.", "");
+  if (meta?.packages) {
+    notes.push(`> Enabled only when one of ${meta.packages.map(p => `\`${p}\``).join(", ")} is a dependency.`, "");
+  }
+  if (meta?.schema) notes.push("**Options**", "", "```jsonc", JSON.stringify(meta.schema, null, 2), "```", "");
+  return notes;
+};
+
+const examples = (moduleDir: string, name: string): string[] => {
+  const bad = fixtureSource(moduleDir, name, "bad");
+  const good = fixtureSource(moduleDir, name, "good");
+  return [
+    ...(bad ? ["**Fails**", "", "```tsx", bad, "```", ""] : []),
+    ...(good ? ["**Passes**", "", "```tsx", good, "```", ""] : []),
+  ];
+};
+
+const ruleSection = (module: ModuleManifest, name: string): string[] => {
+  const rule = module.rules[name];
+  const description = rule.meta?.docs?.description;
+  if (!description) failures.push(`${module.meta.name}/${name}: missing meta.docs.description`);
+
+  return [
+    `#### \`${module.meta.name}/${name}\``,
+    "",
+    description ?? "_undocumented_",
+    "",
+    ...activationNotes(rule.meta),
+    ...examples(shortName(module), name),
+  ];
+};
+
+const moduleSection = (module: ModuleManifest): string[] => {
+  const lines = [`### \`${module.meta.name}\``, "", `_${module.docsWhen}._`, ""];
+  if (module.restrictedImports) {
+    lines.push("**Import bans that ship with this module**", "", ...banList(module.restrictedImports), "");
+  }
+  for (const name of Object.keys(module.rules)) lines.push(...ruleSection(module, name));
+  return lines;
+};
+
+const banGroupSection = (groups: BanGroup[]): string[] => [
+  "### Import bans without a module",
   "",
-  "What each entry sets beyond the custom modules — oxlint built-ins are documented at https://oxc.rs/docs/guide/usage/linter/rules.html. Each table shows only what changed relative to the previous entry.",
+  "_Auto-detected from your dependencies; these carry no rules of their own._",
   "",
-  "### `core()`",
+  ...groups.flatMap(group => [
+    `**\`${group.packages.join("` / `")}\` installed**`,
+    "",
+    ...banList(group.restrictedImports),
+    "",
+  ]),
+];
+
+const anchor = (heading: string): string =>
+  heading
+    .toLowerCase()
+    .replace(/[^a-z0-9 -]/g, "")
+    .replace(/ /g, "-");
+
+interface Entry {
+  entry: string;
+  summary: string;
+  config: OxlintConfig;
+  inherited: Record<string, unknown>;
+  modules: ModuleManifest[];
+  extra?: string[];
+}
+
+const entrySection = ({ entry, summary, config, inherited, modules, extra = [] }: Entry): string[] => [
+  `## \`${entry}\``,
   "",
-  `Plugins: ${(coreConfig.plugins as string[]).map(p => `\`${p}\``).join(", ")}. Categories: \`${JSON.stringify(coreConfig.categories)}\`.`,
+  summary,
   "",
-  settingsTable(builtinRules(coreConfig), {}),
+  `Plugins: ${(config.plugins as string[]).map(p => `\`${p}\``).join(", ")}.`,
   "",
-  "### `react()` — changes on top of `core()`",
+  "### Built-in rules",
   "",
-  `Adds plugins: ${(reactConfig.plugins as string[])
-    .filter(p => !(coreConfig.plugins as string[]).includes(p))
-    .map(p => `\`${p}\``)
-    .join(", ")}, plus the you-might-not-need-an-effect js-plugin (\`react-effect/\`).`,
-  "",
-  settingsTable(builtinRules(reactConfig), builtinRules(coreConfig)),
-  "",
-  "### `react-native()` — changes on top of `react()`",
-  "",
-  settingsTable(builtinRules(reactNativeConfig), builtinRules(reactConfig)),
-  "",
-  "### Auto-detected import bans (no module of their own)",
-  "",
-  ...banGroups.map(group => {
-    const bans = [
-      ...(group.restrictedImports.paths ?? []).map(
-        p => `\`${(p.importNames ?? ["*"]).join("`, `")}\` from \`${p.name}\``
-      ),
-      ...(group.restrictedImports.patterns ?? []).map(p => `any import of \`${p.group.join("`, `")}\``),
-    ];
-    return `- when \`${group.packages.join("` / `")}\` is a dependency: ban ${bans.join("; ")}`;
+  ...builtInTable(config, inherited),
+  ...modules.flatMap(moduleSection),
+  ...extra,
+];
+
+const tocFor = (entry: string, modules: ModuleManifest[]): string[] => [
+  `- [\`${entry}\`](#${anchor(entry)})`,
+  ...modules.map(m => {
+    const count = Object.keys(m.rules).length;
+    return `  - [\`${m.meta.name}\`](#${anchor(m.meta.name)}) — ${count} rule${count === 1 ? "" : "s"}`;
   }),
-  "",
-].join("\n");
+];
+
+const coreConfig = core(EVERY_MODULE_OFF);
+const reactConfig = react(EVERY_MODULE_OFF);
+const reactNativeConfig = reactNative(EVERY_MODULE_OFF);
 
 const doc = [
   "<!-- GENERATED by scripts/generate-rule-docs.ts - do not edit by hand. `bun run docs:rules` regenerates it. -->",
   "",
   "# @ashstack/lint — rules",
   "",
-  "Everything this package ships, generated from the modules' own metadata, the entries, and the fixtures.",
+  "Every rule these entries turn on, generated from the entries, the module manifests and the fixtures. Built-in oxlint rules link to their upstream page; the modules' own rules are documented in full here.",
   "",
-  'Disable any rule by its full id in your `rules` block, e.g. `"@ashstack/unistyles/no-margin": "off"`.',
+  'Disable any rule by its id in your `rules` block, e.g. `"@ashstack/unistyles/no-margin": "off"`. Each entry contains the one before it, so its table lists only what it changes.',
   "",
-  ...toc,
-  "- [Entry configuration (built-in rules)](#entry-configuration-built-in-rules)",
+  ...tocFor("core()", coreModules),
+  ...tocFor("react()", reactModules),
+  ...tocFor("react-native()", reactNativeModules),
   "",
-  ...body,
-  entrySections,
+  ...entrySection({
+    entry: "core()",
+    summary: "Any TypeScript project — backend, CLI, library.",
+    config: coreConfig,
+    inherited: {},
+    modules: coreModules,
+  }),
+  ...entrySection({
+    entry: "react()",
+    summary: "React on the web. Adds the you-might-not-need-an-effect plugin (`react-effect/`) alongside oxlint's own.",
+    config: reactConfig,
+    inherited: builtInRules(coreConfig),
+    modules: reactModules,
+  }),
+  ...entrySection({
+    entry: "react-native()",
+    summary: "Expo and React Native.",
+    config: reactNativeConfig,
+    inherited: builtInRules(reactConfig),
+    modules: reactNativeModules,
+    extra: banGroupSection(banGroups),
+  }),
 ].join("\n");
 
 if (failures.length > 0) {
-  console.error(`RULE DOC FAILURES (${failures.length}):\n` + failures.map(f => `  - ${f}`).join("\n"));
+  const listed = failures.map(f => `  - ${f}`).join("\n");
+  console.error(`RULE DOC FAILURES (${failures.length}):\n${listed}`);
   process.exit(1);
 }
 

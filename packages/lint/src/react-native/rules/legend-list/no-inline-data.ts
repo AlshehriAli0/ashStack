@@ -2,9 +2,7 @@ import { findInSubtree, gate, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
 import { attributeNamed, isListElement, LIST, type GateContext } from "./shared.js";
 
-// `[...]` or `something.filter(…)` / `.map(…)` / `.slice(…)` anywhere inside the
-// attribute value: both produce a fresh array reference on every render.
-const isInlineData = (node: AstNode): boolean =>
+const buildsFreshArray = (node: AstNode): boolean =>
   node.type === "ArrayExpression" ||
   (node.type === "CallExpression" && (node.callee as AstNode | undefined)?.type === "MemberExpression");
 
@@ -16,7 +14,7 @@ export const noInlineData: Rule = problem(
       JSXElement(node) {
         if (!isListElement(node)) return;
         const data = attributeNamed(node, "data");
-        if (!data || !findInSubtree(data.value, isInlineData)) return;
+        if (!data || !findInSubtree(data.value, buildsFreshArray)) return;
 
         context.report({
           node: data,

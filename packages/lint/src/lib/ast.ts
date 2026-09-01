@@ -1,32 +1,34 @@
-// Shared AST helpers for rule implementations. The AST is oxlint's
-// (estree-shaped with parent links); helpers stay null-tolerant on purpose.
 import type { AstNode, Rule, Visitor } from "./types.js";
 
 const SKIPPED_KEYS = new Set(["parent", "loc", "range", "start", "end", "type"]);
 
 type Predicate = (node: AstNode) => boolean;
 
+const findInEach = (values: Iterable<unknown>, predicate: Predicate): AstNode | null => {
+  for (const value of values) {
+    const found = findInSubtree(value, predicate);
+    if (found) return found;
+  }
+  return null;
+};
+
+const childValues = (node: AstNode): unknown[] => {
+  const values: unknown[] = [];
+  for (const key in node) {
+    if (SKIPPED_KEYS.has(key)) continue;
+    const value = node[key];
+    if (value !== null && typeof value === "object") values.push(value);
+  }
+  return values;
+};
+
 export const findInSubtree = (node: unknown, predicate: Predicate): AstNode | null => {
   if (node === null || typeof node !== "object") return null;
-  if (Array.isArray(node)) {
-    for (const child of node) {
-      const found = findInSubtree(child, predicate);
-      if (found) return found;
-    }
-    return null;
-  }
+  if (Array.isArray(node)) return findInEach(node, predicate);
   const candidate = node as AstNode;
   if (typeof candidate.type !== "string") return null;
   if (predicate(candidate)) return candidate;
-  for (const key in candidate) {
-    if (SKIPPED_KEYS.has(key)) continue;
-    const value = candidate[key];
-    if (value !== null && typeof value === "object") {
-      const found = findInSubtree(value, predicate);
-      if (found) return found;
-    }
-  }
-  return null;
+  return findInEach(childValues(candidate), predicate);
 };
 
 export const subtreeHas = (node: unknown, predicate: Predicate): boolean => findInSubtree(node, predicate) !== null;
@@ -116,9 +118,6 @@ export const importedSpecifiers = (node: AstNode, source: string): AstNode[] =>
   node.type === "ImportDeclaration" && (node.source as AstNode | undefined)?.value === source
     ? ((node.specifiers as AstNode[]) ?? [])
     : [];
-
-// ---------------------------------------------------------------------------
-// Shared rule-authoring helpers (previously duplicated per plugin file).
 
 /** Function-ish node types, for ancestor walks. */
 export const FUNCTION_TYPES = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"]);

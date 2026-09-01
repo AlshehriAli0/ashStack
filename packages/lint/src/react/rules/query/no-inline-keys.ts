@@ -28,38 +28,60 @@ const QUERY_KEY_METHODS = new Set([
   "setQueriesData",
 ]);
 
+const methodName = (node: AstNode): string => {
+  const callee = node.callee as AstNode | undefined;
+  if (callee?.type !== "MemberExpression") return "";
+  return ((callee.property as AstNode | undefined)?.name as string | undefined) ?? "";
+};
+
+const firstArgumentArray = (node: AstNode): AstNode | undefined => {
+  const first = (node.arguments as AstNode[] | undefined)?.[0];
+  return first?.type === "ArrayExpression" ? first : undefined;
+};
+
+const takesQueryKeyOptions = (node: AstNode, method: string): boolean => {
+  const callee = node.callee as AstNode | undefined;
+  const isHook = callee?.type === "Identifier" && QUERY_KEY_HOOKS.has(callee.name as string);
+  return isHook || (method !== "" && QUERY_KEY_METHODS.has(method));
+};
+
+const isQueryKeyProperty = (property: AstNode): boolean => {
+  if (property.type !== "Property") return false;
+  const key = property.key as AstNode | undefined;
+  return ((key?.name as string | undefined) ?? (key?.value as string | undefined)) === "queryKey";
+};
+
+const inlineQueryKeys = (node: AstNode): AstNode[] => {
+  const options = (node.arguments as AstNode[] | undefined)?.[0];
+  if (options?.type !== "ObjectExpression") return [];
+  const inline: AstNode[] = [];
+  for (const property of (options.properties as AstNode[] | undefined) ?? []) {
+    if (!isQueryKeyProperty(property)) continue;
+    const value = property.value as AstNode | undefined;
+    if (value?.type === "ArrayExpression") inline.push(value);
+  }
+  return inline;
+};
+
 export const noInlineKeys: Rule = problem(
   "Fires when a query key is written as an array literal at the call site instead of coming from a keys factory.",
   {
     createOnce(context: RuleContext) {
       return {
         CallExpression(node: AstNode) {
-          const callee = node.callee as AstNode | undefined;
-          const method =
-            callee?.type === "MemberExpression"
-              ? (((callee.property as AstNode | undefined)?.name as string | undefined) ?? "")
-              : "";
+          const method = methodName(node);
           if (method === "getQueryData" || method === "setQueryData") {
-            const key = (node.arguments as AstNode[] | undefined)?.[0];
-            if (key?.type !== "ArrayExpression") return;
+            const key = firstArgumentArray(node);
+            if (key === undefined) return;
             context.report({
               node: key,
               message: method === "getQueryData" ? MESSAGES.inlineGetQueryData : MESSAGES.inlineSetQueryData,
             });
             return;
           }
-          const isHook = callee?.type === "Identifier" && QUERY_KEY_HOOKS.has(callee.name as string);
-          const isMethod = method !== "" && QUERY_KEY_METHODS.has(method);
-          if (!isHook && !isMethod) return;
-          const options = (node.arguments as AstNode[] | undefined)?.[0];
-          if (options?.type !== "ObjectExpression") return;
-          for (const property of (options.properties as AstNode[] | undefined) ?? []) {
-            if (property.type !== "Property") continue;
-            const key = property.key as AstNode | undefined;
-            if (((key?.name as string | undefined) ?? (key?.value as string | undefined)) !== "queryKey") continue;
-            const value = property.value as AstNode | undefined;
-            if (value?.type !== "ArrayExpression") continue;
-            context.report({ node: value, message: MESSAGES.inlineQueryKey });
+          if (!takesQueryKeyOptions(node, method)) return;
+          for (const key of inlineQueryKeys(node)) {
+            context.report({ node: key, message: MESSAGES.inlineQueryKey });
           }
         },
       };

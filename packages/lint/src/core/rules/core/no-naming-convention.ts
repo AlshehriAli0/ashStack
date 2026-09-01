@@ -18,6 +18,19 @@ const FORMAT_TESTS: Record<string, (name: string) => boolean> = {
 
 const ANY_CASE = ["camelCase", "snake_case", "CONSTANT_CASE", "PascalCase"];
 
+const LEGEND_STATE_OBSERVABLE_SUFFIX = String.raw`\$?`;
+const AFFIXED_NAME = String.raw`[$_]*([A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)_*${LEGEND_STATE_OBSERVABLE_SUFFIX}`;
+const NUMERIC_KEY = String.raw`(?:[0-9.]+)`;
+
+const LIBRARY_PROPERTY_NAMES = [
+  "enableFullScreenImage_legacy",
+  "experimental_backgroundImage",
+  "unstable_conditionNames",
+];
+const LIBRARY_VARIABLE_NAMES = ["unstable_settings"];
+
+const spelledExactly = (...alternatives: string[]): RegExp => new RegExp(`^(?:${alternatives.join("|")})$`);
+
 interface Convention {
   match: RegExp | null;
   formats: string[];
@@ -26,19 +39,17 @@ interface Convention {
 
 const CONVENTIONS: Record<string, Convention> = {
   objectLiteralMember: {
-    match:
-      /^(?:enableFullScreenImage_legacy|experimental_backgroundImage|unstable_conditionNames|(?:[0-9.]+)|[$_]*([A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)_*\$?)$/,
+    match: spelledExactly(...LIBRARY_PROPERTY_NAMES, NUMERIC_KEY, AFFIXED_NAME),
     formats: ANY_CASE,
     label: "object property",
   },
   typeMember: {
-    match: /^(?:[$_]*([A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)_*\$?)$/,
+    match: spelledExactly(AFFIXED_NAME),
     formats: ANY_CASE,
     label: "type member",
   },
   variable: {
-    // trailing $ is the Legend State observable suffix — state/naming REQUIRES it
-    match: /^(?:unstable_settings|[$_]*([A-Za-z](?:[A-Za-z0-9_]*[A-Za-z0-9])?)_*\$?)$/,
+    match: spelledExactly(...LIBRARY_VARIABLE_NAMES, AFFIXED_NAME),
     formats: ["camelCase", "CONSTANT_CASE", "PascalCase"],
     label: "variable",
   },
@@ -89,8 +100,7 @@ export const noNamingConvention: Rule = problem(
         if (!node) return;
         switch (node.type) {
           case "Identifier":
-            if (shorthand || PLACEHOLDER_NAME.test(node.name as string)) return;
-            check(node, node.name as string, "variable");
+            checkIdentifier(node, shorthand);
             return;
           case "AssignmentPattern":
             checkBinding(node.left as AstNode, shorthand);
@@ -99,15 +109,29 @@ export const noNamingConvention: Rule = problem(
             checkBinding(node.argument as AstNode, false);
             return;
           case "ArrayPattern":
-            for (const element of (node.elements as AstNode[] | undefined) ?? []) checkBinding(element, false);
+            checkArrayElements(node);
             return;
           case "ObjectPattern":
-            for (const property of (node.properties as AstNode[] | undefined) ?? []) {
-              if (property.type === "RestElement") checkBinding(property.argument as AstNode, false);
-              else checkBinding(property.value as AstNode, property.shorthand === true);
-            }
+            checkObjectProperties(node);
             return;
           default:
+        }
+      };
+
+      const checkIdentifier = (node: AstNode, shorthand: boolean): void => {
+        const name = node.name as string;
+        if (shorthand || PLACEHOLDER_NAME.test(name)) return;
+        check(node, name, "variable");
+      };
+
+      const checkArrayElements = (node: AstNode): void => {
+        for (const element of (node.elements as AstNode[] | undefined) ?? []) checkBinding(element, false);
+      };
+
+      const checkObjectProperties = (node: AstNode): void => {
+        for (const property of (node.properties as AstNode[] | undefined) ?? []) {
+          if (property.type === "RestElement") checkBinding(property.argument as AstNode, false);
+          else checkBinding(property.value as AstNode, property.shorthand === true);
         }
       };
 

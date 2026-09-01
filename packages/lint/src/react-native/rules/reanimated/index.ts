@@ -1,10 +1,3 @@
-// @ashstack/lint — Reanimated rules.
-//
-// Every rule is plain AST work. The ones that can be decided from source text
-// first gate on it in `before()`, so a file that cannot contain a violation is
-// skipped before its AST is walked. Gates fail OPEN: when the text is not
-// available the rule still runs, because a missed gate costs milliseconds and a
-// wrong gate costs correctness.
 import { defineModule } from "../../../lib/module.js";
 import { animatedReactionSafety } from "./animated-reaction-safety.js";
 import { animatedStyleNeedsAnimatedComponent } from "./animated-style-needs-animated-component.js";

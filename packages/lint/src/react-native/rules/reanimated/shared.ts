@@ -1,5 +1,3 @@
-// Helpers two or more Reanimated rules need. Anything a single rule uses lives
-// in that rule's own file.
 import type { AstNode, RuleContext } from "../../../lib/types.js";
 
 /** oxlint's context, narrowed to the source text the `gate` helper reads. */

@@ -1,13 +1,3 @@
-// Legend List contracts, one rule per contract so a project can turn any single
-// one off without losing the rest.
-//
-// Most of these catch SILENT failures: a list that renders nothing, a row showing
-// the previous row's data, a remount that discards every cached measurement, a
-// recycling pool shared between two layouts, a prop that simply does not exist on
-// v3. None of them throw at runtime.
-//
-// Every rule gates on the source text first, so a file with no list in it is
-// skipped before its AST is walked. Gates fail OPEN.
 import { defineModule } from "../../../lib/module.js";
 import { noFlexInContentContainer } from "./no-flex-in-content-container.js";
 import { noIndexKeyExtractor } from "./no-index-key-extractor.js";

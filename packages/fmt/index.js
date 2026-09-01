@@ -1,9 +1,12 @@
-// ashStack oxfmt defaults. oxfmt has no `extends`; consume via oxfmt.config.mts:
-//
-//   import fmt from "@ashstack/fmt";
-//   export default fmt;
-//
-// Override by spreading: `export default { ...fmt, useTabs: true }`.
+/**
+ * ashStack oxfmt defaults. oxfmt has no `extends`, so consume them by
+ * re-exporting this object from your `oxfmt.config.mts`:
+ *
+ *     import fmt from "@ashstack/fmt";
+ *     export default fmt;
+ *
+ * Override by spreading: `export default { ...fmt, useTabs: true }`.
+ */
 export default {
   useTabs: false,
   tabWidth: 2,

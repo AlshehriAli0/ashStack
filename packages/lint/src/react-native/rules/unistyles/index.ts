@@ -1,14 +1,3 @@
-// react-native-unistyles conventions.
-//
-// Two of these catch SILENT failures — a spread style and a raw hex both render
-// fine and simply stop reacting to the theme. The rest keep styles on the
-// theme's scale and inside StyleSheet.create, where Unistyles can recalculate
-// them natively.
-//
-// Rules use createOnce so per-file state survives one traversal, and a before()
-// text gate where a cheap marker can rule the file out. Gates fail OPEN — if the
-// source text is unavailable the rule still runs, because a missed gate costs
-// milliseconds and a wrong gate costs correctness.
 import { defineModule } from "../../../lib/module.js";
 import { animatedTheme } from "./animated-theme.js";
 import { contentContainer } from "./content-container.js";

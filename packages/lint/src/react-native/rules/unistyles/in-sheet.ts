@@ -59,7 +59,7 @@ export const inSheet: Rule = inCreate(
         context.report({ node, message: MESSAGES.fullRuntime });
         return;
       }
-      if (/^theme\.screen\./.test(path)) context.report({ node, message: MESSAGES.themeScreen });
+      if (path.startsWith("theme.screen.")) context.report({ node, message: MESSAGES.themeScreen });
     },
     VariableDeclarator(node) {
       if (!inside()) return;

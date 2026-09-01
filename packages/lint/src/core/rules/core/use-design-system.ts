@@ -3,18 +3,11 @@ import { isAbsolute, join } from "node:path";
 
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
-// Two ways to declare the design system, combinable:
-// - the scan: whatever sits in the UI directory is a primitive (a list would
-//   need editing every time a component is added, and the failure mode of
-//   forgetting is a rule that quietly protects less than it appears to)
-// - the `use` option: explicit replacements, for names the scan cannot infer
-//   (Input covering TextInput), other source modules, or paths off the alias
 const DESIGN_SYSTEM_DIR = "src/components/ui";
 const DESIGN_SYSTEM_ALIAS = "@/components/ui";
 const PLATFORM_SUFFIX = /\.(?:ios|android|native|web)$/;
 
-// A primitive named X also covers the older React Native ways of doing X.
-const ALSO_COVERS: Record<string, string[]> = {
+const LEGACY_EQUIVALENTS: Record<string, string[]> = {
   Pressable: ["TouchableOpacity", "TouchableHighlight", "TouchableWithoutFeedback", "TouchableNativeFeedback"],
 };
 
@@ -42,13 +35,13 @@ const toPascalCase = (name: string): string =>
 
 const toKebabCase = (name: string): string => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
 
-// source module -> banned import name -> replacement
-type Banned = Map<string, Map<string, Replacement>>;
+type ReplacementByImportName = Map<string, Replacement>;
+type Banned = Map<string, ReplacementByImportName>;
 
-const addBan = (banned: Banned, source: string, imported: string, replacement: Replacement): void => {
-  const bySource = banned.get(source) ?? new Map<string, Replacement>();
-  bySource.set(imported, replacement);
-  banned.set(source, bySource);
+const addBan = (banned: Banned, sourceModule: string, imported: string, replacement: Replacement): void => {
+  const byImportName = banned.get(sourceModule) ?? new Map<string, Replacement>();
+  byImportName.set(imported, replacement);
+  banned.set(sourceModule, byImportName);
 };
 
 const scanDesignSystem = (banned: Banned, dir: string, alias: string): void => {
@@ -69,7 +62,7 @@ const scanDesignSystem = (banned: Banned, dir: string, alias: string): void => {
     const from = `${alias}/${base}`;
 
     addBan(banned, "react-native", name, { name, from });
-    for (const alternative of ALSO_COVERS[name] ?? []) addBan(banned, "react-native", alternative, { name, from });
+    for (const legacy of LEGACY_EQUIVALENTS[name] ?? []) addBan(banned, "react-native", legacy, { name, from });
   }
 };
 
@@ -88,6 +81,9 @@ const applyUse = (banned: Banned, alias: string, use: Record<string, UseEntry>):
 };
 
 const designSystems = new Map<string, Banned>();
+
+const isExemptFile = (filename: string | undefined, exempt: string[]): boolean =>
+  !!filename && exempt.some(fragment => filename.includes(fragment));
 
 const designSystemFor = (options: Options): { banned: Banned; exempt: string[] } => {
   const dir = options.dir ?? DESIGN_SYSTEM_DIR;
@@ -134,9 +130,8 @@ export const useDesignSystem: Rule = {
         const designSystem = designSystemFor(options);
         banned = designSystem.banned;
         if (banned.size === 0) return false;
-        // the design-system files wrap the raw primitives; they are exempt
         const filename = (context.filename ?? context.physicalFilename) as string | undefined;
-        if (filename && designSystem.exempt.some(fragment => filename.includes(fragment))) return false;
+        if (isExemptFile(filename, designSystem.exempt)) return false;
         return true;
       },
       ImportDeclaration(node: AstNode) {

@@ -1,5 +1,3 @@
-// Helpers two or more Legend List rules need. Anything a single rule uses lives
-// in that rule's own file.
 import { attributeName, tagIdentifier } from "../../../lib/ast.js";
 import type { AstNode, RuleContext } from "../../../lib/types.js";
 
@@ -8,11 +6,10 @@ export type GateContext = RuleContext & { sourceCode?: { text?: string } };
 
 export const LIST = "LegendList";
 
-// Wrappers keep the contract: `UnistylesLegendList`, `Animated.LegendList`, …
-const isLegendList = (name: AstNode | null | undefined): boolean => tagIdentifier(name).endsWith(LIST);
+const isLegendListOrWrapper = (name: AstNode | null | undefined): boolean => tagIdentifier(name).endsWith(LIST);
 
 export const isListElement = (node: AstNode): boolean =>
-  isLegendList((node.openingElement as AstNode | undefined)?.name as AstNode | undefined);
+  isLegendListOrWrapper((node.openingElement as AstNode | undefined)?.name as AstNode | undefined);
 
 export const attributesOf = (node: AstNode): AstNode[] =>
   ((node.openingElement as AstNode | undefined)?.attributes as AstNode[] | undefined) ?? [];

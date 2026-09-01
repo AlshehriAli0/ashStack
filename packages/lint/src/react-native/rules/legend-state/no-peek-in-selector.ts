@@ -1,56 +1,68 @@
-// The mirror of no-untracked-get-in-jsx: inside a selector, `peek()` is the one
-// read that does not subscribe, so the component never re-renders for it.
 import { gate, isFunction, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
 import { isObservableRef, textOf, type GateContext } from "./shared.js";
 
-// Callbacks passed to these run inside a tracking context, so a `get()` there
-// subscribes and a `peek()` there deliberately does not.
-const TRACKING_CALLEES = new Set(["useValue", "observe", "useObserve", "useObserveEffect", "when", "whenReady"]);
+const TRACKING_CONTEXT_CALLEES = new Set([
+  "useValue",
+  "observe",
+  "useObserve",
+  "useObserveEffect",
+  "when",
+  "whenReady",
+]);
+
+const trackingCallbackOf = (node: AstNode, callee: AstNode | undefined): AstNode | null => {
+  if (callee?.type !== "Identifier") return null;
+  if (!TRACKING_CONTEXT_CALLEES.has(callee.name as string)) return null;
+  const argument = ((node.arguments as AstNode[] | undefined) ?? [])[0];
+  return isFunction(argument) ? argument : null;
+};
+
+const peekedObservable = (callee: AstNode | undefined): AstNode | null => {
+  if (callee?.type !== "MemberExpression") return null;
+  if ((callee.property as AstNode | undefined)?.name !== "peek") return null;
+  const object = callee.object as AstNode | undefined;
+  return object !== undefined && isObservableRef(object) ? object : null;
+};
 
 export const noPeekInSelector: Rule = problem(
   "`peek()` never subscribes, so a selector or tracking callback that uses it never re-runs. Call `get()` there and keep `peek()` for handlers.",
   {
     createOnce(context: GateContext) {
-      let selectors = new WeakSet<AstNode>();
+      let trackingCallbacks = new WeakSet<AstNode>();
       let depth = 0;
+      const enterIfTracking = (node: AstNode): void => {
+        if (trackingCallbacks.has(node)) depth++;
+      };
+      const exitIfTracking = (node: AstNode): void => {
+        if (trackingCallbacks.has(node)) depth--;
+      };
 
       return {
         before() {
-          selectors = new WeakSet();
+          trackingCallbacks = new WeakSet();
           depth = 0;
           return gate(context, ".peek()");
         },
         CallExpression(node) {
           const callee = node.callee as AstNode | undefined;
-          if (callee?.type === "Identifier" && TRACKING_CALLEES.has(callee.name as string)) {
-            const argument = ((node.arguments as AstNode[] | undefined) ?? [])[0];
-            if (isFunction(argument)) selectors.add(argument);
-          }
+          const callback = trackingCallbackOf(node, callee);
+          if (callback) trackingCallbacks.add(callback);
 
           if (depth === 0) return;
-          if (callee?.type !== "MemberExpression" || (callee.property as AstNode | undefined)?.name !== "peek") return;
-          const object = callee.object as AstNode | undefined;
-          if (!isObservableRef(object)) return;
+          const observable = peekedObservable(callee);
+          if (!observable) return;
 
-          const target = textOf(context, object) ?? "the observable";
+          const target = textOf(context, observable) ?? "the observable";
           context.report({
             node,
             message: `Use \`${target}.get()\` inside this selector and keep \`peek()\` for handlers and async work. \`peek()\` never subscribes, so the selector never re-runs and the component keeps rendering the first value.`,
           });
         },
-        ArrowFunctionExpression(node) {
-          if (selectors.has(node)) depth++;
-        },
-        "ArrowFunctionExpression:exit"(node) {
-          if (selectors.has(node)) depth--;
-        },
-        FunctionExpression(node) {
-          if (selectors.has(node)) depth++;
-        },
-        "FunctionExpression:exit"(node) {
-          if (selectors.has(node)) depth--;
-        },
+        ArrowFunctionExpression: enterIfTracking,
+        "ArrowFunctionExpression:exit": exitIfTracking,
+        FunctionExpression: enterIfTracking,
+        "FunctionExpression:exit": exitIfTracking,
       };
     },
   }

@@ -1,14 +1,13 @@
-// Dogfood the published config; repo-specific ignores on top.
 import fmt from "@ashstack/fmt";
 
 export default {
   ...fmt,
   ignorePatterns: [
     "**/node_modules/**",
+    "**/dist/**",
+    "**/fixtures/**",
     "CONTEXT.md",
     "docs/**",
-    "**/fixtures/**",
-    "**/dist/**",
     "packages/lint/RULES.md",
   ],
 };

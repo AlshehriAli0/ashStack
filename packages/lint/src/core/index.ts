@@ -1,6 +1,3 @@
-// @ashstack/lint — core entry. Base TypeScript rules for any project (backend, CLI, library).
-// Type-aware rules (typescript/no-floating-promises, no-unnecessary-condition, …) require
-// running oxlint with --type-aware and the oxlint-tsgolint peer installed.
 import { composeModules } from "../lib/module.js";
 import type { CoreOptions, OxlintConfig } from "../lib/types.js";
 import coreModule from "./rules/core/index.js";
@@ -172,6 +169,10 @@ const BASE_RULES = {
  * Base entry — strict TypeScript rules for any project (backend, CLI, library).
  * Library modules (zod) auto-enable when the consumer depends on the library;
  * pass an explicit boolean to force either way.
+ *
+ * Some of the enabled `typescript/` rules are type-aware (`no-floating-promises`,
+ * `no-unnecessary-condition`, …): they only report when oxlint runs with
+ * `--type-aware` and the `oxlint-tsgolint` peer installed.
  */
 const core = (options: CoreOptions = {}): OxlintConfig => {
   const composed = composeModules(coreModules, options as Record<string, boolean | undefined>);
