@@ -1,8 +1,22 @@
-# ashStack
+<h1 align="center">ashStack</h1>
 
-Shared, strict oxc tooling: [`@ashstack/lint`](packages/lint) (oxlint configs + custom rules) and [`@ashstack/fmt`](packages/fmt) (oxfmt config). One install per new project instead of hand-copying lint setups around.
+<p align="center">
+  One strict <a href="https://oxc.rs">oxc</a> setup — lint and format — shared across every project.
+</p>
 
-## Quick start
+<p align="center">
+  <a href="https://www.npmjs.com/package/@ashstack/lint"><img alt="npm" src="https://img.shields.io/npm/v/@ashstack/lint?color=%23111"></a>
+  <a href="https://github.com/AlshehriAli0/ashStack/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AlshehriAli0/ashStack/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="./LICENSE"><img alt="MIT" src="https://img.shields.io/npm/l/@ashstack/lint?color=%23111"></a>
+</p>
+
+---
+
+Two packages: [`@ashstack/lint`](packages/lint) (oxlint config + 71 custom rules) and [`@ashstack/fmt`](packages/fmt) (oxfmt config). One install per project instead of copying a lint setup around and watching the copies drift.
+
+Rules for a library only ship when you actually depend on that library, so the config is strict without being noise.
+
+## Install
 
 ```sh
 bun add -d oxlint oxfmt oxlint-tsgolint @ashstack/lint @ashstack/fmt
@@ -27,38 +41,54 @@ oxlint --type-aware --deny-warnings .
 oxfmt --check .
 ```
 
-> TS config files (`oxlint.config.mts`) are the **only** supported consumption path — oxlint's JSON `extends` cannot resolve npm packages, and oxfmt has no `extends` at all. Requires Node 22.18+.
+> `.mts` config files are the only supported path: oxlint's JSON `extends` can't resolve npm packages, and oxfmt has no `extends` at all. Needs Node 22.18+.
 
-## Entries
+## What it catches
 
-| Entry            | For                    | Always adds                                                                                      |
-| ---------------- | ---------------------- | ------------------------------------------------------------------------------------------------ |
-| `core()`         | any TypeScript project | strict eslint/typescript/unicorn/promise base + `@ashstack/core/` convention rules               |
-| `react()`        | React (web)            | react + jsx-a11y + React Compiler + you-might-not-need-an-effect                                 |
-| `react-native()` | Expo / RN              | generic `@ashstack/react-native/` rules (leaked renders, view nesting, keyboard events, images…) |
+Beyond the base config, the custom rules encode the mistakes that survive review and fail in production:
 
-Each entry is a function returning a flat, plain config object — `react()` already contains all of `core()`.
+| You wrote                                            | What happens                                                                                    |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `{items.length && <List />}`                         | a bare `0` leaks into JSX and crashes RN with _Text strings must be rendered within a `<Text>`_ |
+| `offset.value = y`                                   | React Compiler can't track a `.value` access — use `.get()` / `.set()`                          |
+| `<LegendList key={id} />`                            | remounts on every key change, losing measurements and scroll position — pass `dataKey`          |
+| `backgroundColor: "#111"` inside `StyleSheet.create` | skips dark mode and never follows the theme                                                     |
 
-## Library rule groups (auto-detected)
+Every message says what to do instead, not just what's wrong — they're written to be actionable by a coding agent as well as a human.
 
-Library-specific rules ship only when you actually depend on that library — detected from your package.json (walking up, so monorepos work). Every group below is a **module**: one rule namespace, one boolean to force it either way, e.g. `reactNative({ unistyles: false, i18n: true })`. Only the import bans (and the React Compiler gate on `@ashstack/react-native/no-manual-memo`) are auto-detect-only — to disagree with one rule, turn that rule off by name.
+## Three entries
 
-| Group / rule prefix                                 | Enabled when you depend on                                   |
-| --------------------------------------------------- | ------------------------------------------------------------ |
-| `@ashstack/zod/`                                    | `zod`                                                        |
-| `@ashstack/query/`                                  | `@tanstack/react-query`                                      |
-| `@ashstack/zustand/`                                | `zustand`                                                    |
-| `@ashstack/i18n/`                                   | i18next / lingui / react-intl / use-intl / expo-localization |
-| `@ashstack/unistyles/` + bans                       | `react-native-unistyles`                                     |
-| `@ashstack/legend-list/` + bans                     | `@legendapp/list`                                            |
-| `@ashstack/legend-state/` + ban                     | `@legendapp/state`                                           |
-| `@ashstack/reanimated/` + bans                      | `react-native-reanimated`                                    |
-| `@ashstack/turbo-image/`                            | `react-native-turbo-image`                                   |
-| `@ashstack/skia/`                                   | `@shopify/react-native-skia`                                 |
-| `@ashstack/keyboard/`                               | `react-native-keyboard-controller`                           |
-| Pressable / router / font / crypto bans (auto-only) | the matching library                                         |
+Each is a function returning one flat config object. Each contains the one before it.
 
-Every custom rule is documented in [packages/lint/RULES.md](packages/lint/RULES.md) — description, options, examples — generated from the rules themselves (`bun run docs:rules`, checked in CI).
+| Entry            | For                    | Adds                                                                                              |
+| ---------------- | ---------------------- | ------------------------------------------------------------------------------------------------- |
+| `core()`         | any TypeScript project | strict eslint / typescript / unicorn / promise / import base, plus `@ashstack/core/` conventions  |
+| `react()`        | React on the web       | react, jsx-a11y, React Compiler, you-might-not-need-an-effect                                     |
+| `react-native()` | Expo and React Native  | `@ashstack/react-native/` — leaked renders, view nesting, iOS-only keyboard events, remote images |
+
+## Library rules, auto-detected
+
+Each library gets a **module**: one rule namespace, one toggle. A module turns on when the library is in your `package.json` — walking up to the repo root, so monorepos work.
+
+| Module                   | Detected from                                                                            |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| `@ashstack/zod`          | `zod`                                                                                    |
+| `@ashstack/query`        | `@tanstack/react-query`                                                                  |
+| `@ashstack/zustand`      | `zustand`                                                                                |
+| `@ashstack/i18n`         | i18next · react-i18next · lingui · react-intl · use-intl · next-intl · expo-localization |
+| `@ashstack/unistyles`    | `react-native-unistyles`                                                                 |
+| `@ashstack/legend-list`  | `@legendapp/list`                                                                        |
+| `@ashstack/legend-state` | `@legendapp/state`                                                                       |
+| `@ashstack/reanimated`   | `react-native-reanimated`                                                                |
+| `@ashstack/turbo-image`  | `react-native-turbo-image`                                                               |
+| `@ashstack/skia`         | `@shopify/react-native-skia`                                                             |
+| `@ashstack/keyboard`     | `react-native-keyboard-controller`                                                       |
+
+Force one either way when detection guesses wrong:
+
+```ts
+reactNative({ unistyles: false, i18n: true });
+```
 
 ## Overriding
 
@@ -74,18 +104,26 @@ export default defineConfig({
 });
 ```
 
-Rules people turn off first: `max-lines` / `max-lines-per-function` / `complexity` (size caps), `no-await-in-loop`, `typescript/no-unnecessary-condition` (noisy with imprecise types), `@ashstack/core/no-naming-convention`, `unicorn/filename-case`, `typescript/no-floating-promises` (only if you can't run `--type-aware`).
+The size caps go first for most people: `max-lines` (300), `max-lines-per-function` (120) and `complexity` (12).
 
-Shipped but **off by default** (opt in): `@ashstack/core/no-comments`, `@ashstack/core/use-design-system`, `@ashstack/core/components-tsx-only`.
+Three rules ship **off** because they only make sense once a team has agreed to them: `@ashstack/core/no-comments`, `use-design-system`, `components-tsx-only`.
 
-## Development
+## Rule reference
+
+**[RULES.md](packages/lint/RULES.md)** — every rule in every entry, with its options and a passing and failing example. Generated from the rules themselves and checked in CI, so it can't drift.
+
+## Contributing
 
 ```sh
 bun install
-bun run lint             # this repo lints itself with core()
-bun run check:fixtures   # every custom rule: bad fixture fires, good fixture doesn't
-bun run check:smoke      # consumer-style end-to-end check
-bun run docs:rules       # regenerate RULES.md
+bun run lint            # this repo lints itself with core()
+bun run check:fixtures  # every rule: the bad fixture fires, the good one doesn't
+bun run check:smoke     # a real consumer app, end to end
+bun run docs:rules      # regenerate RULES.md
 ```
 
-Releases: [changesets](https://github.com/changesets/changesets) — add one per PR, CI publishes on merge.
+Add a [changeset](https://github.com/changesets/changesets) with your PR; CI publishes on merge.
+
+## License
+
+MIT

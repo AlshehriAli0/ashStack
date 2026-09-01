@@ -5,6 +5,21 @@
   "type": "module",
   "license": "MIT",
   "author": "Ali Alshehri (https://github.com/AlshehriAli0)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlshehriAli0/ashStack.git",
+    "directory": "packages/fmt"
+  },
+  "homepage": "https://github.com/AlshehriAli0/ashStack/tree/main/packages/fmt#readme",
+  "bugs": "https://github.com/AlshehriAli0/ashStack/issues",
+  "keywords": [
+    "oxfmt",
+    "oxc",
+    "format",
+    "formatter",
+    "prettier-config",
+    "typescript"
+  ],
   "exports": {
     ".": {
       "types": "./index.d.ts",

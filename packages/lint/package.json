@@ -5,6 +5,24 @@
   "type": "module",
   "license": "MIT",
   "author": "Ali Alshehri (https://github.com/AlshehriAli0)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlshehriAli0/ashStack.git",
+    "directory": "packages/lint"
+  },
+  "homepage": "https://github.com/AlshehriAli0/ashStack/tree/main/packages/lint#readme",
+  "bugs": "https://github.com/AlshehriAli0/ashStack/issues",
+  "keywords": [
+    "oxlint",
+    "oxc",
+    "lint",
+    "linter",
+    "eslint-config",
+    "typescript",
+    "react",
+    "react-native",
+    "expo"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
