@@ -1,10 +1,18 @@
 # @ashstack/lint
 
-Strict shared oxlint config. Entries are functions: `core()` → `react()` → `react-native()` (each contains the previous, returned flat).
+Strict shared [oxlint](https://oxc.rs) config with 71 custom rules. Three entries, each containing the one before it: `core()`, `react()`, `react-native()`.
+
+Rules for a library only ship when you actually depend on that library, so nothing fires about code you don't have.
+
+## Install
+
+```sh
+bun add -d oxlint oxlint-tsgolint @ashstack/lint
+```
 
 ```ts
-// oxlint.config.mts  (JSON configs cannot consume npm packages — TS config only)
-import { reactNative } from "@ashstack/lint";
+// oxlint.config.mts (JSON configs can't resolve npm packages, so TS config only)
+import { reactNative } from "@ashstack/lint"; // or: core, react
 import { defineConfig } from "oxlint";
 
 export default defineConfig({
@@ -13,12 +21,38 @@ export default defineConfig({
 });
 ```
 
-Every custom rule is documented in [RULES.md](./RULES.md) — description, options, failing and passing examples, generated from the rules themselves.
+```sh
+oxlint --type-aware --deny-warnings .
+```
 
-Run with `oxlint --type-aware --deny-warnings .` (type-aware rules need the `oxlint-tsgolint` peer). Node 22.18+.
+Type-aware rules need the `oxlint-tsgolint` peer. Node 22.18+.
 
-**Library rule groups auto-detect from your dependencies** — `@ashstack/zod/`, `@ashstack/query/`, `@ashstack/zustand/`, `@ashstack/i18n/`, `@ashstack/unistyles/`, `@ashstack/legend-list/`, `@ashstack/legend-state/`, `@ashstack/reanimated/`, `@ashstack/turbo-image/`, `@ashstack/skia/`, `@ashstack/keyboard/` plus their import bans only ship when the library is in your package.json. Each module is one boolean: `reactNative({ unistyles: false, i18n: true })`. Import bans are auto-detect only; disable individual rules by name.
+## What each entry adds
 
-Always on: the strict `core` base, react + jsx-a11y + React Compiler + you-might-not-need-an-effect, generic `@ashstack/react-native/` rules, and `@ashstack/core/` convention rules. Off by default (opt in): `@ashstack/core/no-comments`, `@ashstack/core/use-design-system`, `@ashstack/core/components-tsx-only`.
+`core()` is a strict eslint / typescript / unicorn / promise / import base plus the `@ashstack/core/` convention rules. `react()` adds react, jsx-a11y, React Compiler and you-might-not-need-an-effect. `react-native()` adds the generic `@ashstack/react-native/` rules: leaked renders, view nesting, iOS-only keyboard events, remote images.
 
-Layout: `src/core`, `src/react`, `src/react-native` each hold their entry (`index.ts`) and the modules they introduce (`rules/<module>/` — a manifest `index.ts` plus one file per rule).
+## Library rules, auto-detected
+
+A module is one rule namespace with one toggle, and turns on when its library is in your `package.json`. Detection walks up to the repo root, so monorepos work.
+
+`@ashstack/zod` · `@ashstack/query` · `@ashstack/zustand` · `@ashstack/i18n` · `@ashstack/unistyles` · `@ashstack/legend-list` · `@ashstack/legend-state` · `@ashstack/reanimated` · `@ashstack/turbo-image` · `@ashstack/skia` · `@ashstack/keyboard`
+
+Force one either way when detection guesses wrong:
+
+```ts
+reactNative({ unistyles: false, i18n: true });
+```
+
+Import bans are auto-detect only. To disagree with one, turn that rule off by name.
+
+## Opt-in rules
+
+Three rules ship off because they only make sense once a team has agreed to them: `@ashstack/core/no-comments`, `use-design-system` and `components-tsx-only`.
+
+## Rule reference
+
+[RULES.md](./RULES.md) lists every rule in every entry, with its options and a passing and failing example. It ships in this package and is generated from the rules themselves, so it can't drift.
+
+## License
+
+MIT
