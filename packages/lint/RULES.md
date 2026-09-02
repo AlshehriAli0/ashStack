@@ -35,7 +35,7 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`.
 
 | Rule | Setting |
 | --- | --- |
-| [`array-callback-return`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/array-callback-return.html) | `"error"` |
+| [`array-callback-return`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/array-callback-return.html) | `["error",{"allowImplicit":true}]` |
 | [`constructor-super`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/constructor-super.html) | `"error"` |
 | [`default-param-last`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/default-param-last.html) | `"error"` |
 | [`eqeqeq`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/eqeqeq.html) | `["error","always",{"null":"ignore"}]` |

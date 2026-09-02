@@ -6,7 +6,7 @@ import zodModule from "./rules/zod/index.js";
 export const coreModules = [coreModule, zodModule];
 
 const BASE_RULES: RuleMap = {
-  "array-callback-return": "error",
+  "array-callback-return": ["error", { allowImplicit: true }],
   "constructor-super": "error",
   "default-param-last": "error",
   eqeqeq: ["error", "always", { null: "ignore" }],
