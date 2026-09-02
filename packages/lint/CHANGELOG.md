@@ -1,5 +1,29 @@
 # @ashstack/lint
 
+## 0.4.0 (2026-09-02)
+
+### Breaking Changes
+
+- require the entry subpath instead of the package root ([`968838e`](https://github.com/AlshehriAli0/ashStack/commit/968838e))
+- make the effect plugin an optional peer ([`625d772`](https://github.com/AlshehriAli0/ashStack/commit/625d772))
+- turn no-comments on by default ([`143301e`](https://github.com/AlshehriAli0/ashStack/commit/143301e))
+
+### Features
+
+- port the netzero web rules into three modules ([`788b1f6`](https://github.com/AlshehriAli0/ashStack/commit/788b1f6))
+- trade two legend-list rules for the react-perf plugin ([`6bc1bba`](https://github.com/AlshehriAli0/ashStack/commit/6bc1bba))
+
+### Bug Fixes
+
+- **shared:** correct formatting of rule counts in README and update generation script ([`7658a44`](https://github.com/AlshehriAli0/ashStack/commit/7658a44))
+- read the options a rule is actually given ([`6d31660`](https://github.com/AlshehriAli0/ashStack/commit/6d31660))
+- let no-comments and no-manual-memo run in one project ([`1ba0878`](https://github.com/AlshehriAli0/ashStack/commit/1ba0878))
+- stop requiring void on an unhandled promise ([`af175ee`](https://github.com/AlshehriAli0/ashStack/commit/af175ee))
+
+### Performance
+
+- ship declarations only for the exported entries ([`9b0f3fe`](https://github.com/AlshehriAli0/ashStack/commit/9b0f3fe))
+
 ## 0.3.1 (2026-09-02)
 
 ### Bug Fixes

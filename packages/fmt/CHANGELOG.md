@@ -1,5 +1,11 @@
 # @ashstack/fmt
 
+## 0.3.0 (2026-09-02)
+
+### Bug Fixes
+
+- **shared:** correct formatting of rule counts in README and update generation script ([`7658a44`](https://github.com/AlshehriAli0/ashStack/commit/7658a44))
+
 ## 0.2.1 (2026-09-02)
 
 ### Bug Fixes
