@@ -128,4 +128,7 @@ const react = (options: ReactOptions = {}): OxlintConfig => {
   });
 };
 
+export { react };
+export type { ReactOptions, ModuleManifest } from "../lib/types.js";
+
 export default react;

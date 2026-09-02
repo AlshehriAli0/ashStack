@@ -122,4 +122,7 @@ const reactNative = (options: ReactNativeOptions = {}): OxlintConfig => {
   });
 };
 
+export { reactNative };
+export type { ReactNativeOptions, ModuleManifest } from "../lib/types.js";
+
 export default reactNative;

@@ -14,7 +14,7 @@ bun add -d oxlint oxlint-tsgolint @ashstack/lint
 
 ```ts
 // oxlint.config.mts (JSON configs can't resolve npm packages, so TS config only)
-import { core } from "@ashstack/lint"; // or: react, reactNative
+import { core } from "@ashstack/lint/core"; // or: /react, /react-native
 import { defineConfig } from "oxlint";
 
 export default defineConfig({
@@ -28,6 +28,20 @@ oxlint --type-aware --deny-warnings .
 ```
 
 Type-aware rules need the `oxlint-tsgolint` peer. Node 22.18+.
+
+Import the entry you use. There is no package root to import from, so nothing
+loads rule files you have no use for: `@ashstack/lint/core` loads 27 KB where
+a root re-export of all three would load 137 KB. `react` and `react-native`
+load most of it either way, since they configure most of the rules.
+
+```ts
+import { core } from "@ashstack/lint/core";
+import { react } from "@ashstack/lint/react";
+import { reactNative } from "@ashstack/lint/react-native";
+```
+
+Each entry also has a default export, and carries its own options type
+(`CoreOptions`, `ReactOptions`, `ReactNativeOptions`).
 
 `react()` adds nine rules from `eslint-plugin-react-you-might-not-need-an-effect`.
 It is an optional peer, because it unpacks to 218 KB that a backend or CLI on

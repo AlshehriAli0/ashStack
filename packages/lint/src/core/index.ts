@@ -226,4 +226,7 @@ const core = (options: CoreOptions = {}): OxlintConfig => {
   };
 };
 
+export { core };
+export type { CoreOptions, ModuleManifest } from "../lib/types.js";
+
 export default core;

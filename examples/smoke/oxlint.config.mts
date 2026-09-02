@@ -3,7 +3,7 @@
 // i18n and zod are dependencies, so their rules ship; turbo-image is not, so
 // its rules don't. skia and keyboard are forced on to show a boolean enabling
 // a module the dependencies would not have detected.
-import { reactNative } from "@ashstack/lint";
+import { reactNative } from "@ashstack/lint/react-native";
 import { defineConfig } from "oxlint";
 
 export default defineConfig({

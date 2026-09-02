@@ -78,7 +78,7 @@ const probeDetection = Bun.spawnSync(
   [
     "bun",
     "-e",
-    `const { reactNative } = await import("@ashstack/lint");
+    `const { reactNative } = await import("@ashstack/lint/react-native");
      const rules = Object.keys(reactNative({ zustand: false }).rules);
      console.log(JSON.stringify({
        dependencyEnablesModule: rules.some(r => r.startsWith("@ashstack/zod/")),

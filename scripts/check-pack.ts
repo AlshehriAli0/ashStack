@@ -48,7 +48,7 @@ writeFileSync(
 );
 writeFileSync(
   join(consumer, "oxlint.config.mts"),
-  `import { reactNative } from "@ashstack/lint";\nimport { defineConfig } from "oxlint";\nexport default defineConfig({ extends: [reactNative()] });\n`
+  `import { reactNative } from "@ashstack/lint/react-native";\nimport { defineConfig } from "oxlint";\nexport default defineConfig({ extends: [reactNative()] });\n`
 );
 writeFileSync(join(consumer, "oxfmt.config.mts"), `import fmt from "@ashstack/fmt";\nexport default fmt;\n`);
 writeFileSync(

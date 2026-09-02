@@ -24,7 +24,7 @@ bun add -d oxlint oxfmt oxlint-tsgolint @ashstack/lint @ashstack/fmt
 
 ```ts
 // oxlint.config.mts
-import { core } from "@ashstack/lint"; // or: react, reactNative
+import { core } from "@ashstack/lint/core"; // or: /react, /react-native
 import { defineConfig } from "oxlint";
 
 export default defineConfig({ extends: [core()] });

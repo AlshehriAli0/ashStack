@@ -1,4 +1,4 @@
-import { core } from "@ashstack/lint";
+import { core } from "@ashstack/lint/core";
 import { defineConfig } from "oxlint";
 
 export default defineConfig({
