@@ -24,7 +24,7 @@ const ONE_RULE_PER_DETECTED_MODULE = [
   "@ashstack/i18n/no-bare-text",
 ];
 
-const RULES_THE_CONSUMER_TURNED_OFF = ["no-nested-ternary", "@ashstack/unistyles/no-margin"];
+const RULES_THE_CONSUMER_TURNED_OFF = ["no-nested-ternary", "@ashstack/unistyles/no-margin", "no-comments"];
 
 const IMPORT_BAN_FILE = "import-bans.tsx";
 const IMPORT_BANS_FORCED_ON = 2;

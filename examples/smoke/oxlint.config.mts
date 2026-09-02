@@ -13,6 +13,8 @@ export default defineConfig({
     // consumer overrides always win: one built-in, one custom rule
     "no-nested-ternary": "off",
     "@ashstack/unistyles/no-margin": "off",
+    // on by default; this example is documentation, so its comments stay
+    "@ashstack/core/no-comments": "off",
     // opt-in rule, configured in place: raw imports get banned with a pointer
     // to your component; files under src/components/ui stay exempt
     "@ashstack/core/use-design-system": [

@@ -178,7 +178,6 @@ export const noComments: Rule = {
         additionalProperties: false,
       },
     ],
-    defaultOff: true,
   },
   createOnce(context: RuleContext) {
     const declarationStarts = new Set<number>();
