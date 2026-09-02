@@ -24,7 +24,11 @@ jobs:
       contents: write
       id-token: write
     steps:
+      # Full history and tags: the changelog is built from the commits since
+      # the last tag, and a shallow checkout has neither.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: oven-sh/setup-bun@v2
       - uses: actions/setup-node@v4
         with:

@@ -80,8 +80,8 @@ export interface Release {
 
 /**
  * A package's changelog entry: breaking changes first, then the sections a
- * reader cares about. A release carrying none of those still lists its commits,
- * under `Other Changes`, so no version lands with an empty entry.
+ * reader cares about. A release whose commits are all chores still lists them,
+ * under `Other Changes`, rather than showing a version with nothing under it.
  */
 export const renderNotes = (entries: Entry[], into: Release): string => {
   const { version, date, dir, commitUrl } = into;
@@ -118,6 +118,13 @@ const git = (...args: string[]): string =>
     .stdout.toString()
     .trim();
 
+/** A shallow checkout sees one commit and no tags, which would read as a release of one commit. */
+const assertFullHistory = (): void => {
+  if (git("rev-parse", "--is-shallow-repository") !== "false") {
+    throw new Error("Shallow clone: the notes would miss every commit but the last. Check out with fetch-depth: 0.");
+  }
+};
+
 const lastTag = (dir: Dir): string =>
   git("tag", "--list", `${npmName(dir)}@*`, "--sort=-version:refname").split("\n")[0] ?? "";
 
@@ -147,6 +154,7 @@ const packageJson = (dir: Dir): PackageJson =>
  * one-line `name@version` list, which the release commit uses as its subject.
  */
 const main = (requested: string): void => {
+  assertFullHistory();
   const asked = requested.split(",");
   const date = new Date().toISOString().slice(0, 10);
   const released: string[] = [];
