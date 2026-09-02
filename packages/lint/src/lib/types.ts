@@ -120,3 +120,5 @@ export type OxlintConfig = OxlintNativeConfig;
 
 /** The `rules` block of a config: oxlint's own map, so a built-in rule's options are checked. */
 export type RuleMap = NonNullable<OxlintConfig["rules"]>;
+
+export type JsPlugin = NonNullable<OxlintConfig["jsPlugins"]>[number];

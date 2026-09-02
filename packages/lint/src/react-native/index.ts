@@ -1,4 +1,5 @@
 import { TEST_FILES, coreModules } from "../core/index.js";
+import { effectPlugin } from "../lib/effect-plugin.js";
 import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
 import type { BanGroup, OxlintConfig, ReactNativeOptions } from "../lib/types.js";
@@ -104,7 +105,7 @@ const reactNative = (options: ReactNativeOptions = {}): OxlintConfig => {
     globals: { __DEV__: "readonly" },
     rules: {
       ...FORBID_EMPTY_NOOP_HANDLERS,
-      ...ALLOW_GESTURE_AND_ANIMATION_EFFECTS,
+      ...(effectPlugin().present ? ALLOW_GESTURE_AND_ANIMATION_EFFECTS : {}),
       "no-restricted-imports": ["error", composed.restricted],
       ...composed.rules,
     },

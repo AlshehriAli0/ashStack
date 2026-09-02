@@ -555,7 +555,7 @@ export const Panel = () => <View />;
 
 ## `react()`
 
-React on the web. Adds the you-might-not-need-an-effect plugin (`react-effect/`) alongside oxlint's own.
+React on the web. Adds the you-might-not-need-an-effect plugin (`react-effect/`) alongside oxlint's own, when that optional peer is installed.
 
 Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`, `jsx-a11y`, `react-perf`.
 
@@ -636,6 +636,7 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 | [`jsx-a11y/prefer-tag-over-role`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/prefer-tag-over-role.html) | `"off"` |
 | [`jsx-a11y/role-has-required-aria-props`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/role-has-required-aria-props.html) | `"error"` |
 | [`jsx-a11y/role-supports-aria-props`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/role-supports-aria-props.html) | `"error"` |
+| [`unicorn/filename-case`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/filename-case.html) | `["error",{"cases":{"kebabCase":true,"pascalCase":true}}]` |
 | [`react-effect/no-derived-state`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
 | [`react-effect/no-chain-state-updates`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
 | [`react-effect/no-event-handler`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
@@ -645,7 +646,6 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 | [`react-effect/no-pass-data-to-parent`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
 | [`react-effect/no-external-store-subscription`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
 | [`react-effect/no-initialize-state`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
-| [`unicorn/filename-case`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/filename-case.html) | `["error",{"cases":{"kebabCase":true,"pascalCase":true}}]` |
 
 ### `@ashstack/react`
 

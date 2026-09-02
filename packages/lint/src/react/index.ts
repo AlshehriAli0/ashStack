@@ -1,6 +1,5 @@
-import { fileURLToPath } from "node:url";
-
 import core, { coreModules } from "../core/index.js";
+import { effectPlugin } from "../lib/effect-plugin.js";
 import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
 import type { OxlintConfig, ReactOptions, RuleMap } from "../lib/types.js";
@@ -104,15 +103,6 @@ const REACT_RULES: RuleMap = {
   "jsx-a11y/prefer-tag-over-role": "off",
   "jsx-a11y/role-has-required-aria-props": "error",
   "jsx-a11y/role-supports-aria-props": "error",
-  "react-effect/no-derived-state": "error",
-  "react-effect/no-chain-state-updates": "error",
-  "react-effect/no-event-handler": "error",
-  "react-effect/no-adjust-state-on-prop-change": "error",
-  "react-effect/no-reset-all-state-on-prop-change": "error",
-  "react-effect/no-pass-live-state-to-parent": "error",
-  "react-effect/no-pass-data-to-parent": "error",
-  "react-effect/no-external-store-subscription": "error",
-  "react-effect/no-initialize-state": "error",
   "unicorn/filename-case": ["error", { cases: { kebabCase: true, pascalCase: true } }],
 };
 
@@ -123,17 +113,12 @@ const REACT_RULES: RuleMap = {
  */
 const react = (options: ReactOptions = {}): OxlintConfig => {
   const composed = composeModules([...coreModules, ...reactModules], options);
+  const effect = effectPlugin();
 
   return mergeConfigs(core(options), {
     plugins: ["react", "jsx-a11y", "react-perf"],
-    jsPlugins: [
-      {
-        name: "react-effect",
-        specifier: fileURLToPath(import.meta.resolve("eslint-plugin-react-you-might-not-need-an-effect")),
-      },
-      ...composed.jsPlugins,
-    ],
-    rules: { ...REACT_RULES, ...composed.rules },
+    jsPlugins: [...effect.jsPlugins, ...composed.jsPlugins],
+    rules: { ...REACT_RULES, ...effect.rules, ...composed.rules },
     overrides: [
       {
         files: FILE_BASED_ROUTER_FILES,

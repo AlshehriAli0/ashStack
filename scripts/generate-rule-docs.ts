@@ -213,7 +213,8 @@ const doc = [
   }),
   ...entrySection({
     entry: "react()",
-    summary: "React on the web. Adds the you-might-not-need-an-effect plugin (`react-effect/`) alongside oxlint's own.",
+    summary:
+      "React on the web. Adds the you-might-not-need-an-effect plugin (`react-effect/`) alongside oxlint's own, when that optional peer is installed.",
     config: reactConfig,
     inherited: builtInRules(coreConfig),
     modules: reactModules,
