@@ -1,5 +1,11 @@
 # @ashstack/lint
 
+## 0.3.1 (2026-09-02)
+
+### Bug Fixes
+
+- **shared:** ensure full history is fetched for accurate changelog generation ([`5a323c5`](https://github.com/AlshehriAli0/ashStack/commit/5a323c5))
+
 ## 0.3.0 (2026-09-02)
 
 ### Other Changes

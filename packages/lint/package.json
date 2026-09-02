@@ -1,6 +1,6 @@
 {
   "name": "@ashstack/lint",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "ashStack shared oxlint configuration and custom rules. Entries: core, react, react-native, with per-library rule groups auto-detected from your dependencies. Consume from oxlint.config.mts.",
   "type": "module",
   "license": "MIT",

@@ -1,6 +1,6 @@
 {
   "name": "@ashstack/fmt",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "ashStack shared oxfmt configuration. Consume from oxfmt.config.mts.",
   "type": "module",
   "license": "MIT",
