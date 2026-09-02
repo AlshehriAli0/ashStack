@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 
 import {
@@ -10,7 +10,6 @@ import {
   reactNative,
   reactNativeModules,
 } from "../packages/lint/dist/index.js";
-import { EFFECT_NAMESPACE, EFFECT_SPECIFIER } from "../packages/lint/dist/lib/effect-plugin.js";
 import { shortName } from "../packages/lint/dist/lib/module.js";
 import type {
   BanGroup,
@@ -19,13 +18,12 @@ import type {
   RestrictedImports,
   Rule,
 } from "../packages/lint/dist/lib/types.js";
+import { anchor, effectsModule, emit, type Generated, ruleNotes } from "./shared.js";
 
 const lintDir = join(import.meta.dir, "..", "packages", "lint");
 const outPath = join(lintDir, "RULES.md");
-const check = process.argv.includes("--check");
 
 const OXLINT_RULE_DOCS = "https://oxc.rs/docs/guide/usage/linter/rules";
-const REACT_EFFECT_DOCS = "https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect";
 const linkedRuleId = (ruleId: string): string => {
   const [plugin = "eslint", rule = ruleId] = ruleId.includes("/") ? ruleId.split("/") : ["eslint", ruleId];
   const pluginPath = plugin.replace(/-/g, "_");
@@ -55,15 +53,10 @@ const fixtureSource = (moduleDir: string, rule: string, fixture: "bad" | "good")
   return existsSync(path) ? readFileSync(path, "utf8").trim() : null;
 };
 
-const activationNotes = (meta: Rule["meta"]): string[] => {
-  const notes: string[] = [];
-  if (meta.defaultOff) notes.push("> Off by default — opt in per project.", "");
-  if (meta.packages) {
-    notes.push(`> Enabled only when one of ${meta.packages.map(p => `\`${p}\``).join(", ")} is a dependency.`, "");
-  }
-  if (meta.schema) notes.push("**Options**", "", "```jsonc", JSON.stringify(meta.schema, null, 2), "```", "");
-  return notes;
-};
+const activationNotes = (meta: Rule["meta"]): string[] => [
+  ...ruleNotes(meta).flatMap(note => [`> ${note}`, ""]),
+  ...(meta.schema ? ["**Options**", "", "```jsonc", JSON.stringify(meta.schema, null, 2), "```", ""] : []),
+];
 
 const examples = (moduleDir: string, name: string): string[] => {
   const bad = fixtureSource(moduleDir, name, "bad");
@@ -104,12 +97,6 @@ const banGroupSection = (groups: BanGroup[]): string[] => [
     "",
   ]),
 ];
-
-const anchor = (heading: string): string =>
-  heading
-    .toLowerCase()
-    .replace(/[^a-z0-9 -]/g, "")
-    .replace(/ /g, "-");
 
 interface Entry {
   entry: string;
@@ -160,45 +147,6 @@ const customRules = (modules: ModuleManifest[]): number =>
 
 const detectingModules = (modules: ModuleManifest[]): number =>
   modules.filter(m => (m.packages ?? []).length > 0).length;
-
-interface VendoredRule {
-  meta?: { docs?: { description?: string; url?: string } };
-}
-
-/**
- * The vendored effect rules as a module, so they render through the same
- * section and table-of-contents code as every other namespace. They carry no
- * fixtures, which the renderer already omits, and the description keeps the
- * upstream link the plugin ships.
- */
-const effectsModule = async (): Promise<ModuleManifest> => {
-  const loaded: unknown = await import(EFFECT_SPECIFIER);
-  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
-  const plugin = loaded as { default?: { rules?: Record<string, VendoredRule> } };
-  const vendored = Object.entries(plugin.default?.rules ?? {});
-
-  const described = ([name, rule]: [string, VendoredRule]): [string, Rule] => {
-    const docs = rule.meta?.docs ?? {};
-    const description = docs.description ?? "";
-    return [
-      name,
-      {
-        meta: {
-          type: "problem",
-          docs: { description: docs.url === undefined ? description : `${description} [Why](${docs.url})` },
-        },
-        create: () => ({}),
-      },
-    ];
-  };
-
-  return {
-    meta: { name: EFFECT_NAMESPACE },
-    url: EFFECT_SPECIFIER,
-    docsWhen: `always on via \`react()\` and every entry above it, from [eslint-plugin-react-you-might-not-need-an-effect](${REACT_EFFECT_DOCS}) (MIT)`,
-    rules: Object.fromEntries(vendored.map(described)),
-  };
-};
 
 const coreConfig = core();
 const reactConfig = react();
@@ -298,27 +246,11 @@ const withCounts = (text: string, sentence: string): string | null => {
   return text.slice(0, from + START.length) + sentence + text.slice(to);
 };
 
-const stale: string[] = [];
+/** A README with its counts sentence spliced back between the markers. */
+const counted = ([path, sentence]: [string, string]): Generated => {
+  const updated = withCounts(readFileSync(path, "utf8"), sentence);
+  if (updated === null) throw new Error(`${path} lost its ${START} markers - put them back around the counts.`);
+  return [path, updated];
+};
 
-if (check) {
-  const current = existsSync(outPath) ? readFileSync(outPath, "utf8") : "";
-  if (current !== doc) stale.push("RULES.md");
-  for (const [path, sentence] of countedReadmes) {
-    const text = readFileSync(path, "utf8");
-    if (withCounts(text, sentence) !== text) stale.push(path);
-  }
-  if (stale.length > 0) {
-    console.error(`stale, run \`bun run docs:rules\` and commit the result: ${stale.join(", ")}`);
-    process.exit(1);
-  }
-  console.log("rule docs ok");
-} else {
-  writeFileSync(outPath, doc);
-  console.log(`wrote ${outPath}`);
-  for (const [path, sentence] of countedReadmes) {
-    const updated = withCounts(readFileSync(path, "utf8"), sentence);
-    if (updated === null) throw new Error(`${path} lost its ${START} markers - put them back around the counts.`);
-    writeFileSync(path, updated);
-    console.log(`counts in ${path}`);
-  }
-}
+emit([[outPath, doc], ...countedReadmes.map(counted)], "rule docs", "bun run docs:rules");

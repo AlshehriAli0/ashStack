@@ -1,9 +1,9 @@
-import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type { ModuleManifest } from "../packages/lint/dist/lib/types.js";
+import type { ModuleManifest, Rule } from "../packages/lint/dist/lib/types.js";
 import { coreModules, reactModules, reactNativeModules } from "../packages/lint/dist/modules.js";
+import { emit, formatGenerated } from "./shared.js";
 
 /**
  * Write the metadata an entry needs, so no config imports rule code.
@@ -12,44 +12,42 @@ import { coreModules, reactModules, reactNativeModules } from "../packages/lint/
  * flags per rule. oxlint loads the rule implementations itself from that path.
  * Importing the manifests directly put all 74 of them — 104 KB, three quarters
  * of the graph — in front of every consumer for nothing.
+ *
+ * Layout is oxfmt's job, so nothing here indents.
  */
 const lintDir = join(import.meta.dir, "..", "packages", "lint");
 const outPath = join(lintDir, "src", "lib", "registry.ts");
-const check = process.argv.includes("--check");
 
 /** Where the module's plugin file sits relative to `lib/registry.js`, which resolves it at runtime. */
 const pluginPath = (module: ModuleManifest): string =>
   relative(join(lintDir, "dist", "lib"), fileURLToPath(module.url)).replaceAll("\\", "/");
 
-const ruleFlags = (module: ModuleManifest): string => {
-  const entries = Object.entries(module.rules).map(([name, rule]) => {
-    const flags = [
-      ...(rule.meta.defaultOff === true ? ["defaultOff: true"] : []),
-      ...(rule.meta.packages ? [`packages: ${JSON.stringify(rule.meta.packages)}`] : []),
-    ];
-    const body = flags.length === 0 ? "{}" : `{ ${flags.join(", ")} }`;
-    return `      ${JSON.stringify(name)}: ${body},`;
-  });
-  return entries.length === 0 ? "    rules: {}," : ["    rules: {", ...entries, "    },"].join("\n");
+/** Module fields a config reads only when the module has them. */
+const OPTIONAL = ["option", "packages", "restrictedImports"] as const;
+
+/** The two flags that decide whether a rule is on, and nothing else from its meta. */
+const ruleFlags = (rule: Rule): string => {
+  const flags = [
+    ...(rule.meta.defaultOff === true ? ["defaultOff: true"] : []),
+    ...(rule.meta.packages ? [`packages: ${JSON.stringify(rule.meta.packages)}`] : []),
+  ];
+  return flags.length === 0 ? "{}" : `{ ${flags.join(", ")} }`;
 };
 
-const entryFor = (module: ModuleManifest): string =>
-  [
-    "  {",
-    `    meta: { name: ${JSON.stringify(module.meta.name)} },`,
-    `    url: at(${JSON.stringify(pluginPath(module))}),`,
-    ...(module.option === undefined ? [] : [`    option: ${JSON.stringify(module.option)},`]),
-    ...(module.packages === undefined ? [] : [`    packages: ${JSON.stringify(module.packages)},`]),
-    ...(module.restrictedImports === undefined
-      ? []
-      : [`    restrictedImports: ${JSON.stringify(module.restrictedImports)},`]),
-    ruleFlags(module),
-    "  },",
-  ].join("\n");
+const entryFor = (module: ModuleManifest): string[] => [
+  "{",
+  `meta: { name: ${JSON.stringify(module.meta.name)} },`,
+  `url: at(${JSON.stringify(pluginPath(module))}),`,
+  ...OPTIONAL.flatMap(key => (module[key] === undefined ? [] : [`${key}: ${JSON.stringify(module[key])},`])),
+  "rules: {",
+  ...Object.entries(module.rules).map(([name, rule]) => `${JSON.stringify(name)}: ${ruleFlags(rule)},`),
+  "},",
+  "},",
+];
 
 const listFor = (name: string, modules: ModuleManifest[]): string[] => [
   `export const ${name}: ModuleMeta[] = [`,
-  ...modules.map(entryFor),
+  ...modules.flatMap(entryFor),
   "];",
   "",
 ];
@@ -66,31 +64,4 @@ const registry = [
   ...listFor("reactNativeRegistry", reactNativeModules),
 ].join("\n");
 
-/**
- * The same text `oxfmt` would leave behind, so the staleness check compares
- * like with like instead of losing to the formatter. Formatting happens on a
- * file inside the repo, where `oxfmt.config.mts` applies.
- */
-const formatted = (text: string): string => {
-  const scratch = join(import.meta.dir, "..", ".registry.generated.ts");
-  writeFileSync(scratch, text);
-  const run = Bun.spawnSync([join(import.meta.dir, "..", "node_modules", ".bin", "oxfmt"), scratch]);
-  if (run.exitCode !== 0) throw new Error(`oxfmt could not format the registry: ${run.stderr.toString()}`);
-  const output = readFileSync(scratch, "utf8");
-  rmSync(scratch);
-  return output;
-};
-
-const document = formatted(registry);
-
-if (check) {
-  const current = existsSync(outPath) ? readFileSync(outPath, "utf8") : "";
-  if (current !== document) {
-    console.error("registry.ts is stale - run `bun run registry` and commit the result.");
-    process.exit(1);
-  }
-  console.log("registry ok");
-} else {
-  writeFileSync(outPath, document);
-  console.log(`wrote ${outPath}`);
-}
+emit([[outPath, formatGenerated(outPath, registry)]], "registry", "bun run registry");
