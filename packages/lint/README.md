@@ -63,7 +63,7 @@ Import bans follow detection only; disable one by rule name.
 
 ## Opt-in rules
 
-Off by default, since they need a team decision first: `@ashstack/core/no-comments`, `use-design-system` and `components-tsx-only`.
+<!-- opt-in -->Off by default, since they need a team decision first: `@ashstack/core/use-design-system` and `@ashstack/core/components-tsx-only`.<!-- /opt-in -->
 
 ## Rule reference
 

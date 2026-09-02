@@ -164,6 +164,27 @@ const counts = {
   detecting: detectingModules(reactNativeAll),
 };
 
+const andList = (names: string[]): string => {
+  const last = names.at(-1) ?? "";
+  return names.length < 2 ? last : `${names.slice(0, -1).join(", ")} and ${last}`;
+};
+
+/**
+ * The rules a consumer has to ask for, named in full. Read off the
+ * `defaultOff` flags themselves, so a rule that stops being opt-in cannot
+ * leave a README claiming it still is.
+ */
+const optInIds = reactNativeAll.flatMap(module =>
+  Object.entries(module.rules)
+    .filter(([, rule]) => rule.meta.defaultOff === true)
+    .map(([name]) => `\`${module.meta.name}/${name}\``)
+);
+
+const optIn =
+  optInIds.length === 0
+    ? "Every rule is on by default."
+    : `Off by default, since they need a team decision first: ${andList(optInIds)}.`;
+
 /** On in a bare oxlint install, so listing them as ours would be a lie. */
 const OXLINT_DEFAULT_PLUGINS = ["eslint", "typescript", "unicorn", "oxc"];
 
@@ -217,33 +238,37 @@ const doc = [
   }),
 ].join("\n");
 
-const START = "<!-- rule-counts -->";
-const END = "<!-- /rule-counts -->";
-
-/** The counts sentence each README carries between its markers. */
-const countedReadmes: [path: string, sentence: string][] = [
+/** The generated regions each README carries, keyed by marker name. */
+const readmeRegions: [path: string, regions: Record<string, string>][] = [
   [
     join(import.meta.dir, "..", "README.md"),
-    // what: the bullets start their own lines, or the marker opens an HTML block that eats the `**`
-    [
-      "",
-      "",
-      `- **${counts.core} rules** on plain TypeScript, **${counts.react}** with React, **${counts.reactNative}** on React Native, ${counts.custom} of them custom-built`,
-      `- library-specific rules ship only when you depend on that library: ${counts.detecting} self-detecting modules`,
-    ].join("\n"),
+    {
+      // what: the bullets start their own lines, or the marker opens an HTML block that eats the `**`
+      "rule-counts": [
+        "",
+        "",
+        `- **${counts.core} rules** on plain TypeScript, **${counts.react}** with React, **${counts.reactNative}** on React Native, ${counts.custom} of them custom-built`,
+        `- library-specific rules ship only when you depend on that library: ${counts.detecting} self-detecting modules`,
+      ].join("\n"),
+      "opt-in": optIn,
+    },
   ],
   [
     join(lintDir, "README.md"),
-    `${counts.core} rules on plain TypeScript, ${counts.react} with React, ${counts.reactNative} on React Native, ${counts.custom} of them custom-built`,
+    {
+      "rule-counts": `${counts.core} rules on plain TypeScript, ${counts.react} with React, ${counts.reactNative} on React Native, ${counts.custom} of them custom-built`,
+      "opt-in": optIn,
+    },
   ],
 ];
 
-/** The file with `sentence` between the markers, or null when the markers are missing. */
-const withCounts = (text: string, sentence: string): string | null => {
-  const from = text.indexOf(START);
-  const to = text.indexOf(END, from);
+/** The file with `body` between `<!-- name -->` and its closer, or null when either marker is missing. */
+const withRegion = (text: string, name: string, body: string): string | null => {
+  const start = `<!-- ${name} -->`;
+  const from = text.indexOf(start);
+  const to = text.indexOf(`<!-- /${name} -->`, from);
   if (from === -1 || to === -1) return null;
-  return text.slice(0, from + START.length) + sentence + text.slice(to);
+  return text.slice(0, from + start.length) + body + text.slice(to);
 };
 
 const headingAnchors = (text: string): Set<string> =>
@@ -301,11 +326,15 @@ if (broken.length > 0) {
   process.exit(1);
 }
 
-/** A README with its counts sentence spliced back between the markers. */
-const counted = ([path, sentence]: [string, string]): Generated => {
-  const updated = withCounts(readFileSync(path, "utf8"), sentence);
-  if (updated === null) throw new Error(`${path} lost its ${START} markers - put them back around the counts.`);
-  return [path, updated];
+/** A README with every generated region spliced back between its markers. */
+const spliced = ([path, regions]: [string, Record<string, string>]): Generated => {
+  let text = readFileSync(path, "utf8");
+  for (const [name, body] of Object.entries(regions)) {
+    const updated = withRegion(text, name, body);
+    if (updated === null) throw new Error(`${path} lost its <!-- ${name} --> markers - put them back around it.`);
+    text = updated;
+  }
+  return [path, text];
 };
 
-emit([[outPath, doc], ...countedReadmes.map(counted)], "rule docs", "bun run docs:rules");
+emit([[outPath, doc], ...readmeRegions.map(spliced)], "rule docs", "bun run docs:rules");

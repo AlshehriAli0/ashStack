@@ -99,7 +99,7 @@ export default defineConfig({
 
 Usual first cuts: `max-lines` (300), `max-lines-per-function` (120), `complexity` (12).
 
-Off by default, since they need a team decision first: `@ashstack/core/no-comments`, `use-design-system`, `components-tsx-only`.
+<!-- opt-in -->Off by default, since they need a team decision first: `@ashstack/core/use-design-system` and `@ashstack/core/components-tsx-only`.<!-- /opt-in -->
 
 ## Contributing
 
