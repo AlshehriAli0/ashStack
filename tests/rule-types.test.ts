@@ -93,19 +93,20 @@ describe("tsType", () => {
 
 describe("settingType", () => {
   it("accepts a bare severity when the rule takes no options", () => {
-    expect(settingType(rule("Does a thing."))).toBe("AllowWarnDeny | [AllowWarnDeny]");
+    expect(settingType(rule("Does a thing."))).toBe("RuleSetting");
   });
 
   it("adds the option tuple when the rule declares one", () => {
-    expect(settingType(withSchema([{ type: "integer" }]))).toBe(
-      "AllowWarnDeny | [AllowWarnDeny] | [AllowWarnDeny, number]"
-    );
+    expect(settingType(withSchema([{ type: "integer" }]))).toBe("RuleSetting<[number]>");
   });
 
-  it("offers every prefix when a rule declares several options", () => {
-    expect(settingType(withSchema([{ type: "string" }, { type: "boolean" }]))).toBe(
-      "AllowWarnDeny | [AllowWarnDeny] | [AllowWarnDeny, string] | [AllowWarnDeny, string, boolean]"
-    );
+  it("carries every option a rule declares, each optional to set", () => {
+    expect(settingType(withSchema([{ type: "string" }, { type: "boolean" }]))).toBe("RuleSetting<[string, boolean]>");
+  });
+
+  // what: an editor intersects the value with every arm, so a union printed eight arms per hover
+  it("names the shape instead of spelling a union, which an editor renders unreadably", () => {
+    expect(settingType(withSchema([{ type: "integer" }]))).not.toContain("|");
   });
 });
 
@@ -118,7 +119,7 @@ describe("ruleMember", () => {
     expect(text).toContain(
       "@see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreprobe"
     );
-    expect(text).toContain('"@ashstack/core/probe"?: AllowWarnDeny | [AllowWarnDeny];');
+    expect(text).toContain('"@ashstack/core/probe"?: RuleSetting;');
   });
 
   it("says when a rule is off by default or gated on a dependency", () => {
@@ -143,6 +144,7 @@ describe("fileFor", () => {
     expect(text).toContain('declare module "oxlint" {');
     expect(text).toContain("interface DummyRuleMap {");
     expect(text).toContain('import type { AllowWarnDeny } from "oxlint";');
+    expect(text).toContain("type RuleSetting<Options extends unknown[] = []>");
   });
 
   it("names every rule in both the union and the map", () => {

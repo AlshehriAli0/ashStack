@@ -2,6 +2,9 @@
 
 import type { AllowWarnDeny } from "oxlint";
 
+/** A severity, or a severity followed by as many of the rule's options as you want to set. */
+type RuleSetting<Options extends unknown[] = []> = AllowWarnDeny | [AllowWarnDeny, ...Partial<Options>];
+
 /** Every rule id `react-native()` adds on top of the entry below it. */
 export type ReactNativeRuleId =
   | "@ashstack/react-native/no-keyboard-will-events"
@@ -66,55 +69,55 @@ declare module "oxlint" {
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-keyboard-will-events
      */
-    "@ashstack/react-native/no-keyboard-will-events"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/react-native/no-keyboard-will-events"?: RuleSetting;
     /**
      * Disallow a React state setter inside a scroll handler prop. Scroll fires every frame, and so would the re-render.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-scroll-position-state
      */
-    "@ashstack/react-native/no-scroll-position-state"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/react-native/no-scroll-position-state"?: RuleSetting;
     /**
      * Disallow conditional and logical entries inside a JSX `style` array. A falsy entry leaves a hole that breaks the Unistyles C++ proxy.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-conditional-style-array
      */
-    "@ashstack/react-native/no-conditional-style-array"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/react-native/no-conditional-style-array"?: RuleSetting;
     /**
      * Disallow a `&&` guard in JSX on a value this rule can see is a number or a string — a `.length`, a `.size`, arithmetic, a literal. The falsy left operand leaks into the output, and a bare `0` crashes React Native with "Text strings must be rendered within a <Text> component".
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-leaked-render
      */
-    "@ashstack/react-native/no-leaked-render"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/react-native/no-leaked-render"?: RuleSetting;
     /**
      * Disallow a react-native `<Image>` with a network `{ uri }` source. It has no disk cache and no decode sizing, so the image re-downloads at full size on every cold start.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-rn-image-network-source
      */
-    "@ashstack/react-native/no-rn-image-network-source"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/react-native/no-rn-image-network-source"?: RuleSetting;
     /**
      * Disallow a View or Animated.View that wraps an identical view when neither carries anything but a style. Every extra host view is a real node in the native tree.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-redundant-view-nesting
      */
-    "@ashstack/react-native/no-redundant-view-nesting"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/react-native/no-redundant-view-nesting"?: RuleSetting;
     /**
      * Disallow a namespace import of react-native and a re-export of its `Platform`. Both defeat Metro's platform shaking, so dead `Platform.OS` branches ship in both bundles.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-rn-namespace-import
      */
-    "@ashstack/react-native/no-rn-namespace-import"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/react-native/no-rn-namespace-import"?: RuleSetting;
     /**
      * Require an accessible name on an icon-only touchable or an icon-only Expo UI `<Button>`. Without a label, hint or visible text, a screen reader cannot reach the control.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-unlabeled-icon-pressable
      */
-    "@ashstack/react-native/no-unlabeled-icon-pressable"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/react-native/no-unlabeled-icon-pressable"?: RuleSetting;
     /**
      * Require module scope for a non-component function that reads nothing from the component around it. Out there it is created once, keeps a stable identity, and can be tested without rendering.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativehoist-stateless-function
      */
-    "@ashstack/react-native/hoist-stateless-function"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/react-native/hoist-stateless-function"?: RuleSetting;
     /**
      * Require a `// why:` line above every kept `useMemo`, `useCallback` and `memo`. The React Compiler memoises on a best-effort basis, not a guarantee, so a memo is allowed where the cost is real: something rendered per list row, or a computation measured as heavy. The `// why:` line names which of the two applies. `@ashstack/core/no-comments` keeps that line and never counts it against its `budget`, so both rules run together.
      *
@@ -122,270 +125,270 @@ declare module "oxlint" {
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-manual-memo
      */
-    "@ashstack/react-native/no-manual-memo"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/react-native/no-manual-memo"?: RuleSetting;
     /**
      * Disallow dynamic `import()` outside a `React.lazy` or `dynamic` wrapper. Metro inlines it into the same bundle, so nothing is deferred and the module is hidden from the typechecker.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-dynamic-import
      */
-    "@ashstack/react-native/no-dynamic-import"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/react-native/no-dynamic-import"?: RuleSetting;
     /**
      * A Reanimated worklet hook cannot see `useUnistyles()` theme changes on the UI thread. Read the shared value from `useAnimatedTheme()` there instead.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesanimated-theme
      */
-    "@ashstack/unistyles/animated-theme"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/unistyles/animated-theme"?: RuleSetting;
     /**
      * A raw component never subscribes its `contentContainerStyle` to theme or `rt` updates. Wrap the component with `withUnistyles` when the style depends on either.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylescontent-container
      */
-    "@ashstack/unistyles/content-container"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/unistyles/content-container"?: RuleSetting;
     /**
      * Inside `StyleSheet.create`, require `rt` and theme values rather than Dimensions, PixelRatio, Appearance, I18nManager, StatusBar or `UnistylesRuntime`. It also covers logical spacing, `boxShadow`, `borderCurve` and a redundant `as const`.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesin-sheet
      */
-    "@ashstack/unistyles/in-sheet"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/unistyles/in-sheet"?: RuleSetting;
     /**
      * Disallow passing `useSafeAreaInsets()` values into a dynamic style function or an inline JSX style object. Read `rt.insets` inside `StyleSheet.create` instead.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesinsets
      */
-    "@ashstack/unistyles/insets"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/unistyles/insets"?: RuleSetting;
     /**
      * Disallow hex and CSS-function colors inside `StyleSheet.create`. A raw color skips dark mode and never changes with the theme.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesno-hardcoded-color
      */
-    "@ashstack/unistyles/no-hardcoded-color"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/unistyles/no-hardcoded-color"?: RuleSetting;
     /**
      * Require `theme.spacing` or `theme.sizing.scale` for spacing, radius and type values inside `StyleSheet.create`, instead of raw numbers.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesno-hardcoded-spacing
      */
-    "@ashstack/unistyles/no-hardcoded-spacing"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/unistyles/no-hardcoded-spacing"?: RuleSetting;
     /**
      * Disallow non-negative `margin` inside `StyleSheet.create`; `gap` on the parent or `padding` on the element spaces children without leaving a hole when one is removed.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesno-margin
      */
-    "@ashstack/unistyles/no-margin"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/unistyles/no-margin"?: RuleSetting;
     /**
      * Disallow spreading a stylesheet style into another object. The spread reads through the Unistyles C++ proxy once, so the result stops reacting to the theme.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesno-style-spread
      */
-    "@ashstack/unistyles/no-style-spread"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/unistyles/no-style-spread"?: RuleSetting;
     /**
      * Disallow stylesheet keys that nothing in the file reads. A computed key, a computed read, or a sheet that leaves the module skips the whole file.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesno-unused-styles
      */
-    "@ashstack/unistyles/no-unused-styles"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/unistyles/no-unused-styles"?: RuleSetting;
     /**
      * Disallow passing `I18nManager.isRTL` from JSX into a dynamic style function. Unistyles tracks the dependency itself once the style reads `rt.rtl`.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesrtl-style-call
      */
-    "@ashstack/unistyles/rtl-style-call"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/unistyles/rtl-style-call"?: RuleSetting;
     /**
      * `theme.screen.*` is a snapshot taken at module initialization, so a component that reads it never sees the current size. `useUnistyles().rt.screen` and `useWindowDimensions` do.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylestheme-screen-component
      */
-    "@ashstack/unistyles/theme-screen-component"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/unistyles/theme-screen-component"?: RuleSetting;
     /**
      * Theme-dependent values belong in `StyleSheet.create`, not in a JSX `style` prop that reads a `useUnistyles()` theme.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylestheme-style-attr
      */
-    "@ashstack/unistyles/theme-style-attr"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/unistyles/theme-style-attr"?: RuleSetting;
     /**
      * Require `keyExtractor` and an explicit `recycleItems` on a Legend List. Without a key extractor the list keys its rows by index.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listrequired-props
      */
-    "@ashstack/legend-list/required-props"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-list/required-props"?: RuleSetting;
     /**
      * Disallow a `keyExtractor` that uses its index parameter. Cached sizes and recycled row state hang off the key, so a prepend points every measurement at the wrong item.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-index-key-extractor
      */
-    "@ashstack/legend-list/no-index-key-extractor"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-list/no-index-key-extractor"?: RuleSetting;
     /**
      * Disallow `key` on a Legend List, which remounts on any key change and loses its measurements and scroll position. Pass `dataKey` instead.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-remount-key
      */
-    "@ashstack/legend-list/no-remount-key"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-list/no-remount-key"?: RuleSetting;
     /**
      * Disallow inline object and array literals on props nested inside `renderItem`. A row whose props take a new identity every render can never be skipped.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-inline-render-item-props
      */
-    "@ashstack/legend-list/no-inline-render-item-props"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-list/no-inline-render-item-props"?: RuleSetting;
     /**
      * Disallow passing both `data` and real children to a Legend List. The combination is unsupported and one of the two is dropped without a warning.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-mixed-children
      */
-    "@ashstack/legend-list/no-mixed-children"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-list/no-mixed-children"?: RuleSetting;
     /**
      * Disallow `flex` in a Legend List's `contentContainerStyle`, where it sizes the scrolled content to the viewport and the list ends up measuring zero height.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-flex-in-content-container
      */
-    "@ashstack/legend-list/no-flex-in-content-container"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-list/no-flex-in-content-container"?: RuleSetting;
     /**
      * Require `getItemType` when a row branches on `item.type`. Without it every layout shares one recycling pool and one size average.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listtyped-items-need-item-type
      */
-    "@ashstack/legend-list/typed-items-need-item-type"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-list/typed-items-need-item-type"?: RuleSetting;
     /**
      * A `ScrollView` mounts every child up front, so a mapped collection does not belong in its children.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-scrollview-map
      */
-    "@ashstack/legend-list/no-scrollview-map"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-list/no-scrollview-map"?: RuleSetting;
     /**
      * Disallow FlashList and FlatList props that Legend List v3 does not have. It ignores them rather than rejecting them, so the feature looks broken.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-unsupported-props
      */
-    "@ashstack/legend-list/no-unsupported-props"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-list/no-unsupported-props"?: RuleSetting;
     /**
      * Write an observable with `.set(...)` or `.assign({...})`. Assigning or incrementing it with an operator is a silent no-op.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-assignment
      */
-    "@ashstack/legend-state/no-assignment"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-state/no-assignment"?: RuleSetting;
     /**
      * A variable initialized from `observable()` or `useObservable()` needs a trailing `$`. The other rules in this module key off that suffix.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-statenaming
      */
-    "@ashstack/legend-state/naming"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-state/naming"?: RuleSetting;
     /**
      * Never pass an observable to `observable()` or `useObservable()`. The wrapper is a second node, and reads and writes on it never reach the original.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-nested-observable
      */
-    "@ashstack/legend-state/no-nested-observable"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-state/no-nested-observable"?: RuleSetting;
     /**
      * Seeding `useState` from an observable's `get()` or `peek()` gives the value two owners. Read it with `useValue(...)` where it renders.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-react-mirror
      */
-    "@ashstack/legend-state/no-react-mirror"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-state/no-react-mirror"?: RuleSetting;
     /**
      * A `get()` placed directly in a JSX expression container is a plain read. The value renders once and never updates.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-untracked-get-in-jsx
      */
-    "@ashstack/legend-state/no-untracked-get-in-jsx"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-state/no-untracked-get-in-jsx"?: RuleSetting;
     /**
      * `peek()` never subscribes, so a selector or tracking callback that uses it never re-runs. Call `get()` there and keep `peek()` for handlers.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-peek-in-selector
      */
-    "@ashstack/legend-state/no-peek-in-selector"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-state/no-peek-in-selector"?: RuleSetting;
     /**
      * A `useValue` selector that builds a new object or array returns a fresh identity every run. The component then re-renders on every store change.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-object-selector
      */
-    "@ashstack/legend-state/no-object-selector"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-state/no-object-selector"?: RuleSetting;
     /**
      * Calling `observable()` inside a component or hook makes a new observable on every render. Use `useObservable()` or a module-level store instead.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-observable-in-component
      */
-    "@ashstack/legend-state/no-observable-in-component"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/legend-state/no-observable-in-component"?: RuleSetting;
     /**
      * A `useAnimatedReaction` result callback loops forever if it writes a shared value the prepare callback reads. Guard `scheduleOnRN` there on the current result differing from the previous one.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedanimated-reaction-safety
      */
-    "@ashstack/reanimated/animated-reaction-safety"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/reanimated/animated-reaction-safety"?: RuleSetting;
     /**
      * An animated style only takes effect on an `Animated.*` component. A plain element applies it once at mount and then never updates.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedanimated-style-needs-animated-component
      */
-    "@ashstack/reanimated/animated-style-needs-animated-component"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/reanimated/animated-style-needs-animated-component"?: RuleSetting;
     /**
      * An updater passed to `useAnimatedStyle` or `useAnimatedProps` must stay pure, so it may not write a shared value or call `scheduleOnRN`.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedanimated-updater-purity
      */
-    "@ashstack/reanimated/animated-updater-purity"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/reanimated/animated-updater-purity"?: RuleSetting;
     /**
      * Animate `transform` and `opacity` in `useAnimatedStyle` and `useAnimatedProps`. Layout properties such as `width` or `margin` recalculate layout every frame.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedgpu-properties-only
      */
-    "@ashstack/reanimated/gpu-properties-only"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/reanimated/gpu-properties-only"?: RuleSetting;
     /**
      * A layout animation belongs at module scope, or inside a memo when it depends on component values. The `entering`/`exiting`/`layout` props otherwise rebuild it on every render.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedhoist-layout-animation-builder
      */
-    "@ashstack/reanimated/hoist-layout-animation-builder"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/reanimated/hoist-layout-animation-builder"?: RuleSetting;
     /**
      * Give `interpolate()` a fourth argument that clamps. Without one, or with `EXTEND` or `IDENTITY`, the output keeps going past the ends of the input range.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedinterpolate-needs-clamp
      */
-    "@ashstack/reanimated/interpolate-needs-clamp"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/reanimated/interpolate-needs-clamp"?: RuleSetting;
     /**
      * Shared values are read with `.get()` and written with `.set(...)`, never through `.value`. React Compiler cannot track a `.value` access.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedno-shared-value-dot-value
      */
-    "@ashstack/reanimated/no-shared-value-dot-value"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/reanimated/no-shared-value-dot-value"?: RuleSetting;
     /**
      * A worklet that runs every frame must not send a React state setter through `scheduleOnRN`. That puts a Fabric commit on an animation frame.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedno-react-state-from-continuous-worklet
      */
-    "@ashstack/reanimated/no-react-state-from-continuous-worklet"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/reanimated/no-react-state-from-continuous-worklet"?: RuleSetting;
     /**
      * Pass a computed `useSharedValue` initial value as a function. An eager call runs on every render while only the first result is kept.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedprefer-lazy-shared-value-initializer
      */
-    "@ashstack/reanimated/prefer-lazy-shared-value-initializer"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/reanimated/prefer-lazy-shared-value-initializer"?: RuleSetting;
     /**
      * `scheduleOnRN` takes a function declared in RN Runtime scope. An inline callback can end up created on the wrong runtime.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedschedule-on-rn-scope
      */
-    "@ashstack/reanimated/schedule-on-rn-scope"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/reanimated/schedule-on-rn-scope"?: RuleSetting;
     /**
      * Destructuring a shared value or mutating what its `get()` returned detaches it from Reanimated reactivity. Reading or writing one while JSX evaluates also makes render impure.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedshared-value-usage
      */
-    "@ashstack/reanimated/shared-value-usage"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/reanimated/shared-value-usage"?: RuleSetting;
     /**
      * Require `resize` on a TurboImage so the native decoder downsamples before the bitmap reaches memory. A full-resolution decode wastes tens of megabytes and stalls the first frame.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackturbo-imagerequire-resize
      */
-    "@ashstack/turbo-image/require-resize"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/turbo-image/require-resize"?: RuleSetting;
     /**
      * Require `cachePolicy` on a TurboImage. Without one the image is re-fetched over the network on every cold start, so an already-scrolled feed costs its bandwidth again.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackturbo-imagerequire-cache-policy
      */
-    "@ashstack/turbo-image/require-cache-policy"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/turbo-image/require-cache-policy"?: RuleSetting;
     /**
      * Require an explicit `opaque` prop on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackskiacanvas-opaque
      */
-    "@ashstack/skia/canvas-opaque"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/skia/canvas-opaque"?: RuleSetting;
   }
 }

@@ -2,6 +2,9 @@
 
 import type { AllowWarnDeny } from "oxlint";
 
+/** A severity, or a severity followed by as many of the rule's options as you want to set. */
+type RuleSetting<Options extends unknown[] = []> = AllowWarnDeny | [AllowWarnDeny, ...Partial<Options>];
+
 /** Every rule id `core()` adds on top of the entry below it. */
 export type CoreRuleId =
   | "@ashstack/core/no-comments"
@@ -19,22 +22,21 @@ declare module "oxlint" {
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreno-comments
      */
-    "@ashstack/core/no-comments"?:
-      | AllowWarnDeny
-      | [AllowWarnDeny]
-      | [AllowWarnDeny, { jsdoc?: "allow" | "report"; escapeHatch?: boolean; budget?: number }];
+    "@ashstack/core/no-comments"?: RuleSetting<
+      [{ jsdoc?: "allow" | "report"; escapeHatch?: boolean; budget?: number }]
+    >;
     /**
      * Require a variable, object property, type member or enum member to use one of the casings allowed for its kind.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreno-naming-convention
      */
-    "@ashstack/core/no-naming-convention"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/core/no-naming-convention"?: RuleSetting;
     /**
      * Require a condition to be split into named booleans once it holds too many boolean operators and comparisons. The option says how many, defaulting to 5.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreno-packed-condition
      */
-    "@ashstack/core/no-packed-condition"?: AllowWarnDeny | [AllowWarnDeny] | [AllowWarnDeny, number];
+    "@ashstack/core/no-packed-condition"?: RuleSetting<[number]>;
     /**
      * Disallow importing a raw primitive your design system already wraps. Wrapped components come from scanning the design-system directory, plus the explicit `use` map for names, paths and source modules the scan cannot infer. Files under the design-system directory (or `exempt`) are skipped.
      *
@@ -42,23 +44,19 @@ declare module "oxlint" {
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreuse-design-system
      */
-    "@ashstack/core/use-design-system"?:
-      | AllowWarnDeny
-      | [AllowWarnDeny]
-      | [
-          AllowWarnDeny,
-          {
-            dir?: string;
-            alias?: string;
-            use?: Record<
-              string,
-              | string
-              | Array<string>
-              | { replaces: string | Array<string>; from?: string; path?: string; reason?: string }
-            >;
-            exempt?: Array<string>;
-          },
-        ];
+    "@ashstack/core/use-design-system"?: RuleSetting<
+      [
+        {
+          dir?: string;
+          alias?: string;
+          use?: Record<
+            string,
+            string | Array<string> | { replaces: string | Array<string>; from?: string; path?: string; reason?: string }
+          >;
+          exempt?: Array<string>;
+        },
+      ]
+    >;
     /**
      * Require every file under the components directory to render JSX or be a re-export barrel. `dir` says which directory, defaulting to `src/components`.
      *
@@ -66,18 +64,18 @@ declare module "oxlint" {
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcorecomponents-tsx-only
      */
-    "@ashstack/core/components-tsx-only"?: AllowWarnDeny | [AllowWarnDeny] | [AllowWarnDeny, { dir?: string }];
+    "@ashstack/core/components-tsx-only"?: RuleSetting<[{ dir?: string }]>;
     /**
      * Disallow `new Intl.*` inside a function that renders JSX, unless the call already sits in `useMemo` or `useCallback`.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcorehoist-intl
      */
-    "@ashstack/core/hoist-intl"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/core/hoist-intl"?: RuleSetting;
     /**
      * Disallow `z.nativeEnum()` and any `z.union()` whose members are all `z.literal()` strings.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackzodprefer-enum
      */
-    "@ashstack/zod/prefer-enum"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/zod/prefer-enum"?: RuleSetting;
   }
 }

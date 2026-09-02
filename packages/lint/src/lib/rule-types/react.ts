@@ -2,6 +2,9 @@
 
 import type { AllowWarnDeny } from "oxlint";
 
+/** A severity, or a severity followed by as many of the rule's options as you want to set. */
+type RuleSetting<Options extends unknown[] = []> = AllowWarnDeny | [AllowWarnDeny, ...Partial<Options>];
+
 /** Every rule id `react()` adds on top of the entry below it. */
 export type ReactRuleId =
   | "@ashstack/react/no-unlabeled-icon-button"
@@ -36,144 +39,144 @@ declare module "oxlint" {
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreactno-unlabeled-icon-button
      */
-    "@ashstack/react/no-unlabeled-icon-button"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/react/no-unlabeled-icon-button"?: RuleSetting;
     /**
      * Require an accessible name on an inline `<svg>`: a `<title>` child with content, an `aria-label`, or a marker that it is decorative. Every child counts, and a self-closing `<svg />` reports.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreactno-svg-without-title
      */
-    "@ashstack/react/no-svg-without-title"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/react/no-svg-without-title"?: RuleSetting;
     /**
      * Disallow a query key written as an array literal at the call site instead of coming from a keys factory.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackqueryno-inline-keys
      */
-    "@ashstack/query/no-inline-keys"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/query/no-inline-keys"?: RuleSetting;
     /**
      * Disallow the positional key argument that TanStack Query v5 removed from `invalidateQueries` and its sibling methods. The suggestion rewrites it to the filter-object form.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackqueryno-deprecated-filters
      */
-    "@ashstack/query/no-deprecated-filters"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/query/no-deprecated-filters"?: RuleSetting;
     /**
      * Require destructuring the result of a hook imported from an `@/api/*.queries` or `@/api/*.mutations` module.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackqueryrequire-destructured-hooks
      */
-    "@ashstack/query/require-destructured-hooks"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/query/require-destructured-hooks"?: RuleSetting;
     /**
      * Disallow a bare `fetch(` inside a `queryFn` or `mutationFn`.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackqueryno-fetch-in-query-fn
      */
-    "@ashstack/query/no-fetch-in-query-fn"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/query/no-fetch-in-query-fn"?: RuleSetting;
     /**
      * Disallow `return null` in the body of a `getNextPageParam`.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackquerynext-page-param-undefined
      */
-    "@ashstack/query/next-page-param-undefined"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/query/next-page-param-undefined"?: RuleSetting;
     /**
      * Require a selector on a store hook, rather than no arguments or `undefined` in its place.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackzustandrequire-selector
      */
-    "@ashstack/zustand/require-selector"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/zustand/require-selector"?: RuleSetting;
     /**
      * Disallow a JSX element that carries no attributes and whose single child is plain literal text.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacki18nno-bare-text
      */
-    "@ashstack/i18n/no-bare-text"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/i18n/no-bare-text"?: RuleSetting;
     /**
      * Disallow a plain string literal on a configurable list of user-visible JSX attributes, defaulting to placeholder, accessibilityLabel, accessibilityHint and title.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacki18nno-bare-attrs
      */
-    "@ashstack/i18n/no-bare-attrs"?: AllowWarnDeny | [AllowWarnDeny] | [AllowWarnDeny, { attributes?: Array<string> }];
+    "@ashstack/i18n/no-bare-attrs"?: RuleSetting<[{ attributes?: Array<string> }]>;
     /**
      * Disallow a `toast.*` call whose only argument is a string literal.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacki18nno-bare-toast
      */
-    "@ashstack/i18n/no-bare-toast"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/i18n/no-bare-toast"?: RuleSetting;
     /**
      * Require a dynamic class value to go through `cn(...)` before it reaches a `class`, `className` or `*ClassName` prop. Reports both where the value reaches the prop and where a variable named after classes is declared.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktailwindprefer-cn
      */
-    "@ashstack/tailwind/prefer-cn"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/tailwind/prefer-cn"?: RuleSetting;
     /**
      * Require a logical Tailwind utility over its physical left/right twin, so a right-to-left layout mirrors. Reads class props and bindings named after classes, through variant prefixes and the `!` and `-` modifiers.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktailwinduse-logical-classes
      */
-    "@ashstack/tailwind/use-logical-classes"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/tailwind/use-logical-classes"?: RuleSetting;
     /**
      * Require a `select` on `useLocation`, `useRouterState` and non-strict `useSearch`, so a component reads the smallest router value it needs instead of re-rendering on every navigation.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktanstack-routerrequire-selector
      */
-    "@ashstack/tanstack-router/require-selector"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/tanstack-router/require-selector"?: RuleSetting;
     /**
      * Disallow an `as` assertion on a `useSearch()` result or on `router.state.location.search`. The route's `validateSearch` schema is what supplies the type.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktanstack-routerno-search-casts
      */
-    "@ashstack/tanstack-router/no-search-casts"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/tanstack-router/no-search-casts"?: RuleSetting;
     /**
      * Disallow storing derived state in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#updating-state-based-on-props-or-state)
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-derived-state
      */
-    "@ashstack/effects/no-derived-state"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/effects/no-derived-state"?: RuleSetting;
     /**
      * Disallow chaining state changes in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#chains-of-computations)
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-chain-state-updates
      */
-    "@ashstack/effects/no-chain-state-updates"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/effects/no-chain-state-updates"?: RuleSetting;
     /**
      * Disallow using state and an effect as an event handler. [Why](https://react.dev/learn/you-might-not-need-an-effect#sharing-logic-between-event-handlers)
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-event-handler
      */
-    "@ashstack/effects/no-event-handler"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/effects/no-event-handler"?: RuleSetting;
     /**
      * Disallow adjusting state in an effect when a prop changes. [Why](https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-adjust-state-on-prop-change
      */
-    "@ashstack/effects/no-adjust-state-on-prop-change"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/effects/no-adjust-state-on-prop-change"?: RuleSetting;
     /**
      * Disallow resetting all state in an effect when a prop changes. [Why](https://react.dev/learn/you-might-not-need-an-effect#resetting-all-state-when-a-prop-changes)
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-reset-all-state-on-prop-change
      */
-    "@ashstack/effects/no-reset-all-state-on-prop-change"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/effects/no-reset-all-state-on-prop-change"?: RuleSetting;
     /**
      * Disallow passing live state to parents in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#notifying-parent-components-about-state-changes)
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-pass-live-state-to-parent
      */
-    "@ashstack/effects/no-pass-live-state-to-parent"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/effects/no-pass-live-state-to-parent"?: RuleSetting;
     /**
      * Disallow passing data to parents in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#passing-data-to-the-parent)
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-pass-data-to-parent
      */
-    "@ashstack/effects/no-pass-data-to-parent"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/effects/no-pass-data-to-parent"?: RuleSetting;
     /**
      * Disallow subscribing to an external store in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#subscribing-to-an-external-store)
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-external-store-subscription
      */
-    "@ashstack/effects/no-external-store-subscription"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/effects/no-external-store-subscription"?: RuleSetting;
     /**
      * Disallow initializing state in an effect. [Why](https://tkdodo.eu/blog/avoiding-hydration-mismatches-with-use-sync-external-store)
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-initialize-state
      */
-    "@ashstack/effects/no-initialize-state"?: AllowWarnDeny | [AllowWarnDeny];
+    "@ashstack/effects/no-initialize-state"?: RuleSetting;
   }
 }
