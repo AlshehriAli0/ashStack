@@ -115,7 +115,7 @@ const react = (options: ReactOptions = {}): OxlintConfig => {
   const composed = composeModules([...coreModules, ...reactModules], options);
 
   return mergeConfigs(core(options), {
-    plugins: ["react", "jsx-a11y"],
+    plugins: ["react", "jsx-a11y", "react-perf"],
     jsPlugins: [
       {
         name: "react-effect",

@@ -18,7 +18,7 @@ Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-marg
 - [`react-native()`](#react-native)
   - [`@ashstack/react-native`](#ashstackreact-native) — 11 rules
   - [`@ashstack/unistyles`](#ashstackunistyles) — 12 rules
-  - [`@ashstack/legend-list`](#ashstacklegend-list) — 11 rules
+  - [`@ashstack/legend-list`](#ashstacklegend-list) — 9 rules
   - [`@ashstack/legend-state`](#ashstacklegend-state) — 8 rules
   - [`@ashstack/reanimated`](#ashstackreanimated) — 11 rules
   - [`@ashstack/turbo-image`](#ashstackturbo-image) — 2 rules
@@ -552,7 +552,7 @@ export const Panel = () => <View />;
 
 React on the web. Adds the you-might-not-need-an-effect plugin (`react-effect/`) alongside oxlint's own.
 
-Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`, `jsx-a11y`.
+Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`, `jsx-a11y`, `react-perf`.
 
 ### Built-in rules
 
@@ -966,7 +966,7 @@ export const SaveButton = () => {
 
 Expo and React Native.
 
-Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`, `jsx-a11y`.
+Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`, `jsx-a11y`, `react-perf`.
 
 ### Built-in rules
 
@@ -1850,87 +1850,6 @@ const renderRow = ({ item }: { item: { id: string } }) => <Row item={item} />;
 
 export const Good = () => (
   <LegendList dataKey={activeTab} data={items} renderItem={renderRow} keyExtractor={keyOf} recycleItems />
-);
-```
-
-#### `@ashstack/legend-list/no-inline-data`
-
-Disallow building a Legend List's `data` inline. Each render produces a new array reference, and the list re-diffs, re-keys and drops what it had cached.
-
-**Fails**
-
-```tsx
-import { LegendList } from "@legendapp/list/react-native";
-
-declare const items: { id: string; hidden: boolean }[];
-declare const Row: (props: { item: { id: string } }) => JSX.Element;
-const keyOf = (item: { id: string }) => item.id;
-const renderRow = ({ item }: { item: { id: string } }) => <Row item={item} />;
-
-export const BadCall = () => (
-  <LegendList data={items.filter(item => !item.hidden)} renderItem={renderRow} keyExtractor={keyOf} recycleItems />
-);
-
-export const BadFallback = () => (
-  <LegendList data={items ?? []} renderItem={renderRow} keyExtractor={keyOf} recycleItems />
-);
-```
-
-**Passes**
-
-```tsx
-import { LegendList } from "@legendapp/list/react-native";
-import { useMemo } from "react";
-
-declare const rawItems: { id: string; hidden: boolean }[];
-declare const Row: (props: { item: { id: string } }) => JSX.Element;
-const keyOf = (item: { id: string }) => item.id;
-const renderRow = ({ item }: { item: { id: string } }) => <Row item={item} />;
-
-export const Good = () => {
-  const visible = useMemo(() => rawItems.filter(item => !item.hidden), []);
-  return <LegendList data={visible} renderItem={renderRow} keyExtractor={keyOf} recycleItems />;
-};
-```
-
-#### `@ashstack/legend-list/no-inline-extra-data`
-
-An inline object or array as `extraData` takes a new identity on every parent render, and every mounted row re-evaluates with it.
-
-**Fails**
-
-```tsx
-import { LegendList } from "@legendapp/list/react-native";
-
-declare const items: { id: string }[];
-declare const Row: (props: { item: { id: string } }) => JSX.Element;
-const keyOf = (item: { id: string }) => item.id;
-const renderRow = ({ item }: { item: { id: string } }) => <Row item={item} />;
-
-export const Bad = () => (
-  <LegendList
-    data={items}
-    renderItem={renderRow}
-    keyExtractor={keyOf}
-    recycleItems
-    extraData={{ live: true }}
-  />
-);
-```
-
-**Passes**
-
-```tsx
-import { LegendList } from "@legendapp/list/react-native";
-
-declare const items: { id: string }[];
-declare const selectedId: string;
-declare const Row: (props: { item: { id: string } }) => JSX.Element;
-const keyOf = (item: { id: string }) => item.id;
-const renderRow = ({ item }: { item: { id: string } }) => <Row item={item} />;
-
-export const Good = () => (
-  <LegendList data={items} renderItem={renderRow} keyExtractor={keyOf} recycleItems extraData={selectedId} />
 );
 ```
 

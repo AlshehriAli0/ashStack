@@ -1,8 +1,6 @@
 import { defineModule } from "../../../lib/module.js";
 import { noFlexInContentContainer } from "./no-flex-in-content-container.js";
 import { noIndexKeyExtractor } from "./no-index-key-extractor.js";
-import { noInlineData } from "./no-inline-data.js";
-import { noInlineExtraData } from "./no-inline-extra-data.js";
 import { noInlineRenderItemProps } from "./no-inline-render-item-props.js";
 import { noMixedChildren } from "./no-mixed-children.js";
 import { noRemountKey } from "./no-remount-key.js";
@@ -17,8 +15,6 @@ export default defineModule({
     "required-props": requiredProps,
     "no-index-key-extractor": noIndexKeyExtractor,
     "no-remount-key": noRemountKey,
-    "no-inline-data": noInlineData,
-    "no-inline-extra-data": noInlineExtraData,
     "no-inline-render-item-props": noInlineRenderItemProps,
     "no-mixed-children": noMixedChildren,
     "no-flex-in-content-container": noFlexInContentContainer,
