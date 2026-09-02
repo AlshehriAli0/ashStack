@@ -3,8 +3,6 @@ import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MEMO_APIS = new Set(["useMemo", "useCallback", "memo"]);
 
-const REACT_COMPILER_PACKAGES = ["babel-plugin-react-compiler", "react-compiler-runtime", "react-compiler-marker"];
-
 const WHY_COMMENT = /^why:/i;
 
 const NEWLINE = 10;
@@ -58,9 +56,8 @@ const linesCoveredByWhyComments = (comments: Comments, lineOf: (offset: number) 
 };
 
 export const noManualMemo: Rule = problem(
-  "Require a `// why:` line above every kept `useMemo`, `useCallback` and `memo`. The React Compiler memoises on a best-effort basis, not a guarantee, so a memo is allowed where the cost is real: something rendered per list row, or a computation measured as heavy. The `// why:` line names which of the two applies. `@ashstack/core/no-comments` keeps that line and never counts it against its `budget`, so both rules run together.",
+  "Require a `// why:` line above every kept `useMemo`, `useCallback` and `memo`. The React Compiler memoises on a best-effort basis, not a guarantee, so a memo is allowed where the cost is real: something rendered per list row, or a computation measured as heavy. The `// why:` line names which of the two applies. `@ashstack/core/no-comments` keeps that line and never counts it against its `budget`, so both rules run together. Assumes the compiler is on — pass `reactCompiler: false` to the entry and this rule turns off, since without it a hand-written memo is the only memo there is.",
   {
-    meta: { packages: REACT_COMPILER_PACKAGES },
     createOnce(context: RuleContext) {
       let calls: { node: AstNode; name: string }[] = [];
       return {

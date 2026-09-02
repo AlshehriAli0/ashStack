@@ -2,7 +2,7 @@ import { TEST_FILES } from "../core/index.js";
 import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
 import { coreRegistry, reactNativeRegistry, reactRegistry } from "../lib/registry.js";
-import type { BanGroup, OxlintConfig, ReactNativeOptions } from "../lib/types.js";
+import type { BanGroup, OxlintConfig, ReactNativeOptions, RuleMap } from "../lib/types.js";
 import react from "../react/index.js";
 
 export const banGroups: BanGroup[] = [
@@ -73,6 +73,16 @@ const ALLOW_GESTURE_AND_ANIMATION_EFFECTS = {
 } as const;
 
 /**
+ * `no-manual-memo` asks for a `// why:` line above every `useMemo`, on the
+ * grounds that the compiler already memoised it. With `reactCompiler: false`
+ * that ground is gone: a hand-written memo is the only memo there is, and
+ * asking a consumer to justify each one would contradict the `react-perf`
+ * rules the same flag switches on.
+ */
+const compilerOnlyRules = (reactCompiler: boolean): RuleMap =>
+  reactCompiler ? {} : { "@ashstack/react-native/no-manual-memo": "off" };
+
+/**
  * React Native / Expo entry — everything in react plus generic RN rules, with
  * per-library modules (unistyles, legendList, legendState, reanimated,
  * turboImage, skia, keyboard) auto-detected from your dependencies. Your
@@ -91,6 +101,7 @@ const reactNative = (options: ReactNativeOptions = {}): OxlintConfig => {
       ...ALLOW_GESTURE_AND_ANIMATION_EFFECTS,
       "no-restricted-imports": ["error", composed.restricted],
       ...composed.rules,
+      ...compilerOnlyRules(options.reactCompiler ?? true),
     },
     ignorePatterns: ["**/.expo/**", "**/android/**", "**/ios/**"],
     overrides: [

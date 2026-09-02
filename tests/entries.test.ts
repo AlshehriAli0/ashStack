@@ -19,6 +19,7 @@ const ALL_MODULES = [...coreModules, ...reactModules, ...reactNativeModules];
 const FIXTURES = join(import.meta.dir, "..", "packages", "lint", "fixtures");
 
 const ALL_ON: Required<ReactNativeOptions> = {
+  reactCompiler: true,
   zod: true,
   query: true,
   zustand: true,
@@ -182,6 +183,49 @@ describe("entry purity", () => {
     (first.plugins as string[]).push("bogus");
     expect(reactNative(ALL_ON).rules?.eqeqeq).not.toBe("off");
     expect(reactNative(ALL_ON).plugins).not.toContain("bogus");
+  });
+});
+
+describe("the react-compiler toggle", () => {
+  /** Every rule that only ever reports "allocated during render, so its identity changes". */
+  const IDENTITY_RULES = [
+    "react-perf/jsx-no-jsx-as-prop",
+    "react-perf/jsx-no-new-array-as-prop",
+    "react-perf/jsx-no-new-function-as-prop",
+    "react-perf/jsx-no-new-object-as-prop",
+    "react/jsx-no-constructed-context-values",
+    "react/no-object-type-as-default-prop",
+  ];
+
+  it("names every react-perf rule, so the perf category cannot smuggle one in", () => {
+    expect(ruleIds(react()).filter(id => id.startsWith("react-perf/")).length).toBe(4);
+  });
+
+  it("silences them by default, since the compiler memoises what they report", () => {
+    const rules = react().rules ?? {};
+    for (const id of IDENTITY_RULES) expect(rules[id]).toBe("off");
+  });
+
+  it("puts them back when the compiler is off, at every entry", () => {
+    for (const entry of [react, reactNative]) {
+      const rules = entry({ reactCompiler: false }).rules ?? {};
+      for (const id of IDENTITY_RULES) expect(rules[id]).toBe("error");
+    }
+  });
+
+  it("asks a hand-written memo to justify itself whatever the dependency list says", () => {
+    expect(reactNative().rules?.["@ashstack/react-native/no-manual-memo"]).toBe("error");
+  });
+
+  it("stops asking when there is no compiler", () => {
+    expect(reactNative({ reactCompiler: false }).rules?.["@ashstack/react-native/no-manual-memo"]).toBe("off");
+  });
+
+  it("leaves the identity rules the compiler does not fix alone", () => {
+    for (const config of [react(), react({ reactCompiler: false })]) {
+      expect(config.rules?.["react/no-unstable-nested-components"]).toEqual(["error", { allowAsProps: true }]);
+      expect(config.rules?.["react/exhaustive-deps"]).toBe("error");
+    }
   });
 });
 

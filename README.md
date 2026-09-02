@@ -11,7 +11,7 @@
 
 Two packages: [`@ashstack/lint`](packages/lint) and [`@ashstack/fmt`](packages/fmt). Install once per project instead of copying a lint config around and watching the copies drift.<!-- rule-counts -->
 
-- **118 rules** on plain TypeScript, **202** with React, **257** on React Native, 74 of them custom-built
+- **118 rules** on plain TypeScript, **201** with React, **257** on React Native, 74 of them custom-built
 - library-specific rules ship only when you depend on that library: 13 self-detecting modules<!-- /rule-counts -->
 - every rule is in [RULES.md](packages/lint/RULES.md), with options and examples, generated and CI-checked
 - your `rules` block always wins
@@ -61,6 +61,12 @@ Each returns one flat config. `react()` contains `core()`; `react-native()` cont
 | `core()`         | any TypeScript project | strict eslint / typescript / unicorn / promise / import base, plus `@ashstack/core/` conventions            |
 | `react()`        | React on the web       | react, jsx-a11y, react-perf, React Compiler, you-might-not-need-an-effect, `@ashstack/react/` accessibility |
 | `react-native()` | Expo and React Native  | `@ashstack/react-native/`: leaked renders, view nesting, iOS-only keyboard events, remote images            |
+
+`react()` and `react-native()` assume the React Compiler is on, so every rule whose whole complaint is "this value is allocated during render" ships off — the four `react-perf` inline-prop rules, `react/jsx-no-constructed-context-values` and `react/no-object-type-as-default-prop`. The compiler memoises exactly those, and their only suggested fix is a `useMemo` that `react/preserve-manual-memoization` then tells you to delete. Rules about identity the compiler does _not_ fix stay on: a nested component still remounts and loses its state, a dependency array is still yours to get right. Not using the compiler:
+
+```ts
+react({ reactCompiler: false });
+```
 
 ## Library-specific rules, auto-detected
 

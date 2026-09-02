@@ -100,6 +100,12 @@ export type CoreOptions = {
 };
 
 export type ReactOptions = CoreOptions & {
+  /**
+   * Is the React Compiler on? Defaults to `true` — every other React setting here assumes it.
+   * Set `false` and the four [`react-perf/` inline-prop rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#react)
+   * come back on, since without the compiler a fresh object, array, function or element in a prop really does re-render the child.
+   */
+  reactCompiler?: boolean;
   /** [`@ashstack/query/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackquery) — detected from `@tanstack/react-query` */
   query?: boolean;
   /** [`@ashstack/zustand/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackzustand) — detected from `zustand` */

@@ -10,7 +10,7 @@ Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-marg
 
 Each entry lists the oxlint plugins it turns on, below. You never need to add them: your own `plugins` array is added to the entry's set, not swapped for it. A bare oxlint install runs `eslint`, `typescript`, `unicorn`, `oxc`; `import`, `promise`, `react`, `jsx-a11y`, `react-perf` come from here.
 
-Counting what each entry sets with every module on: **118** rules for plain TypeScript, **202** with React, **257** on React Native, 74 of them written for this package. oxlint's own `correctness` category runs alongside these.
+Counting what each entry sets with every module on: **118** rules for plain TypeScript, **201** with React, **257** on React Native, 74 of them written for this package. oxlint's own `correctness` category runs alongside these.
 
 - [`core()`](#core)
   - [`@ashstack/core`](#ashstackcore) — 6 rules
@@ -578,7 +578,6 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 | [`react/jsx-boolean-value`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-boolean-value.html) | `"error"` |
 | [`react/jsx-key`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-key.html) | `"error"` |
 | [`react/jsx-no-comment-textnodes`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-no-comment-textnodes.html) | `"error"` |
-| [`react/jsx-no-constructed-context-values`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-no-constructed-context-values.html) | `"error"` |
 | [`react/jsx-no-duplicate-props`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-no-duplicate-props.html) | `"error"` |
 | [`react/jsx-no-target-blank`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-no-target-blank.html) | `"error"` |
 | [`react/jsx-no-useless-fragment`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-no-useless-fragment.html) | `"error"` |
@@ -638,6 +637,12 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 | [`jsx-a11y/role-has-required-aria-props`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/role-has-required-aria-props.html) | `"error"` |
 | [`jsx-a11y/role-supports-aria-props`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/role-supports-aria-props.html) | `"error"` |
 | [`unicorn/filename-case`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/filename-case.html) | `["error",{"cases":{"kebabCase":true,"pascalCase":true}}]` |
+| [`react-perf/jsx-no-jsx-as-prop`](https://oxc.rs/docs/guide/usage/linter/rules/react_perf/jsx-no-jsx-as-prop.html) | `"off"` |
+| [`react-perf/jsx-no-new-array-as-prop`](https://oxc.rs/docs/guide/usage/linter/rules/react_perf/jsx-no-new-array-as-prop.html) | `"off"` |
+| [`react-perf/jsx-no-new-function-as-prop`](https://oxc.rs/docs/guide/usage/linter/rules/react_perf/jsx-no-new-function-as-prop.html) | `"off"` |
+| [`react-perf/jsx-no-new-object-as-prop`](https://oxc.rs/docs/guide/usage/linter/rules/react_perf/jsx-no-new-object-as-prop.html) | `"off"` |
+| [`react/jsx-no-constructed-context-values`](https://oxc.rs/docs/guide/usage/linter/rules/react/jsx-no-constructed-context-values.html) | `"off"` |
+| [`react/no-object-type-as-default-prop`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-object-type-as-default-prop.html) | `"off"` |
 
 ### `@ashstack/react`
 
@@ -1489,9 +1494,7 @@ export function GoodHoist({ count }: { count: number }) {
 
 #### `@ashstack/react-native/no-manual-memo`
 
-Require a `// why:` line above every kept `useMemo`, `useCallback` and `memo`. The React Compiler memoises on a best-effort basis, not a guarantee, so a memo is allowed where the cost is real: something rendered per list row, or a computation measured as heavy. The `// why:` line names which of the two applies. `@ashstack/core/no-comments` keeps that line and never counts it against its `budget`, so both rules run together.
-
-> Enabled only when one of `babel-plugin-react-compiler`, `react-compiler-runtime`, `react-compiler-marker` is a dependency.
+Require a `// why:` line above every kept `useMemo`, `useCallback` and `memo`. The React Compiler memoises on a best-effort basis, not a guarantee, so a memo is allowed where the cost is real: something rendered per list row, or a computation measured as heavy. The `// why:` line names which of the two applies. `@ashstack/core/no-comments` keeps that line and never counts it against its `budget`, so both rules run together. Assumes the compiler is on — pass `reactCompiler: false` to the entry and this rule turns off, since without it a hand-written memo is the only memo there is.
 
 **Fails**
 

@@ -119,9 +119,7 @@ declare module "oxlint" {
      */
     "@ashstack/react-native/hoist-stateless-function"?: RuleSetting;
     /**
-     * Require a `// why:` line above every kept `useMemo`, `useCallback` and `memo`. The React Compiler memoises on a best-effort basis, not a guarantee, so a memo is allowed where the cost is real: something rendered per list row, or a computation measured as heavy. The `// why:` line names which of the two applies. `@ashstack/core/no-comments` keeps that line and never counts it against its `budget`, so both rules run together.
-     *
-     * Enabled only when one of `babel-plugin-react-compiler`, `react-compiler-runtime`, `react-compiler-marker` is a dependency.
+     * Require a `// why:` line above every kept `useMemo`, `useCallback` and `memo`. The React Compiler memoises on a best-effort basis, not a guarantee, so a memo is allowed where the cost is real: something rendered per list row, or a computation measured as heavy. The `// why:` line names which of the two applies. `@ashstack/core/no-comments` keeps that line and never counts it against its `budget`, so both rules run together. Assumes the compiler is on — pass `reactCompiler: false` to the entry and this rule turns off, since without it a hand-written memo is the only memo there is.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-manual-memo
      */

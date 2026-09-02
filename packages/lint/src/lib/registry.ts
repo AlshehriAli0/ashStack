@@ -128,9 +128,7 @@ export const reactNativeRegistry: ModuleMeta[] = [
       "no-rn-namespace-import": {},
       "no-unlabeled-icon-pressable": {},
       "hoist-stateless-function": {},
-      "no-manual-memo": {
-        packages: ["babel-plugin-react-compiler", "react-compiler-runtime", "react-compiler-marker"],
-      },
+      "no-manual-memo": {},
       "no-dynamic-import": {},
     },
   },

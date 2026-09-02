@@ -37,6 +37,25 @@ const REACT_COMPILER_RULES: RuleMap = {
   "react/unsupported-syntax": "error",
 };
 
+/**
+ * Every rule whose whole complaint is "this value is allocated during render,
+ * so its identity changes". The React Compiler memoises exactly these, and
+ * each one's suggested fix is a `useMemo` that `no-manual-memo` then asks you
+ * to justify. Named here because `core()` turns the whole `perf` category on,
+ * so most of them arrive unasked otherwise.
+ */
+const renderIdentityRules = (reactCompiler: boolean): RuleMap => {
+  const severity = reactCompiler ? "off" : "error";
+  return {
+    "react-perf/jsx-no-jsx-as-prop": severity,
+    "react-perf/jsx-no-new-array-as-prop": severity,
+    "react-perf/jsx-no-new-function-as-prop": severity,
+    "react-perf/jsx-no-new-object-as-prop": severity,
+    "react/jsx-no-constructed-context-values": severity,
+    "react/no-object-type-as-default-prop": severity,
+  };
+};
+
 const FILE_BASED_ROUTER_FILES = ["**/routes/**", "**/src/app/**", "**/app/**/_layout.tsx", "**/app/**/+*.tsx"];
 
 const REACT_RULES: RuleMap = {
@@ -53,7 +72,6 @@ const REACT_RULES: RuleMap = {
   "react/jsx-boolean-value": "error",
   "react/jsx-key": "error",
   "react/jsx-no-comment-textnodes": "error",
-  "react/jsx-no-constructed-context-values": "error",
   "react/jsx-no-duplicate-props": "error",
   "react/jsx-no-target-blank": "error",
   "react/jsx-no-useless-fragment": "error",
@@ -107,7 +125,12 @@ const react = (options: ReactOptions = {}): OxlintConfig => {
   return mergeConfigs(core(options), {
     plugins: ["react", "jsx-a11y", "react-perf"],
     jsPlugins: [effectPlugin, ...composed.jsPlugins],
-    rules: { ...REACT_RULES, ...EFFECT_RULES, ...composed.rules },
+    rules: {
+      ...REACT_RULES,
+      ...renderIdentityRules(options.reactCompiler ?? true),
+      ...EFFECT_RULES,
+      ...composed.rules,
+    },
     overrides: [
       {
         files: FILE_BASED_ROUTER_FILES,
