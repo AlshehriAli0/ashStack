@@ -9,7 +9,7 @@ Find a rule by the id in its diagnostic, e.g. `@ashstack/unistyles/no-margin`. E
 Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-margin": "off"`.
 
 - [`core()`](#core)
-  - [`@ashstack/core`](#ashstackcore) — 5 rules
+  - [`@ashstack/core`](#ashstackcore) — 6 rules
   - [`@ashstack/zod`](#ashstackzod) — 1 rule
 - [`react()`](#react)
   - [`@ashstack/query`](#ashstackquery) — 5 rules
@@ -288,6 +288,50 @@ export const styles = {
 };
 
 export const Panel = () => <View />;
+```
+
+#### `@ashstack/core/no-packed-condition`
+
+Require a condition to be split into named booleans once it holds too many boolean operators and comparisons. The option says how many, defaulting to 5.
+
+**Options**
+
+```jsonc
+[
+  {
+    "type": "integer",
+    "minimum": 1
+  }
+]
+```
+
+**Fails**
+
+```tsx
+export const label = (value?: number, displayed?: number, revealed?: boolean) => {
+  if (value !== undefined && displayed !== value && (revealed === true || displayed === undefined)) {
+    return "show";
+  }
+  return "hide";
+};
+```
+
+**Passes**
+
+```tsx
+export const label = (value?: number, displayed?: number, revealed?: boolean) => {
+  const hasValue = value !== undefined;
+  const changed = displayed !== value;
+  const readable = revealed === true || displayed === undefined;
+  if (hasValue && changed && readable) return "show";
+  return "hide";
+};
+
+export const pick = (a: boolean, b: boolean, count: number) => {
+  if (a && b && count > 0) return count;
+  while (a || b) return 0;
+  return -1;
+};
 ```
 
 #### `@ashstack/core/use-design-system`

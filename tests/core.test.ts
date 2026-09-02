@@ -1132,6 +1132,125 @@ export function twice(value: number) {
     ],
   },
 
+  "no-packed-condition": {
+    valid: [
+      {
+        name: "a condition split into named booleans",
+        code: `export const label = (value?: number, displayed?: number, revealed?: boolean) => {
+  const hasValue = value !== undefined;
+  const changed = displayed !== value;
+  const readable = revealed === true || displayed === undefined;
+  if (hasValue && changed && readable) return "show";
+  return "hide";
+};
+`,
+      },
+      {
+        name: "three comparisons joined by and sit on the limit",
+        code: `export const pick = (a: number, b: number, c: number) => {
+  if (a === 1 && b === 2 && c === 3) return a;
+  return 0;
+};
+`,
+      },
+      {
+        name: "a call reads as one term however long its arguments",
+        code: `export const ready = (a: boolean, b: boolean) =>
+  a && b && matches(one === two, three === four, five === six);
+`,
+      },
+      {
+        name: "no boolean operator, no gate",
+        code: `export const same = (a: number, b: number) => {
+  if (a === b) return true;
+  return false;
+};
+`,
+      },
+      {
+        name: "a packed condition under a raised max",
+        options: 8,
+        code: `export const label = (value?: number, displayed?: number, revealed?: boolean) => {
+  if (value !== undefined && displayed !== value && (revealed === true || displayed === undefined)) return "show";
+  return "hide";
+};
+`,
+      },
+      {
+        name: "terms spread across separate statements",
+        code: `export const label = (a?: number, b?: number) => {
+  if (a === undefined || b === undefined) return "none";
+  if (a > b && a - b > 2) return "far";
+  return "near";
+};
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "the agent-written condition this rule exists for",
+        code: `export const label = (value?: number, displayed?: number, revealed?: boolean) => {
+  if (value !== undefined && displayed !== value && (revealed === true || displayed === undefined)) return "show";
+  return "hide";
+};
+`,
+        errors: [{ message: "holds 7 boolean operators and comparisons, past the 5", line: 2, column: 7 }],
+      },
+      {
+        name: "a ternary test",
+        code: `export const label = (a: number, b: number, c: boolean) =>
+  a === b && b > 0 && (c || a !== 0) ? "yes" : "no";
+`,
+        errors: [{ message: "holds 6 boolean operators and comparisons", line: 2 }],
+      },
+      {
+        name: "a while test",
+        code: `export const drain = (a: number, b: number, c: boolean) => {
+  while (a === b && b > 0 && (c || a !== 0)) return a;
+  return b;
+};
+`,
+        errors: 1,
+      },
+      {
+        name: "a for test",
+        code: `export const scan = (limit: number, stop: boolean, other: number) => {
+  for (let i = 0; i < limit && !stop && (other > 1 || other === -1); i += 1) return i;
+  return -1;
+};
+`,
+        errors: 1,
+      },
+      {
+        name: "a lowered max catches two terms",
+        options: 1,
+        code: `export const pick = (a: boolean, count: number) => {
+  if (a && count > 0) return count;
+  return 0;
+};
+`,
+        errors: [{ message: "past the 1 a reader takes in at once" }],
+      },
+      {
+        name: "negated groups count what they wrap",
+        code: `export const label = (a: number, b: number, c: number, d: number) => {
+  if (!(a === b && c === d) && !(a === d) && !(b === c)) return "hit";
+  return "miss";
+};
+`,
+        errors: 1,
+      },
+      {
+        name: "a nested ternary inside the test counts too",
+        code: `export const label = (a: number, b: number, c: boolean, d: boolean) => {
+  if ((c ? a : b) === 0 && (d ? a : b) === 1 && a !== b) return "hit";
+  return "miss";
+};
+`,
+        errors: 1,
+      },
+    ],
+  },
   "hoist-intl": {
     valid: [
       {
