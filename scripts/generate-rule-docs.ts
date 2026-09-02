@@ -158,6 +158,8 @@ const doc = [
   "",
   'Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-margin": "off"`.',
   "",
+  "Each entry lists the oxlint plugins it turns on, below. You never need to add them: your own `plugins` array is added to the entry's set, not swapped for it. Only `eslint`, `typescript`, `unicorn` and `oxc` are on in a bare oxlint install; `import`, `promise`, `react`, `jsx-a11y` and `react-perf` are ours.",
+  "",
   ...tocFor("core()", coreModules),
   ...tocFor("react()", reactModules),
   ...tocFor("react-native()", reactNativeModules),
