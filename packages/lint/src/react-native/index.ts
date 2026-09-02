@@ -1,5 +1,4 @@
 import { TEST_FILES } from "../core/index.js";
-import { effectPlugin } from "../lib/effect-plugin.js";
 import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
 import { coreRegistry, reactNativeRegistry, reactRegistry } from "../lib/registry.js";
@@ -70,7 +69,7 @@ const FORBID_EMPTY_NOOP_HANDLERS = {
 } as const;
 
 const ALLOW_GESTURE_AND_ANIMATION_EFFECTS = {
-  "react-effect/no-event-handler": "off",
+  "@ashstack/effects/no-event-handler": "off",
 } as const;
 
 /**
@@ -87,7 +86,7 @@ const reactNative = (options: ReactNativeOptions = {}): OxlintConfig => {
     globals: { __DEV__: "readonly" },
     rules: {
       ...FORBID_EMPTY_NOOP_HANDLERS,
-      ...(effectPlugin().present ? ALLOW_GESTURE_AND_ANIMATION_EFFECTS : {}),
+      ...ALLOW_GESTURE_AND_ANIMATION_EFFECTS,
       "no-restricted-imports": ["error", composed.restricted],
       ...composed.rules,
     },

@@ -1,5 +1,5 @@
 import core from "../core/index.js";
-import { effectPlugin } from "../lib/effect-plugin.js";
+import { EFFECT_RULES, effectPlugin } from "../lib/effect-plugin.js";
 import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
 import { coreRegistry, reactRegistry } from "../lib/registry.js";
@@ -99,12 +99,11 @@ const REACT_RULES: RuleMap = {
  */
 const react = (options: ReactOptions = {}): OxlintConfig => {
   const composed = composeModules([...coreRegistry, ...reactRegistry], options);
-  const effect = effectPlugin();
 
   return mergeConfigs(core(options), {
     plugins: ["react", "jsx-a11y", "react-perf"],
-    jsPlugins: [...effect.jsPlugins, ...composed.jsPlugins],
-    rules: { ...REACT_RULES, ...effect.rules, ...composed.rules },
+    jsPlugins: [effectPlugin, ...composed.jsPlugins],
+    rules: { ...REACT_RULES, ...EFFECT_RULES, ...composed.rules },
     overrides: [
       {
         files: FILE_BASED_ROUTER_FILES,

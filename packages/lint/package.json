@@ -39,6 +39,7 @@
   },
   "files": [
     "dist",
+    "vendor",
     "!dist/index.js",
     "!dist/index.d.ts"
   ],
@@ -47,14 +48,10 @@
   },
   "peerDependencies": {
     "oxlint": ">=1.79.0",
-    "oxlint-tsgolint": ">=7.0.0",
-    "eslint-plugin-react-you-might-not-need-an-effect": "^1.0.1"
+    "oxlint-tsgolint": ">=7.0.0"
   },
   "peerDependenciesMeta": {
     "oxlint-tsgolint": {
-      "optional": true
-    },
-    "eslint-plugin-react-you-might-not-need-an-effect": {
       "optional": true
     }
   },
@@ -63,7 +60,6 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
-    "eslint-plugin-react-you-might-not-need-an-effect": "^1.0.1",
     "typescript": "^7.0.2"
   }
 }

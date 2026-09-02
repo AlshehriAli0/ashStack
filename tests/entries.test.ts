@@ -11,6 +11,7 @@ import {
   reactNative,
   reactNativeModules,
 } from "../packages/lint/dist/index.js";
+import { EFFECT_NAMESPACE } from "../packages/lint/dist/lib/effect-plugin.js";
 import { shortName } from "../packages/lint/dist/lib/module.js";
 import type { ModuleManifest, OxlintConfig, ReactNativeOptions } from "../packages/lint/dist/lib/types.js";
 
@@ -36,6 +37,9 @@ const ALL_OFF = Object.fromEntries(Object.keys(ALL_ON).map(key => [key, false]))
 
 const ruleIds = (config: OxlintConfig): string[] => Object.keys(config.rules ?? {});
 const customIds = (config: OxlintConfig): string[] => ruleIds(config).filter(id => id.startsWith("@ashstack/"));
+/** Rules written in this repo. The vendored effect plugin wears our namespace without being one of our modules. */
+const ourIds = (config: OxlintConfig): string[] =>
+  customIds(config).filter(id => !id.startsWith(`${EFFECT_NAMESPACE}/`));
 const namespaceOf = (id: string): string => id.slice(0, id.lastIndexOf("/"));
 
 describe("the module registry", () => {
@@ -183,12 +187,12 @@ describe("entry purity", () => {
 
 describe("module toggles", () => {
   it("turns every library namespace off together", () => {
-    const namespaces = new Set(customIds(reactNative(ALL_OFF)).map(namespaceOf));
+    const namespaces = new Set(ourIds(reactNative(ALL_OFF)).map(namespaceOf));
     expect([...namespaces].toSorted()).toEqual(["@ashstack/core", "@ashstack/react", "@ashstack/react-native"]);
   });
 
   it("turns every library namespace on together", () => {
-    const namespaces = new Set(customIds(reactNative(ALL_ON)).map(namespaceOf));
+    const namespaces = new Set(ourIds(reactNative(ALL_ON)).map(namespaceOf));
     for (const module of ALL_MODULES) {
       if (Object.keys(module.rules).length > 0) expect(namespaces).toContain(module.meta.name);
     }
@@ -227,12 +231,13 @@ describe("module toggles", () => {
 
   it("sets every enabled custom rule to error", () => {
     const rules = reactNative(ALL_ON).rules ?? {};
-    for (const id of customIds(reactNative(ALL_ON))) expect(rules[id]).toBe("error");
+    for (const id of ourIds(reactNative(ALL_ON))) expect(rules[id]).toBe("error");
   });
 
   it("gives every custom rule id a namespace matching its module", () => {
-    const moduleNames: string[] = ALL_MODULES.map((module: ModuleManifest) => module.meta.name);
-    for (const id of customIds(reactNative(ALL_ON))) {
+    // what: `@ashstack/effects` is the vendored plugin registered under our namespace, not a module of ours
+    const moduleNames: string[] = [EFFECT_NAMESPACE, ...ALL_MODULES.map((module: ModuleManifest) => module.meta.name)];
+    for (const id of ourIds(reactNative(ALL_ON))) {
       expect(moduleNames).toContain(namespaceOf(id));
     }
   });

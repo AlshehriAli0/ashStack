@@ -95,6 +95,22 @@ const runOxlint = async (dir: string, config: object): Promise<Diagnostic[]> => 
 };
 
 /**
+ * Lint one file with a whole entry config and return the rule codes that
+ * fired, for assertions about an entry rather than a module: whether an entry
+ * turns a rule off is a fact about the config oxlint resolves, not about the
+ * object the entry returns.
+ */
+export const codesFrom = async (config: object, code: string): Promise<string[]> => {
+  const dir = mkdtempSync(join(tmpdir(), "ashstack-entry-"));
+  try {
+    writeFileSync(join(dir, "case.tsx"), code);
+    return (await runOxlint(dir, config)).map(diagnostic => diagnostic.code);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+};
+
+/**
  * Run every case for one module through real oxlint and assert per case.
  *
  * Cases go into a temp directory and are linted in as few runs as possible:

@@ -22,6 +22,7 @@ Counting what each entry sets with every module on: **118** rules for plain Type
   - [`@ashstack/i18n`](#ashstacki18n) — 3 rules
   - [`@ashstack/tailwind`](#ashstacktailwind) — 2 rules
   - [`@ashstack/tanstack-router`](#ashstacktanstack-router) — 2 rules
+  - [`@ashstack/effects`](#ashstackeffects) — 9 rules
 - [`react-native()`](#react-native)
   - [`@ashstack/react-native`](#ashstackreact-native) — 11 rules
   - [`@ashstack/unistyles`](#ashstackunistyles) — 12 rules
@@ -555,7 +556,7 @@ export const Panel = () => <View />;
 
 ## `react()`
 
-React on the web. Adds the you-might-not-need-an-effect plugin (`react-effect/`) alongside oxlint's own, when that optional peer is installed.
+React on the web. Adds the you-might-not-need-an-effect rules as `@ashstack/effects/`, alongside oxlint's own react plugin.
 
 Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`, `jsx-a11y`, `react-perf`.
 
@@ -637,15 +638,6 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 | [`jsx-a11y/role-has-required-aria-props`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/role-has-required-aria-props.html) | `"error"` |
 | [`jsx-a11y/role-supports-aria-props`](https://oxc.rs/docs/guide/usage/linter/rules/jsx_a11y/role-supports-aria-props.html) | `"error"` |
 | [`unicorn/filename-case`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/filename-case.html) | `["error",{"cases":{"kebabCase":true,"pascalCase":true}}]` |
-| [`react-effect/no-derived-state`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
-| [`react-effect/no-chain-state-updates`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
-| [`react-effect/no-event-handler`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
-| [`react-effect/no-adjust-state-on-prop-change`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
-| [`react-effect/no-reset-all-state-on-prop-change`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
-| [`react-effect/no-pass-live-state-to-parent`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
-| [`react-effect/no-pass-data-to-parent`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
-| [`react-effect/no-external-store-subscription`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
-| [`react-effect/no-initialize-state`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
 
 ### `@ashstack/react`
 
@@ -1167,6 +1159,46 @@ export const Paged = () => {
 };
 ```
 
+### `@ashstack/effects`
+
+_always on via `react()` and every entry above it, from [eslint-plugin-react-you-might-not-need-an-effect](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) (MIT)._
+
+#### `@ashstack/effects/no-derived-state`
+
+Disallow storing derived state in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#updating-state-based-on-props-or-state)
+
+#### `@ashstack/effects/no-chain-state-updates`
+
+Disallow chaining state changes in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#chains-of-computations)
+
+#### `@ashstack/effects/no-event-handler`
+
+Disallow using state and an effect as an event handler. [Why](https://react.dev/learn/you-might-not-need-an-effect#sharing-logic-between-event-handlers)
+
+#### `@ashstack/effects/no-adjust-state-on-prop-change`
+
+Disallow adjusting state in an effect when a prop changes. [Why](https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)
+
+#### `@ashstack/effects/no-reset-all-state-on-prop-change`
+
+Disallow resetting all state in an effect when a prop changes. [Why](https://react.dev/learn/you-might-not-need-an-effect#resetting-all-state-when-a-prop-changes)
+
+#### `@ashstack/effects/no-pass-live-state-to-parent`
+
+Disallow passing live state to parents in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#notifying-parent-components-about-state-changes)
+
+#### `@ashstack/effects/no-pass-data-to-parent`
+
+Disallow passing data to parents in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#passing-data-to-the-parent)
+
+#### `@ashstack/effects/no-external-store-subscription`
+
+Disallow subscribing to an external store in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#subscribing-to-an-external-store)
+
+#### `@ashstack/effects/no-initialize-state`
+
+Disallow initializing state in an effect. [Why](https://tkdodo.eu/blog/avoiding-hydration-mismatches-with-use-sync-external-store)
+
 ## `react-native()`
 
 Expo and React Native.
@@ -1179,7 +1211,6 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 | --- | --- |
 | [`eslint/no-empty`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-empty.html) | `"error"` |
 | [`eslint/no-empty-function`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-empty-function.html) | `"error"` |
-| [`react-effect/no-event-handler`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"off"` |
 
 ### `@ashstack/react-native`
 

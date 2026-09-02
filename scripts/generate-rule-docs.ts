@@ -10,6 +10,7 @@ import {
   reactNative,
   reactNativeModules,
 } from "../packages/lint/dist/index.js";
+import { EFFECT_NAMESPACE, EFFECT_SPECIFIER } from "../packages/lint/dist/lib/effect-plugin.js";
 import { shortName } from "../packages/lint/dist/lib/module.js";
 import type {
   BanGroup,
@@ -27,7 +28,6 @@ const OXLINT_RULE_DOCS = "https://oxc.rs/docs/guide/usage/linter/rules";
 const REACT_EFFECT_DOCS = "https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect";
 const linkedRuleId = (ruleId: string): string => {
   const [plugin = "eslint", rule = ruleId] = ruleId.includes("/") ? ruleId.split("/") : ["eslint", ruleId];
-  if (plugin === "react-effect") return `[\`${ruleId}\`](${REACT_EFFECT_DOCS})`;
   const pluginPath = plugin.replace(/-/g, "_");
   return `[\`${ruleId}\`](${OXLINT_RULE_DOCS}/${pluginPath}/${rule}.html)`;
 };
@@ -161,11 +161,51 @@ const customRules = (modules: ModuleManifest[]): number =>
 const detectingModules = (modules: ModuleManifest[]): number =>
   modules.filter(m => (m.packages ?? []).length > 0).length;
 
+interface VendoredRule {
+  meta?: { docs?: { description?: string; url?: string } };
+}
+
+/**
+ * The vendored effect rules as a module, so they render through the same
+ * section and table-of-contents code as every other namespace. They carry no
+ * fixtures, which the renderer already omits, and the description keeps the
+ * upstream link the plugin ships.
+ */
+const effectsModule = async (): Promise<ModuleManifest> => {
+  const loaded: unknown = await import(EFFECT_SPECIFIER);
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
+  const plugin = loaded as { default?: { rules?: Record<string, VendoredRule> } };
+  const vendored = Object.entries(plugin.default?.rules ?? {});
+
+  const described = ([name, rule]: [string, VendoredRule]): [string, Rule] => {
+    const docs = rule.meta?.docs ?? {};
+    const description = docs.description ?? "";
+    return [
+      name,
+      {
+        meta: {
+          type: "problem",
+          docs: { description: docs.url === undefined ? description : `${description} [Why](${docs.url})` },
+        },
+        create: () => ({}),
+      },
+    ];
+  };
+
+  return {
+    meta: { name: EFFECT_NAMESPACE },
+    url: EFFECT_SPECIFIER,
+    docsWhen: `always on via \`react()\` and every entry above it, from [eslint-plugin-react-you-might-not-need-an-effect](${REACT_EFFECT_DOCS}) (MIT)`,
+    rules: Object.fromEntries(vendored.map(described)),
+  };
+};
+
 const coreConfig = core();
 const reactConfig = react();
 const reactNativeConfig = reactNative();
 
 const reactAll = [...coreModules, ...reactModules];
+const reactDocsModules = [...reactModules, await effectsModule()];
 const reactNativeAll = [...reactAll, ...reactNativeModules];
 
 const counts = {
@@ -201,7 +241,7 @@ const doc = [
   `Counting what each entry sets with every module on: **${counts.core}** rules for plain TypeScript, **${counts.react}** with React, **${counts.reactNative}** on React Native, ${counts.custom} of them written for this package. oxlint's own \`correctness\` category runs alongside these.`,
   "",
   ...tocFor("core()", coreModules),
-  ...tocFor("react()", reactModules),
+  ...tocFor("react()", reactDocsModules),
   ...tocFor("react-native()", reactNativeModules),
   "",
   ...entrySection({
@@ -214,10 +254,10 @@ const doc = [
   ...entrySection({
     entry: "react()",
     summary:
-      "React on the web. Adds the you-might-not-need-an-effect plugin (`react-effect/`) alongside oxlint's own, when that optional peer is installed.",
+      "React on the web. Adds the you-might-not-need-an-effect rules as `@ashstack/effects/`, alongside oxlint's own react plugin.",
     config: reactConfig,
     inherited: builtInRules(coreConfig),
-    modules: reactModules,
+    modules: reactDocsModules,
   }),
   ...entrySection({
     entry: "react-native()",

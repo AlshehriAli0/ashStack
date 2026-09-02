@@ -43,15 +43,6 @@ import { reactNative } from "@ashstack/lint/react-native";
 Each entry also has a default export, and carries its own options type
 (`CoreOptions`, `ReactOptions`, `ReactNativeOptions`).
 
-`react()` adds nine rules from `eslint-plugin-react-you-might-not-need-an-effect`.
-It is an optional peer, because it unpacks to 218 KB that a backend or CLI on
-`core()` should not install. Add it for the effect rules; without it `react()`
-works and leaves those nine out.
-
-```sh
-bun add -d eslint-plugin-react-you-might-not-need-an-effect
-```
-
 ## What each entry adds
 
 `core()` is a strict eslint / typescript / unicorn / promise / import base plus the `@ashstack/core/` convention rules. `react()` adds react, jsx-a11y, React Compiler and you-might-not-need-an-effect. `react-native()` adds the generic `@ashstack/react-native/` rules: leaked renders, view nesting, iOS-only keyboard events, remote images.
