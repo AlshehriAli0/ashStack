@@ -1,5 +1,11 @@
 # @ashstack/lint
 
+## 0.5.1 (2026-09-02)
+
+### Bug Fixes
+
+- keep a rule's hover to one line ([`bcf2cbd`](https://github.com/AlshehriAli0/ashStack/commit/bcf2cbd))
+
 ## 0.5.0 (2026-09-02)
 
 ### Breaking Changes
