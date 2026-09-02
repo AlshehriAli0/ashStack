@@ -1,5 +1,21 @@
 # @ashstack/lint
 
+## 0.5.0 (2026-09-02)
+
+### Breaking Changes
+
+- vendor the effect rules as `@ashstack/effects` ([`23b2237`](https://github.com/AlshehriAli0/ashStack/commit/23b2237))
+- build a config from module metadata, not rule code ([`a259e5e`](https://github.com/AlshehriAli0/ashStack/commit/a259e5e))
+
+### Features
+
+- document every rule and entry on hover ([`99c47f1`](https://github.com/AlshehriAli0/ashStack/commit/99c47f1))
+
+### Bug Fixes
+
+- generate the opt-in rule list instead of retyping it ([`a13f8d6`](https://github.com/AlshehriAli0/ashStack/commit/a13f8d6))
+- stop reporting one defect with two rules ([`8471f60`](https://github.com/AlshehriAli0/ashStack/commit/8471f60))
+
 ## 0.4.0 (2026-09-02)
 
 ### Breaking Changes

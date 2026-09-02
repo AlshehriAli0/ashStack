@@ -1,5 +1,11 @@
 # @ashstack/fmt
 
+## 0.4.0 (2026-09-02)
+
+### Other Changes
+
+- **shared:** share one write-or-check path across generators ([`0936898`](https://github.com/AlshehriAli0/ashStack/commit/0936898))
+
 ## 0.3.0 (2026-09-02)
 
 ### Bug Fixes
