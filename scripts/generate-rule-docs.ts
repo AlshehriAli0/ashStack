@@ -235,8 +235,13 @@ const END = "<!-- /rule-counts -->";
 const countedReadmes: [path: string, sentence: string][] = [
   [
     join(import.meta.dir, "..", "README.md"),
-    `**${counts.core} rules** on plain TypeScript, **${counts.react}** with React, **${counts.reactNative}** on React Native, ${counts.custom} of them custom-built
-- library-specific rules ship only when you depend on that library: ${counts.detecting} self-detecting modules`,
+    // what: the bullets start their own lines, or the marker opens an HTML block that eats the `**`
+    [
+      "",
+      "",
+      `- **${counts.core} rules** on plain TypeScript, **${counts.react}** with React, **${counts.reactNative}** on React Native, ${counts.custom} of them custom-built`,
+      `- library-specific rules ship only when you depend on that library: ${counts.detecting} self-detecting modules`,
+    ].join("\n"),
   ],
   [
     join(lintDir, "README.md"),
