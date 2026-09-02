@@ -7,6 +7,7 @@ export default defineConfig({
     "**/fixtures/**",
     "examples/**",
     "packages/lint/src/lib/registry.ts",
+    "packages/lint/src/lib/rule-types/**",
     "packages/lint/vendor/**",
     "tests/corpus/**",
   ],

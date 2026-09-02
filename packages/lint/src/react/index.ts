@@ -98,6 +98,8 @@ const REACT_RULES: RuleMap = {
  * React (web) entry — everything in core plus react, jsx-a11y, React Compiler
  * diagnostics, you-might-not-need-an-effect, and the auto-detected library
  * modules (query, zustand, i18n).
+ *
+ * @see [every rule `react()` sets](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#react)
  */
 const react = (options: ReactOptions = {}): OxlintConfig => {
   const composed = composeModules([...coreRegistry, ...reactRegistry], options);
@@ -116,6 +118,8 @@ const react = (options: ReactOptions = {}): OxlintConfig => {
 };
 
 export { react };
+export type { CoreRuleId } from "../lib/rule-types/core.js";
+export type { ReactRuleId } from "../lib/rule-types/react.js";
 export type { ReactOptions, ModuleManifest } from "../lib/types.js";
 
 export default react;

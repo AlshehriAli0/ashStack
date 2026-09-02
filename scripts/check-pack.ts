@@ -76,35 +76,68 @@ if (!codes.some(code => code.includes("@ashstack/zod"))) {
 /** Reads every entry, both import styles and each options type, so a public type the prune dropped fails here. */
 const EVERY_PUBLIC_TYPE = [
   'import defaultCore from "@ashstack/lint/core";',
-  'import { core, type CoreOptions } from "@ashstack/lint/core";',
-  'import { react, type ReactOptions } from "@ashstack/lint/react";',
+  'import { core, type CoreOptions, type CoreRuleId } from "@ashstack/lint/core";',
+  'import { react, type ReactOptions, type ReactRuleId } from "@ashstack/lint/react";',
   'import { banGroups, reactNative } from "@ashstack/lint/react-native";',
-  'import type { ModuleManifest, ReactNativeOptions } from "@ashstack/lint/react-native";',
+  'import type { ModuleManifest, ReactNativeOptions, ReactNativeRuleId } from "@ashstack/lint/react-native";',
+  'import { defineConfig } from "oxlint";',
   "",
   "const coreOptions: CoreOptions = { zod: true };",
   "const reactOptions: ReactOptions = { tailwind: true };",
   "const nativeOptions: ReactNativeOptions = { unistyles: true };",
   "const modules: ModuleManifest[] = [];",
+  'const ids: [CoreRuleId, ReactRuleId, ReactNativeRuleId] = ["@ashstack/core/no-comments", "@ashstack/query/no-inline-keys", "@ashstack/unistyles/no-margin"];',
   "export const built = [core(coreOptions), react(reactOptions), reactNative(nativeOptions), defaultCore()];",
-  "export const counts = [built.length, modules.length, banGroups.length];",
+  "export const counts = [built.length, modules.length, banGroups.length, ids.length];",
+  "export const config = defineConfig({",
+  "  extends: [reactNative(nativeOptions)],",
+  "  rules: {",
+  '    "@ashstack/core/no-comments": ["error", { jsdoc: "allow", budget: 1 }],',
+  '    "@ashstack/unistyles/no-margin": "off",',
+  "  },",
+  "});",
 ].join("\n");
 
-const TYPECHECK_ONLY = {
-  compilerOptions: { module: "nodenext", moduleResolution: "nodenext", target: "es2022", strict: true, noEmit: true },
-  include: ["types.ts"],
+/** A wrong rule option has to be a type error, or the hover types the augmentation ships are decoration. */
+const BOGUS_RULE_OPTION = [
+  'import { core } from "@ashstack/lint/core";',
+  'import { defineConfig } from "oxlint";',
+  "",
+  "export default defineConfig({",
+  "  extends: [core()],",
+  '  rules: { "@ashstack/core/no-comments": ["error", { jsdoc: "sometimes" }] },',
+  "});",
+].join("\n");
+
+const COMPILER_OPTIONS = {
+  module: "nodenext",
+  moduleResolution: "nodenext",
+  target: "es2022",
+  strict: true,
+  noEmit: true,
 };
 
-/** Whether the declarations `prune-types.ts` kept are enough for a consumer to compile against. */
-const packedTypesSatisfyAConsumer = (): { ok: boolean; out: string; err: string } => {
-  writeFileSync(join(consumer, "types.ts"), EVERY_PUBLIC_TYPE);
-  writeFileSync(join(consumer, "tsconfig.json"), JSON.stringify(TYPECHECK_ONLY));
-  // why: the consumer installs no typescript of its own
-  return run([join(repoRoot, "node_modules", ".bin", "tsc"), "-p", "tsconfig.json"], consumer);
+// why: the consumer installs no typescript of its own
+const TSC = join(repoRoot, "node_modules", ".bin", "tsc");
+
+/** Whether the declarations `prune-types.ts` kept are enough for a consumer to compile `source`. */
+const typecheckConsumer = (file: string, source: string): { ok: boolean; out: string; err: string } => {
+  writeFileSync(join(consumer, file), source);
+  writeFileSync(
+    join(consumer, "tsconfig.json"),
+    JSON.stringify({ compilerOptions: COMPILER_OPTIONS, include: [file] })
+  );
+  return run([TSC, "-p", "tsconfig.json"], consumer);
 };
 
-const typechecked = packedTypesSatisfyAConsumer();
+const typechecked = typecheckConsumer("types.ts", EVERY_PUBLIC_TYPE);
 if (!typechecked.ok) {
   failures.push(`the packed types did not satisfy a consumer: ${(typechecked.out + typechecked.err).slice(0, 500)}`);
+}
+
+const rejected = typecheckConsumer("bogus.ts", BOGUS_RULE_OPTION);
+if (rejected.ok) {
+  failures.push("a bogus rule option typechecked: the packed rule-option types are not reaching the consumer");
 }
 
 const formatted = run([join(consumer, "node_modules", ".bin", "oxfmt"), "--check", "src/a.ts"], consumer);

@@ -95,20 +95,20 @@ export interface BanGroup {
 }
 
 export type CoreOptions = {
-  /** `@ashstack/zod/` rules — detected from `zod` */
+  /** [`@ashstack/zod/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackzod) — detected from `zod` */
   zod?: boolean;
 };
 
 export type ReactOptions = CoreOptions & {
-  /** `@ashstack/query/` rules — detected from `@tanstack/react-query` */
+  /** [`@ashstack/query/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackquery) — detected from `@tanstack/react-query` */
   query?: boolean;
-  /** `@ashstack/zustand/` rules — detected from `zustand` */
+  /** [`@ashstack/zustand/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackzustand) — detected from `zustand` */
   zustand?: boolean;
-  /** `@ashstack/i18n/` rules — detected from i18next/lingui/react-intl/use-intl/next-intl/expo-localization */
+  /** [`@ashstack/i18n/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacki18n) — detected from i18next/lingui/react-intl/use-intl/next-intl/expo-localization */
   i18n?: boolean;
-  /** `@ashstack/tailwind/` rules — detected from `tailwindcss` */
+  /** [`@ashstack/tailwind/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktailwind) — detected from `tailwindcss` */
   tailwind?: boolean;
-  /** `@ashstack/tanstack-router/` rules — detected from `@tanstack/react-router` */
+  /** [`@ashstack/tanstack-router/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktanstack-router) — detected from `@tanstack/react-router` */
   tanstackRouter?: boolean;
 };
 
@@ -118,19 +118,19 @@ export type ReactOptions = CoreOptions & {
  * by name in your `rules` block.
  */
 export type ReactNativeOptions = ReactOptions & {
-  /** `@ashstack/unistyles/` rules + StyleSheet/Dimensions/SafeArea import bans — `react-native-unistyles` */
+  /** [`@ashstack/unistyles/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistyles) + StyleSheet/Dimensions/SafeArea import bans — `react-native-unistyles` */
   unistyles?: boolean;
-  /** `@ashstack/legend-list/` rules + FlatList/FlashList bans — `@legendapp/list` */
+  /** [`@ashstack/legend-list/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-list) + FlatList/FlashList bans — `@legendapp/list` */
   legendList?: boolean;
-  /** `@ashstack/legend-state/` rules + use$/useSelector ban — `@legendapp/state` */
+  /** [`@ashstack/legend-state/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-state) + use$/useSelector ban — `@legendapp/state` */
   legendState?: boolean;
-  /** `@ashstack/reanimated/` rules + Animated/runOnJS bans — `react-native-reanimated` */
+  /** [`@ashstack/reanimated/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimated) + Animated/runOnJS bans — `react-native-reanimated` */
   reanimated?: boolean;
-  /** `@ashstack/turbo-image/` rules — `react-native-turbo-image` */
+  /** [`@ashstack/turbo-image/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackturbo-image) — `react-native-turbo-image` */
   turboImage?: boolean;
-  /** `@ashstack/skia/` rules — `@shopify/react-native-skia` */
+  /** [`@ashstack/skia/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackskia) — `@shopify/react-native-skia` */
   skia?: boolean;
-  /** `@ashstack/keyboard` import bans — `react-native-keyboard-controller` */
+  /** [`@ashstack/keyboard` import bans](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackkeyboard) — `react-native-keyboard-controller` */
   keyboard?: boolean;
 };
 

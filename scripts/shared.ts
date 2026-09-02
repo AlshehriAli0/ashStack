@@ -6,6 +6,9 @@ import type { ModuleManifest, Rule } from "../packages/lint/dist/lib/types.js";
 
 const repoRoot = join(import.meta.dir, "..");
 
+/** RULES.md is not packed, so a link an editor shows has to point at the copy on GitHub. */
+export const RULES_URL = "https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md";
+
 const REACT_EFFECT_DOCS = "https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect";
 
 /** GitHub's heading slug: lowercased, punctuation dropped, spaces hyphenated. */
@@ -15,7 +18,10 @@ export const anchor = (heading: string): string =>
     .replace(/[^a-z0-9 -]/g, "")
     .replace(/ /g, "-");
 
-/** What gates a rule, as plain sentences RULES.md quotes. */
+/** The RULES.md section for a heading's text, e.g. `core()` or `@ashstack/core/no-comments`. */
+export const sectionLink = (heading: string): string => `${RULES_URL}#${anchor(heading)}`;
+
+/** What gates a rule, as plain sentences: RULES.md quotes them, the hover types spell them out. */
 export const ruleNotes = (meta: Rule["meta"]): string[] => [
   ...(meta.defaultOff === true ? ["Off by default — opt in per project."] : []),
   ...(meta.packages
@@ -29,7 +35,7 @@ interface VendoredRule {
 
 /**
  * The vendored effect rules as a module, so they render through the same
- * section and table-of-contents code as every other namespace.
+ * section, table-of-contents and hover-type code as every other namespace.
  * They carry no fixtures, which the renderer already omits, and the
  * description keeps the upstream link the plugin ships.
  */

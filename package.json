@@ -23,6 +23,8 @@
     "registry:check": "bun run build && bun scripts/generate-registry.ts --check",
     "release": "changeset publish",
     "test": "bun run build && bun test --parallel tests/",
+    "types:rules": "bun run build && bun scripts/generate-rule-types.ts",
+    "types:rules:check": "bun run build && bun scripts/generate-rule-types.ts --check",
     "typecheck": "bun run build && tsc -p . --noEmit",
     "vendor:effects": "bun scripts/vendor-effects.ts"
   },
