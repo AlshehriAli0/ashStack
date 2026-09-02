@@ -59,7 +59,7 @@
     }
   },
   "scripts": {
-    "prepack": "rm -rf dist && tsc && bun build $(find dist -name '*.js') --minify --target=node --root dist --outdir dist --no-bundle"
+    "prepack": "rm -rf dist && tsc && bun build $(find dist -name '*.js') --minify --target=node --root dist --outdir dist --no-bundle && bun ../../scripts/prune-types.ts"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

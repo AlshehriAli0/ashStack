@@ -73,6 +73,40 @@ if (!codes.some(code => code.includes("@ashstack/zod"))) {
   failures.push(`a module rule did not fire from the packed package; saw: ${codes.join(", ") || "nothing"}`);
 }
 
+/** Reads every entry, both import styles and each options type, so a public type the prune dropped fails here. */
+const EVERY_PUBLIC_TYPE = [
+  'import defaultCore from "@ashstack/lint/core";',
+  'import { core, type CoreOptions } from "@ashstack/lint/core";',
+  'import { react, type ReactOptions } from "@ashstack/lint/react";',
+  'import { banGroups, reactNative } from "@ashstack/lint/react-native";',
+  'import type { ModuleManifest, ReactNativeOptions } from "@ashstack/lint/react-native";',
+  "",
+  "const coreOptions: CoreOptions = { zod: true };",
+  "const reactOptions: ReactOptions = { tailwind: true };",
+  "const nativeOptions: ReactNativeOptions = { unistyles: true };",
+  "const modules: ModuleManifest[] = [];",
+  "export const built = [core(coreOptions), react(reactOptions), reactNative(nativeOptions), defaultCore()];",
+  "export const counts = [built.length, modules.length, banGroups.length];",
+].join("\n");
+
+const TYPECHECK_ONLY = {
+  compilerOptions: { module: "nodenext", moduleResolution: "nodenext", target: "es2022", strict: true, noEmit: true },
+  include: ["types.ts"],
+};
+
+/** Whether the declarations `prune-types.ts` kept are enough for a consumer to compile against. */
+const packedTypesSatisfyAConsumer = (): { ok: boolean; out: string; err: string } => {
+  writeFileSync(join(consumer, "types.ts"), EVERY_PUBLIC_TYPE);
+  writeFileSync(join(consumer, "tsconfig.json"), JSON.stringify(TYPECHECK_ONLY));
+  // why: the consumer installs no typescript of its own
+  return run([join(repoRoot, "node_modules", ".bin", "tsc"), "-p", "tsconfig.json"], consumer);
+};
+
+const typechecked = packedTypesSatisfyAConsumer();
+if (!typechecked.ok) {
+  failures.push(`the packed types did not satisfy a consumer: ${(typechecked.out + typechecked.err).slice(0, 500)}`);
+}
+
 const formatted = run([join(consumer, "node_modules", ".bin", "oxfmt"), "--check", "src/a.ts"], consumer);
 if (!formatted.ok && !formatted.out.includes("Format issues")) {
   failures.push(`the packed oxfmt config did not load: ${formatted.err.slice(0, 300)}`);
@@ -84,4 +118,4 @@ if (failures.length > 0) {
   console.error(`PACK FAILURES:\n${failures.map(f => `  - ${f}`).join("\n")}`);
   process.exit(1);
 }
-console.log("pack ok: both tarballs install and work in a clean consumer");
+console.log("pack ok: both tarballs install, typecheck and work in a clean consumer");
