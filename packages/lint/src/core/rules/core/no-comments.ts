@@ -31,7 +31,7 @@ const COMMENT_DIRECTIVES = [
   "EXPECT_FAIL",
 ];
 
-const ESCAPE_HATCH = /^what:\s*(?<fact>[\s\S]+)$/i;
+const MARKER = /^(?<kind>what|why):\s*(?<fact>[\s\S]+)$/i;
 const BLOCK_COMMENT_TYPES = new Set(["Block", "MultiLine"]);
 const IGNORED_COMMENT_TYPES = new Set(["Shebang", "Hashbang"]);
 
@@ -46,7 +46,7 @@ const HATCH_OPEN =
   " The `// what:` hatch carries one kind of fact: one that outlives this code — a platform bug, an upstream contract, a number measured on a device. A fact about what this code does fails that test, and the refactor is still owed.";
 
 const HATCH_CLOSED =
-  " This project runs with the `// what:` hatch turned off, so the refactor is the only way out: there is no fact this file may state in prose.";
+  " This project runs with the `// what:` hatch turned off, so the refactor is the only way out. The one line left is `// why:`, which a kept `memo` requires.";
 
 const refactorFirst = (escapeHatch: boolean): string => REFACTOR_MOVES + (escapeHatch ? HATCH_OPEN : HATCH_CLOSED);
 
@@ -100,8 +100,8 @@ const isDirective = (body: string): boolean => COMMENT_DIRECTIVES.some(prefix =>
 const isJsdoc = (comment: Comment): boolean => BLOCK_COMMENT_TYPES.has(comment.type) && comment.value.startsWith("*");
 
 /** Comments this rule judges: shebangs and tooling directives are none of its business. */
-const reviewedComments = (context: RuleContext): { comment: Comment; body: string }[] => {
-  const reviewed: { comment: Comment; body: string }[] = [];
+const reviewedComments = (context: RuleContext): Reviewed[] => {
+  const reviewed: Reviewed[] = [];
   for (const comment of context.sourceCode.getAllComments()) {
     if (IGNORED_COMMENT_TYPES.has(comment.type)) continue;
     const body = commentBody(comment);
@@ -116,6 +116,30 @@ const nextTokenStart = (text: string, from: number): number => {
   let index = from;
   while (/\s/.test(text.charAt(index))) index += 1;
   return index;
+};
+
+interface Reviewed {
+  comment: Comment;
+  body: string;
+}
+
+interface Marker extends Reviewed {
+  kind: "what" | "why";
+  fact: string;
+}
+
+/**
+ * `what:` states a durable fact and spends the file's prose budget. `why:` is
+ * the marker `@ashstack/react-native/no-manual-memo` requires above a kept
+ * `memo`: not discretionary prose, so it is held to the same one-line shape and
+ * left out of the budget, and it survives `escapeHatch: false`.
+ */
+const markerIn = (reviewed: Reviewed, escapeHatch: boolean): Marker[] => {
+  const groups = MARKER.exec(reviewed.body)?.groups;
+  if (!groups?.kind || !groups.fact) return [];
+  const kind = groups.kind.toLowerCase() === "why" ? "why" : "what";
+  if (kind === "what" && !escapeHatch) return [];
+  return [{ ...reviewed, kind, fact: groups.fact }];
 };
 
 const shapeViolation = (comment: Comment, body: string, fact: string): string | null => {
@@ -141,7 +165,7 @@ export const noComments: Rule = {
     type: "problem",
     docs: {
       description:
-        'Disallow every comment that is neither a `// what: <fact>` line nor a tooling directive. The message names the refactoring that removes it: Rename, Extract Function, Guard Clause. Surviving `// what:` lines are held to one short line each, at most `budget` per file (default 2); `escapeHatch: false` removes the hatch entirely, so no prose survives at all. With `jsdoc: "allow"`, a `/** */` block documenting the declaration directly beneath it is kept, while a floating one still reports.',
+        'Disallow every comment that is neither a `// what: <fact>` line, a `// why:` marker, nor a tooling directive. The message names the refactoring that removes it: Rename, Extract Function, Guard Clause. Surviving `// what:` lines are held to one short line each, at most `budget` per file (default 2); `escapeHatch: false` removes that hatch, so no discretionary prose survives. A `// why:` line is the marker `@ashstack/react-native/no-manual-memo` requires above a kept `memo`: held to the same one-line shape, never counted against `budget`, and kept even with `escapeHatch: false`, so the two rules run together. With `jsdoc: "allow"`, a `/** */` block documenting the declaration directly beneath it is kept, while a floating one still reports.',
     },
     schema: [
       {
@@ -169,40 +193,43 @@ export const noComments: Rule = {
       context.report({ node: comment, message });
     };
 
-    const reportProse = (reviewed: { comment: Comment; body: string }[], options: Options) => {
+    const reportProse = (reviewed: Reviewed[], options: Options) => {
       const { text } = context.sourceCode;
       const escapeHatch = hatchAllowed(options);
-      for (const { comment, body } of reviewed) {
-        if (escapeHatch && ESCAPE_HATCH.test(body)) continue;
+      for (const entry of reviewed) {
+        const { comment } = entry;
+        if (markerIn(entry, escapeHatch).length > 0) continue;
         if (options.jsdoc !== "allow" || !isJsdoc(comment)) report(comment, refactorFirst(escapeHatch));
         else if (!declarationStarts.has(nextTokenStart(text, comment.end))) report(comment, FLOATING_JSDOC);
       }
     };
 
-    const wellShapedHatches = (reviewed: { comment: Comment; body: string }[]): Comment[] => {
-      const accepted: Comment[] = [];
-      for (const { comment, body } of reviewed) {
-        const fact = body.match(ESCAPE_HATCH)?.groups?.fact;
-        if (fact === undefined) continue;
-        const violation = shapeViolation(comment, body, fact);
-        if (violation === null) accepted.push(comment);
-        else report(comment, violation);
+    const wellShapedMarkers = (reviewed: Reviewed[], escapeHatch: boolean): Marker[] => {
+      const accepted: Marker[] = [];
+      for (const entry of reviewed) {
+        for (const marker of markerIn(entry, escapeHatch)) {
+          const violation = shapeViolation(marker.comment, marker.body, marker.fact);
+          if (violation === null) accepted.push(marker);
+          else report(marker.comment, violation);
+        }
       }
       return accepted;
     };
 
-    const reportStacked = (accepted: Comment[]) => {
+    const reportStacked = (accepted: Marker[]) => {
       const source = context.sourceCode.getText();
-      for (const [index, comment] of accepted.entries()) {
-        const previous = accepted[index - 1];
+      const comments = accepted.map(marker => marker.comment);
+      for (const [index, comment] of comments.entries()) {
+        const previous = comments[index - 1];
         if (previous && isStackedOn(source, previous, comment)) report(comment, HATCH_MESSAGES.stacked);
       }
     };
 
-    const reportOverBudget = (accepted: Comment[], options: Options) => {
+    const reportOverBudget = (accepted: Marker[], options: Options) => {
       const budget = options.budget ?? HATCH_DEFAULT_BUDGET;
-      const overflow = accepted[budget];
-      if (overflow) report(overflow, overBudget(budget, accepted.length));
+      const hatches = accepted.filter(marker => marker.kind === "what");
+      const overflow = hatches[budget];
+      if (overflow) report(overflow.comment, overBudget(budget, hatches.length));
     };
 
     return {
@@ -215,8 +242,7 @@ export const noComments: Rule = {
         const options = optionsOf<Options>(context, {});
         const reviewed = reviewedComments(context);
         reportProse(reviewed, options);
-        if (!hatchAllowed(options)) return;
-        const accepted = wellShapedHatches(reviewed);
+        const accepted = wellShapedMarkers(reviewed, hatchAllowed(options));
         reportStacked(accepted);
         reportOverBudget(accepted, options);
       },

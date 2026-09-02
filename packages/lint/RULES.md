@@ -189,7 +189,7 @@ _always on via `core()` and every entry above it (opt-in rules noted per rule)._
 
 #### `@ashstack/core/no-comments`
 
-Disallow every comment that is neither a `// what: <fact>` line nor a tooling directive. The message names the refactoring that removes it: Rename, Extract Function, Guard Clause. Surviving `// what:` lines are held to one short line each, at most `budget` per file (default 2); `escapeHatch: false` removes the hatch entirely, so no prose survives at all. With `jsdoc: "allow"`, a `/** */` block documenting the declaration directly beneath it is kept, while a floating one still reports.
+Disallow every comment that is neither a `// what: <fact>` line, a `// why:` marker, nor a tooling directive. The message names the refactoring that removes it: Rename, Extract Function, Guard Clause. Surviving `// what:` lines are held to one short line each, at most `budget` per file (default 2); `escapeHatch: false` removes that hatch, so no discretionary prose survives. A `// why:` line is the marker `@ashstack/react-native/no-manual-memo` requires above a kept `memo`: held to the same one-line shape, never counted against `budget`, and kept even with `escapeHatch: false`, so the two rules run together. With `jsdoc: "allow"`, a `/** */` block documenting the declaration directly beneath it is kept, while a floating one still reports.
 
 > Off by default — opt in per project.
 
@@ -1255,7 +1255,7 @@ export function GoodHoist({ count }: { count: number }) {
 
 #### `@ashstack/react-native/no-manual-memo`
 
-Disallow `useMemo`, `useCallback` and `memo` unless a `why:` comment on the line above states the case the React Compiler cannot see: something rendered per list row, or a cost that was measured.
+Require a `// why:` line above every kept `useMemo`, `useCallback` and `memo`. The React Compiler memoises on a best-effort basis, not a guarantee, so a memo is allowed where the cost is real: something rendered per list row, or a computation measured as heavy. The `// why:` line names which of the two applies. `@ashstack/core/no-comments` keeps that line and never counts it against its `budget`, so both rules run together.
 
 > Enabled only when one of `babel-plugin-react-compiler`, `react-compiler-runtime`, `react-compiler-marker` is a dependency.
 

@@ -110,6 +110,62 @@ export const insetFrames = 1;
 `,
       },
       {
+        name: "a why: marker survives on its own",
+        code: `// why: rendered per list row, so the compiler cannot hoist it
+export const Row = 1;
+`,
+      },
+      {
+        name: "four why: markers ignore the budget the hatches obey",
+        code: `// why: rendered per list row, so the compiler cannot hoist it
+export const A = 1;
+
+// why: rendered per list row, so the compiler cannot hoist it
+export const B = 2;
+
+// why: rendered per list row, so the compiler cannot hoist it
+export const C = 3;
+
+// why: rendered per list row, so the compiler cannot hoist it
+export const D = 4;
+`,
+      },
+      {
+        name: "why: markers alongside hatches spending the whole budget",
+        code: `// what: Android 14 rejects a zero-length payload here
+export const payload = [0];
+
+// what: the vendor SDK caps the retry window at 30 seconds
+export const retryWindowMs = 30_000;
+
+// why: rendered per list row, so the compiler cannot hoist it
+export const A = 1;
+
+// why: rendered per list row, so the compiler cannot hoist it
+export const B = 2;
+`,
+      },
+      {
+        name: "a why: marker outlives escapeHatch false",
+        options: { escapeHatch: false },
+        code: `// why: rendered per list row, so the compiler cannot hoist it
+export const Row = 1;
+`,
+      },
+      {
+        name: "a why: marker outlives a budget of zero",
+        options: { budget: 0 },
+        code: `// why: rendered per list row, so the compiler cannot hoist it
+export const Row = 1;
+`,
+      },
+      {
+        name: "WHY: is matched case-insensitively like what:",
+        code: `// WHY: rendered per list row, so the compiler cannot hoist it
+export const Row = 1;
+`,
+      },
+      {
         name: "budget of zero with no hatches at all",
         options: { budget: 0 },
         code: `export const retryWindowMs = 30_000;
@@ -444,12 +500,41 @@ export const retryWindowMs = 30_000;
         errors: [{ message: "at most 1 remain (it has 2)", line: 4, column: 1 }],
       },
       {
+        name: "a why: marker is held to the same one-line shape as a hatch",
+        code: `// why: short
+export const Row = 1;
+`,
+        errors: [{ message: "Write the fact after" }],
+      },
+      {
+        name: "a block why: marker must become a line comment",
+        code: `/* why: rendered per list row, so the compiler cannot hoist it */
+export const Row = 1;
+`,
+        errors: [{ message: "Rewrite this as a single `// what: <fact>` line comment" }],
+      },
+      {
+        name: "a why: marker stacked on a hatch still reports the stack",
+        code: `// what: iOS 17 reports a stale safe-area inset for one frame
+// why: rendered per list row, so the compiler cannot hoist it
+export const Row = 1;
+`,
+        errors: [{ message: "Keep one `what:` line here" }],
+      },
+      {
+        name: "whying is prose, not a marker",
+        code: `// whying about this later
+export const Row = 1;
+`,
+        errors: 1,
+      },
+      {
         name: "escapeHatch false reports a well-shaped hatch with the closed message",
         options: { escapeHatch: false },
         code: `// what: Android 14 rejects a zero-length payload here
 export const payload = [0];
 `,
-        errors: [{ message: "there is no fact this file may state in prose", line: 1, column: 1 }],
+        errors: [{ message: "The one line left is `// why:`", line: 1, column: 1 }],
       },
       {
         name: "escapeHatch false skips the shape check instead of reporting twice",
@@ -468,7 +553,7 @@ export const formatPrice = (value: number) => String(value);
 // what: Android 14 rejects a zero-length payload here
 export const payload = [0];
 `,
-        errors: [{ message: "there is no fact this file may state in prose", line: 4, column: 1 }],
+        errors: [{ message: "The one line left is `// why:`", line: 4, column: 1 }],
       },
       {
         name: "directives and a valid hatch are skipped while prose is counted",

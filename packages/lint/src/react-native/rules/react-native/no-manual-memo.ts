@@ -58,7 +58,7 @@ const linesCoveredByWhyComments = (comments: Comments, lineOf: (offset: number) 
 };
 
 export const noManualMemo: Rule = problem(
-  "Disallow `useMemo`, `useCallback` and `memo` unless a `why:` comment on the line above states the case the React Compiler cannot see: something rendered per list row, or a cost that was measured.",
+  "Require a `// why:` line above every kept `useMemo`, `useCallback` and `memo`. The React Compiler memoises on a best-effort basis, not a guarantee, so a memo is allowed where the cost is real: something rendered per list row, or a computation measured as heavy. The `// why:` line names which of the two applies. `@ashstack/core/no-comments` keeps that line and never counts it against its `budget`, so both rules run together.",
   {
     meta: { packages: REACT_COMPILER_PACKAGES },
     createOnce(context: RuleContext) {
@@ -85,7 +85,7 @@ export const noManualMemo: Rule = problem(
 
             context.report({
               node,
-              message: `Drop this \`${name}\` and let the React Compiler memoise it. Keep it only for what the compiler cannot see — something rendered per row in a list, or a computation you measured as heavy — and write a \`why:\` comment on the line above saying which of the two it is.`,
+              message: `The React Compiler memoises on a best-effort basis, not a guarantee, so a \`${name}\` is allowed where you know the cost is real: something rendered per row in a list, or a computation you measured as heavy. Add a \`// why:\` line directly above it naming which of the two applies. If neither does, delete the \`${name}\`.`,
             });
           }
         },
