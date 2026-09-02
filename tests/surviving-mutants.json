@@ -56,6 +56,8 @@
     "react/rules/i18n/no-bare-toast.js:6 false -> true",
     "react/rules/query/no-deprecated-filters.js:11 false -> true",
     "react/rules/query/no-inline-keys.js:53 && -> ||",
-    "react/rules/query/no-inline-keys.js:59 && -> ||"
+    "react/rules/query/no-inline-keys.js:59 && -> ||",
+    "react/rules/tailwind/prefer-cn.js:64 || -> &&",
+    "react/rules/tanstack-router/no-search-casts.js:38 || -> &&"
   ]
 }

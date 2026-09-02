@@ -14,9 +14,12 @@ Each entry lists the oxlint plugins it turns on, below. You never need to add th
   - [`@ashstack/core`](#ashstackcore) — 6 rules
   - [`@ashstack/zod`](#ashstackzod) — 1 rule
 - [`react()`](#react)
+  - [`@ashstack/react`](#ashstackreact) — 2 rules
   - [`@ashstack/query`](#ashstackquery) — 5 rules
   - [`@ashstack/zustand`](#ashstackzustand) — 1 rule
   - [`@ashstack/i18n`](#ashstacki18n) — 3 rules
+  - [`@ashstack/tailwind`](#ashstacktailwind) — 2 rules
+  - [`@ashstack/tanstack-router`](#ashstacktanstack-router) — 2 rules
 - [`react-native()`](#react-native)
   - [`@ashstack/react-native`](#ashstackreact-native) — 11 rules
   - [`@ashstack/unistyles`](#ashstackunistyles) — 12 rules
@@ -642,6 +645,73 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 | [`react-effect/no-initialize-state`](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) | `"error"` |
 | [`unicorn/filename-case`](https://oxc.rs/docs/guide/usage/linter/rules/unicorn/filename-case.html) | `["error",{"cases":{"kebabCase":true,"pascalCase":true}}]` |
 
+### `@ashstack/react`
+
+_always on via `react()` and every entry above it._
+
+#### `@ashstack/react/no-unlabeled-icon-button`
+
+Require an accessible name on an icon-only `<button>` or `<Button>`. Without a label, visible text or image alt text, a screen reader cannot reach the control.
+
+**Fails**
+
+```tsx
+declare const TrashIcon: () => JSX.Element;
+
+export const Delete = () => (
+  <button type="button">
+    <TrashIcon />
+  </button>
+);
+```
+
+**Passes**
+
+```tsx
+declare const TrashIcon: () => JSX.Element;
+
+export const Delete = () => (
+  <button type="button" aria-label="Delete this row">
+    <TrashIcon />
+  </button>
+);
+
+export const Labelled = () => (
+  <button type="button">
+    <TrashIcon /> Delete
+  </button>
+);
+```
+
+#### `@ashstack/react/no-svg-without-title`
+
+Require an accessible name on an inline `<svg>`: a `<title>` child with content, an `aria-label`, or a marker that it is decorative. Every child counts, and a self-closing `<svg />` reports.
+
+**Fails**
+
+```tsx
+export const Mark = () => (
+  <svg viewBox="0 0 16 16">
+    <path d="M0 0h16v16H0z" />
+  </svg>
+);
+
+export const Bare = () => <svg viewBox="0 0 16 16" />;
+```
+
+**Passes**
+
+```tsx
+export const Mark = () => (
+  <svg viewBox="0 0 16 16">
+    <title>Company mark</title>
+    <path d="M0 0h16v16H0z" />
+  </svg>
+);
+
+export const Decorative = () => <svg viewBox="0 0 16 16" aria-hidden="true" />;
+```
+
 ### `@ashstack/query`
 
 _auto-enabled by `react()` when `@tanstack/react-query` is a dependency._
@@ -959,6 +1029,139 @@ import { Button } from "@/components/ui/button";
 export const SaveButton = () => {
   const { t } = useTranslation();
   return <Button onPress={() => toast.success(t("saved"))} />;
+};
+```
+
+### `@ashstack/tailwind`
+
+_auto-enabled by `react()` when `tailwindcss` is a dependency._
+
+#### `@ashstack/tailwind/prefer-cn`
+
+Require a dynamic class value to go through `cn(...)` before it reaches a `class`, `className` or `*ClassName` prop. Reports both where the value reaches the prop and where a variable named after classes is declared.
+
+**Fails**
+
+```tsx
+declare const active: boolean;
+declare const size: string;
+
+export const Chip = () => <span className={`px-2 ${active ? "bg-black" : "bg-white"}`} />;
+
+export const Card = () => {
+  const cardClasses = [size, active && "ring-2"].join(" ");
+  return <div className={cardClasses} />;
+};
+```
+
+**Passes**
+
+```tsx
+declare const cn: (...values: unknown[]) => string;
+declare const active: boolean;
+declare const size: string;
+
+export const Chip = () => <span className={cn("px-2", active ? "bg-black" : "bg-white")} />;
+
+export const Card = () => {
+  const cardClasses = cn(size, active && "ring-2");
+  return <div className={cardClasses} />;
+};
+
+export const Static = () => <div className="flex items-center gap-2" />;
+```
+
+#### `@ashstack/tailwind/use-logical-classes`
+
+Require a logical Tailwind utility over its physical left/right twin, so a right-to-left layout mirrors. Reads through variant prefixes and the `!` and `-` modifiers.
+
+**Fails**
+
+```tsx
+export const Row = () => <div className="ml-2 text-left md:pr-4" />;
+export const Corner = () => <div className="rounded-tl border-r" />;
+```
+
+**Passes**
+
+```tsx
+export const Row = () => <div className="ms-2 text-start md:pe-4" />;
+export const Corner = () => <div className="rounded-ss border-e" />;
+```
+
+### `@ashstack/tanstack-router`
+
+_auto-enabled by `react()` when `@tanstack/react-router` is a dependency._
+
+#### `@ashstack/tanstack-router/require-selector`
+
+Require a `select` on `useLocation`, `useRouterState` and non-strict `useSearch`, so a component reads the smallest router value it needs instead of re-rendering on every navigation.
+
+**Fails**
+
+```tsx
+import { useLocation, useSearch } from "@tanstack/react-router";
+
+export const Crumb = () => {
+  const location = useLocation();
+  return <span>{location.pathname}</span>;
+};
+
+export const Filters = () => {
+  const search = useSearch({ strict: false });
+  return <span>{String(search)}</span>;
+};
+```
+
+**Passes**
+
+```tsx
+import { useLocation, useSearch } from "@tanstack/react-router";
+
+export const Crumb = () => {
+  const pathname = useLocation({ select: location => location.pathname });
+  return <span>{pathname}</span>;
+};
+
+export const Filters = () => {
+  const page = useSearch({ strict: false, select: search => search.page });
+  return <span>{String(page)}</span>;
+};
+```
+
+#### `@ashstack/tanstack-router/no-search-casts`
+
+Disallow an `as` assertion on a `useSearch()` result or on `router.state.location.search`. The route's `validateSearch` schema is what supplies the type.
+
+**Fails**
+
+```tsx
+import { useRouter, useSearch } from "@tanstack/react-router";
+
+interface Query {
+  page: number;
+}
+
+export const Paged = () => {
+  const search = useSearch({ strict: false }) as Query;
+  return <span>{search.page}</span>;
+};
+
+export const Raw = () => {
+  const router = useRouter();
+  const query = router.state.location.search as Query;
+  return <span>{query.page}</span>;
+};
+```
+
+**Passes**
+
+```tsx
+import { useSearch } from "@tanstack/react-router";
+
+export const Paged = () => {
+  const page = useSearch({ strict: false, select: search => search.page });
+  return <span>{String(page)}</span>;
 };
 ```
 

@@ -6,9 +6,19 @@ import { composeModules } from "../lib/module.js";
 import type { OxlintConfig, ReactOptions, RuleMap } from "../lib/types.js";
 import i18nModule from "./rules/i18n/index.js";
 import queryModule from "./rules/query/index.js";
+import reactWebModule from "./rules/react/index.js";
+import tailwindModule from "./rules/tailwind/index.js";
+import tanstackRouterModule from "./rules/tanstack-router/index.js";
 import zustandModule from "./rules/zustand/index.js";
 
-export const reactModules = [queryModule, zustandModule, i18nModule];
+export const reactModules = [
+  reactWebModule,
+  queryModule,
+  zustandModule,
+  i18nModule,
+  tailwindModule,
+  tanstackRouterModule,
+];
 
 const ALLOW_EMPTY_NOOP_HANDLERS: RuleMap = {
   "eslint/no-empty": "off",

@@ -53,29 +53,31 @@ The rest encode how a library expects to be used, so its anti-patterns get caugh
 
 Each returns one flat config. `react()` contains `core()`; `react-native()` contains both.
 
-| Entry            | For                    | Adds                                                                                             |
-| ---------------- | ---------------------- | ------------------------------------------------------------------------------------------------ |
-| `core()`         | any TypeScript project | strict eslint / typescript / unicorn / promise / import base, plus `@ashstack/core/` conventions |
-| `react()`        | React on the web       | react, jsx-a11y, React Compiler, you-might-not-need-an-effect                                    |
-| `react-native()` | Expo and React Native  | `@ashstack/react-native/`: leaked renders, view nesting, iOS-only keyboard events, remote images |
+| Entry            | For                    | Adds                                                                                                        |
+| ---------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------- |
+| `core()`         | any TypeScript project | strict eslint / typescript / unicorn / promise / import base, plus `@ashstack/core/` conventions            |
+| `react()`        | React on the web       | react, jsx-a11y, react-perf, React Compiler, you-might-not-need-an-effect, `@ashstack/react/` accessibility |
+| `react-native()` | Expo and React Native  | `@ashstack/react-native/`: leaked renders, view nesting, iOS-only keyboard events, remote images            |
 
 ## Library-specific rules, auto-detected
 
 One module per library: one rule namespace, one toggle. A module turns on when its library is in your `package.json`, searched up to the repo root.
 
-| Module                   | Detected from                                                                            |
-| ------------------------ | ---------------------------------------------------------------------------------------- |
-| `@ashstack/zod`          | `zod`                                                                                    |
-| `@ashstack/query`        | `@tanstack/react-query`                                                                  |
-| `@ashstack/zustand`      | `zustand`                                                                                |
-| `@ashstack/i18n`         | i18next · react-i18next · lingui · react-intl · use-intl · next-intl · expo-localization |
-| `@ashstack/unistyles`    | `react-native-unistyles`                                                                 |
-| `@ashstack/legend-list`  | `@legendapp/list`                                                                        |
-| `@ashstack/legend-state` | `@legendapp/state`                                                                       |
-| `@ashstack/reanimated`   | `react-native-reanimated`                                                                |
-| `@ashstack/turbo-image`  | `react-native-turbo-image`                                                               |
-| `@ashstack/skia`         | `@shopify/react-native-skia`                                                             |
-| `@ashstack/keyboard`     | `react-native-keyboard-controller`                                                       |
+| Module                      | Detected from                                                                            |
+| --------------------------- | ---------------------------------------------------------------------------------------- |
+| `@ashstack/zod`             | `zod`                                                                                    |
+| `@ashstack/query`           | `@tanstack/react-query`                                                                  |
+| `@ashstack/zustand`         | `zustand`                                                                                |
+| `@ashstack/i18n`            | i18next · react-i18next · lingui · react-intl · use-intl · next-intl · expo-localization |
+| `@ashstack/tailwind`        | `tailwindcss`                                                                            |
+| `@ashstack/tanstack-router` | `@tanstack/react-router`                                                                 |
+| `@ashstack/unistyles`       | `react-native-unistyles`                                                                 |
+| `@ashstack/legend-list`     | `@legendapp/list`                                                                        |
+| `@ashstack/legend-state`    | `@legendapp/state`                                                                       |
+| `@ashstack/reanimated`      | `react-native-reanimated`                                                                |
+| `@ashstack/turbo-image`     | `react-native-turbo-image`                                                               |
+| `@ashstack/skia`            | `@shopify/react-native-skia`                                                             |
+| `@ashstack/keyboard`        | `react-native-keyboard-controller`                                                       |
 
 Detection only sets the default. Turn any module on or off yourself, whatever your dependencies say:
 

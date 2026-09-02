@@ -87,6 +87,10 @@ export type ReactOptions = CoreOptions & {
   zustand?: boolean;
   /** `@ashstack/i18n/` rules — detected from i18next/lingui/react-intl/use-intl/next-intl/expo-localization */
   i18n?: boolean;
+  /** `@ashstack/tailwind/` rules — detected from `tailwindcss` */
+  tailwind?: boolean;
+  /** `@ashstack/tanstack-router/` rules — detected from `@tanstack/react-router` */
+  tanstackRouter?: boolean;
 };
 
 /**

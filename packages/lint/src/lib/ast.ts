@@ -105,6 +105,24 @@ export const receiverName = (node: AstNode | null | undefined): string | null =>
   return object.type === "Identifier" ? object.name : null;
 };
 
+/**
+ * A member chain as a dotted string: `router.state.location.search` reads as
+ * itself, a computed segment as `*`, and a call at the root as `()`.
+ */
+export const memberPathOf = (node: AstNode | null | undefined): string => {
+  const parts: string[] = [];
+  let current = node;
+  while (current?.type === "MemberExpression") {
+    if (current.property.type === "Identifier") parts.unshift(current.property.name);
+    else if (current.property.type === "Literal") parts.unshift(String(current.property.value));
+    else parts.unshift("*");
+    current = current.object;
+  }
+  if (current?.type === "Identifier") parts.unshift(current.name);
+  else if (current?.type === "CallExpression") parts.unshift("()");
+  return parts.join(".");
+};
+
 /** The last segment of a JSX tag name: `Animated.View` reads as `View`. */
 export const tagIdentifier = (node: AstNode | null | undefined): string => {
   let current = node;

@@ -22,6 +22,8 @@ const ALL_ON: Required<ReactNativeOptions> = {
   query: true,
   zustand: true,
   i18n: true,
+  tailwind: true,
+  tanstackRouter: true,
   unistyles: true,
   legendList: true,
   legendState: true,
@@ -182,7 +184,7 @@ describe("entry purity", () => {
 describe("module toggles", () => {
   it("turns every library namespace off together", () => {
     const namespaces = new Set(customIds(reactNative(ALL_OFF)).map(namespaceOf));
-    expect([...namespaces].toSorted()).toEqual(["@ashstack/core", "@ashstack/react-native"]);
+    expect([...namespaces].toSorted()).toEqual(["@ashstack/core", "@ashstack/react", "@ashstack/react-native"]);
   });
 
   it("turns every library namespace on together", () => {
