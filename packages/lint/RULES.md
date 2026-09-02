@@ -10,7 +10,7 @@ Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-marg
 
 Each entry lists the oxlint plugins it turns on, below. You never need to add them: your own `plugins` array is added to the entry's set, not swapped for it. A bare oxlint install runs `eslint`, `typescript`, `unicorn`, `oxc`; `import`, `promise`, `react`, `jsx-a11y`, `react-perf` come from here.
 
-Counting what each entry sets with every module on: **118** rules for plain TypeScript, **204** with React, **259** on React Native, 74 of them written for this package. oxlint's own `correctness` category runs alongside these.
+Counting what each entry sets with every module on: **118** rules for plain TypeScript, **202** with React, **257** on React Native, 74 of them written for this package. oxlint's own `correctness` category runs alongside these.
 
 - [`core()`](#core)
   - [`@ashstack/core`](#ashstackcore) — 6 rules
@@ -604,7 +604,7 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 | [`react/preserve-manual-memoization`](https://oxc.rs/docs/guide/usage/linter/rules/react/preserve-manual-memoization.html) | `"error"` |
 | [`react/purity`](https://oxc.rs/docs/guide/usage/linter/rules/react/purity.html) | `"error"` |
 | [`react/refs`](https://oxc.rs/docs/guide/usage/linter/rules/react/refs.html) | `"error"` |
-| [`react/set-state-in-effect`](https://oxc.rs/docs/guide/usage/linter/rules/react/set-state-in-effect.html) | `"error"` |
+| [`react/set-state-in-effect`](https://oxc.rs/docs/guide/usage/linter/rules/react/set-state-in-effect.html) | `"off"` |
 | [`react/set-state-in-render`](https://oxc.rs/docs/guide/usage/linter/rules/react/set-state-in-render.html) | `"error"` |
 | [`react/static-components`](https://oxc.rs/docs/guide/usage/linter/rules/react/static-components.html) | `"error"` |
 | [`react/use-memo`](https://oxc.rs/docs/guide/usage/linter/rules/react/use-memo.html) | `"error"` |
@@ -613,7 +613,7 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 | [`react/exhaustive-effect-dependencies`](https://oxc.rs/docs/guide/usage/linter/rules/react/exhaustive-effect-dependencies.html) | `"error"` |
 | [`react/hooks`](https://oxc.rs/docs/guide/usage/linter/rules/react/hooks.html) | `"error"` |
 | [`react/memo-dependencies`](https://oxc.rs/docs/guide/usage/linter/rules/react/memo-dependencies.html) | `"error"` |
-| [`react/no-deriving-state-in-effects`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-deriving-state-in-effects.html) | `"error"` |
+| [`react/no-deriving-state-in-effects`](https://oxc.rs/docs/guide/usage/linter/rules/react/no-deriving-state-in-effects.html) | `"off"` |
 | [`react/invariant`](https://oxc.rs/docs/guide/usage/linter/rules/react/invariant.html) | `"error"` |
 | [`react/rule-suppression`](https://oxc.rs/docs/guide/usage/linter/rules/react/rule-suppression.html) | `"error"` |
 | [`react/syntax`](https://oxc.rs/docs/guide/usage/linter/rules/react/syntax.html) | `"error"` |

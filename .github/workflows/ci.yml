@@ -31,5 +31,6 @@ jobs:
       - run: bun run check:fixtures
       - run: bun run check:smoke
       - run: bun run check:pack
+      - run: bun run check:duplicates
       - run: bun run docs:rules:check
       - run: bun run registry:check

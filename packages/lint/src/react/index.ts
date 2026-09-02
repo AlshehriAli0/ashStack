@@ -18,7 +18,8 @@ const REACT_COMPILER_RULES: RuleMap = {
   "react/preserve-manual-memoization": "error",
   "react/purity": "error",
   "react/refs": "error",
-  "react/set-state-in-effect": "error",
+  // why: @ashstack/effects reports these positions naming the refactor, not the symptom
+  "react/set-state-in-effect": "off",
   "react/set-state-in-render": "error",
   "react/static-components": "error",
   "react/use-memo": "error",
@@ -27,7 +28,8 @@ const REACT_COMPILER_RULES: RuleMap = {
   "react/exhaustive-effect-dependencies": "error",
   "react/hooks": "error",
   "react/memo-dependencies": "error",
-  "react/no-deriving-state-in-effects": "error",
+  // why: duplicates @ashstack/effects/no-derived-state at the same position
+  "react/no-deriving-state-in-effects": "off",
   "react/invariant": "error",
   "react/rule-suppression": "error",
   "react/syntax": "error",

@@ -1,0 +1,9 @@
+{
+  "separate": [
+    "@ashstack/effects(no-adjust-state-on-prop-change) + react(exhaustive-effect-dependencies)",
+    "@ashstack/legend-list(no-index-key-extractor) + react-perf(jsx-no-new-function-as-prop)",
+    "@ashstack/reanimated(no-shared-value-dot-value) + react(immutability)",
+    "@ashstack/tanstack-router(no-search-casts) + @ashstack/tanstack-router(require-selector)",
+    "eslint(no-restricted-imports) + unicorn(filename-case)"
+  ]
+}

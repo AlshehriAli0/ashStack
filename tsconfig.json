@@ -11,5 +11,6 @@
     "verbatimModuleSyntax": true,
     "lib": ["ES2023"]
   },
-  "include": ["scripts", "tests", "*.mts"]
+  "include": ["scripts", "tests", "*.mts"],
+  "exclude": ["tests/corpus"]
 }
