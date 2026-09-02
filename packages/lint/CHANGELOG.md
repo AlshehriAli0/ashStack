@@ -1,5 +1,11 @@
 # @ashstack/lint
 
+## 0.6.0 (2026-09-02)
+
+### Breaking Changes
+
+- assume the React Compiler, with `reactCompiler: false` for when it is off ([`39a0d22`](https://github.com/AlshehriAli0/ashStack/commit/39a0d22))
+
 ## 0.5.1 (2026-09-02)
 
 ### Bug Fixes
