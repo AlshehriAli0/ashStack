@@ -1,9 +1,6 @@
 import { composeModules } from "../lib/module.js";
+import { coreRegistry } from "../lib/registry.js";
 import type { CoreOptions, OxlintConfig, RuleMap } from "../lib/types.js";
-import coreModule from "./rules/core/index.js";
-import zodModule from "./rules/zod/index.js";
-
-export const coreModules = [coreModule, zodModule];
 
 const BASE_RULES: RuleMap = {
   "array-callback-return": ["error", { allowImplicit: true }],
@@ -185,7 +182,7 @@ export const TEST_FILES = [
  * `--type-aware` and the `oxlint-tsgolint` peer installed.
  */
 const core = (options: CoreOptions = {}): OxlintConfig => {
-  const composed = composeModules(coreModules, options);
+  const composed = composeModules(coreRegistry, options);
 
   return {
     plugins: ["eslint", "typescript", "import", "unicorn", "promise", "oxc"],

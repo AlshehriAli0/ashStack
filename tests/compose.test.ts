@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { mergeConfigs } from "../packages/lint/dist/lib/merge.js";
 import { composeModules, defineModule, shortName } from "../packages/lint/dist/lib/module.js";
-import type { BanGroup, ModuleManifest, OxlintConfig, Rule } from "../packages/lint/dist/lib/types.js";
+import type { BanGroup, ModuleManifest, ModuleMeta, OxlintConfig, Rule } from "../packages/lint/dist/lib/types.js";
 
 const here = import.meta.url;
 const herePath = fileURLToPath(here);
@@ -13,7 +13,14 @@ const rule = (description: string, meta: Partial<Rule["meta"]> = {}): Rule => ({
   create: () => ({}),
 });
 
-const moduleWith = (parts: Partial<ModuleManifest> & { name: string }): ModuleManifest =>
+/** The flags a config reads off a rule, which is all `composeModules` is given. */
+const flagsOf = (rules: Record<string, Rule>): ModuleMeta["rules"] =>
+  Object.fromEntries(
+    Object.entries(rules).map(([name, one]) => [name, { defaultOff: one.meta.defaultOff, packages: one.meta.packages }])
+  );
+
+/** A manifest, so `defineModule` still types the shape a module author writes. */
+const manifestWith = (parts: Partial<ModuleManifest> & { name: string }): ModuleManifest =>
   defineModule({
     meta: { name: `@ashstack/${parts.name}` },
     rules: parts.rules ?? { "a-rule": rule("Does a thing.") },
@@ -23,6 +30,19 @@ const moduleWith = (parts: Partial<ModuleManifest> & { name: string }): ModuleMa
     docsWhen: parts.docsWhen ?? "always on",
     restrictedImports: parts.restrictedImports,
   });
+
+/** The same module as the metadata a config sees. */
+const moduleWith = (parts: Partial<ModuleManifest> & { name: string }): ModuleMeta => {
+  const manifest = manifestWith(parts);
+  return {
+    meta: manifest.meta,
+    url: manifest.url,
+    packages: manifest.packages,
+    option: manifest.option,
+    restrictedImports: manifest.restrictedImports,
+    rules: flagsOf(manifest.rules),
+  };
+};
 
 describe("mergeConfigs", () => {
   it("lets the delta win on a scalar key", () => {

@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 
 import { detect } from "./detect.js";
-import type { BanGroup, ModuleManifest, RestrictedImports, Rule } from "./types.js";
+import type { BanGroup, ModuleManifest, ModuleMeta, RestrictedImports } from "./types.js";
 
 /**
  * Identity helper: types the manifest and keeps the shape honest. The returned
@@ -9,7 +9,7 @@ import type { BanGroup, ModuleManifest, RestrictedImports, Rule } from "./types.
  */
 export const defineModule = (manifest: ModuleManifest): ModuleManifest => manifest;
 
-const shortName = (module: ModuleManifest): string => module.meta.name.slice("@ashstack/".length);
+const shortName = (module: { meta: { name: string } }): string => module.meta.name.slice("@ashstack/".length);
 
 export interface Composed {
   jsPlugins: string[];
@@ -17,14 +17,14 @@ export interface Composed {
   restricted: Required<RestrictedImports>;
 }
 
-const isModuleEnabled = (module: ModuleManifest, options: Record<string, boolean | undefined>): boolean =>
+const isModuleEnabled = (module: ModuleMeta, options: Record<string, boolean | undefined>): boolean =>
   detect(module.option === undefined ? undefined : options[module.option], module.packages);
 
-const enabledRuleIds = (module: ModuleManifest): string[] => {
+const enabledRuleIds = (module: ModuleMeta): string[] => {
   const ids: string[] = [];
-  for (const [name, rule] of Object.entries<Rule>(module.rules)) {
-    if (rule.meta.defaultOff) continue;
-    if (rule.meta.packages && !detect(undefined, rule.meta.packages)) continue;
+  for (const [name, rule] of Object.entries(module.rules)) {
+    if (rule.defaultOff) continue;
+    if (rule.packages && !detect(undefined, rule.packages)) continue;
     ids.push(`${module.meta.name}/${name}`);
   }
   return ids;
@@ -41,7 +41,7 @@ const addRestrictedImports = (into: Required<RestrictedImports>, from: Restricte
  * bans from the enabled modules plus the enabled ban-only groups.
  */
 export const composeModules = (
-  modules: ModuleManifest[],
+  modules: ModuleMeta[],
   options: Record<string, boolean | undefined>,
   banGroups: BanGroup[] = []
 ): Composed => {

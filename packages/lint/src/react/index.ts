@@ -1,23 +1,9 @@
-import core, { coreModules } from "../core/index.js";
+import core from "../core/index.js";
 import { effectPlugin } from "../lib/effect-plugin.js";
 import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
+import { coreRegistry, reactRegistry } from "../lib/registry.js";
 import type { OxlintConfig, ReactOptions, RuleMap } from "../lib/types.js";
-import i18nModule from "./rules/i18n/index.js";
-import queryModule from "./rules/query/index.js";
-import reactWebModule from "./rules/react/index.js";
-import tailwindModule from "./rules/tailwind/index.js";
-import tanstackRouterModule from "./rules/tanstack-router/index.js";
-import zustandModule from "./rules/zustand/index.js";
-
-export const reactModules = [
-  reactWebModule,
-  queryModule,
-  zustandModule,
-  i18nModule,
-  tailwindModule,
-  tanstackRouterModule,
-];
 
 const ALLOW_EMPTY_NOOP_HANDLERS: RuleMap = {
   "eslint/no-empty": "off",
@@ -112,7 +98,7 @@ const REACT_RULES: RuleMap = {
  * modules (query, zustand, i18n).
  */
 const react = (options: ReactOptions = {}): OxlintConfig => {
-  const composed = composeModules([...coreModules, ...reactModules], options);
+  const composed = composeModules([...coreRegistry, ...reactRegistry], options);
   const effect = effectPlugin();
 
   return mergeConfigs(core(options), {

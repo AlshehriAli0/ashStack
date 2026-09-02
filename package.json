@@ -18,6 +18,8 @@
     "format:check": "oxfmt --check .",
     "lint": "bun run build && oxlint --disable-nested-config --type-aware .",
     "lint:fix": "bun run build && oxlint --disable-nested-config --type-aware --fix .",
+    "registry": "bun run build && bun scripts/generate-registry.ts",
+    "registry:check": "bun run build && bun scripts/generate-registry.ts --check",
     "release": "changeset publish",
     "test": "bun run build && bun test --parallel tests/",
     "typecheck": "bun run build && tsc -p . --noEmit"

@@ -32,3 +32,4 @@ jobs:
       - run: bun run check:smoke
       - run: bun run check:pack
       - run: bun run docs:rules:check
+      - run: bun run registry:check

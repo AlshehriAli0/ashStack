@@ -69,6 +69,25 @@ export interface ModuleManifest {
   restrictedImports?: RestrictedImports;
 }
 
+/**
+ * What a config needs from a module: the plugin file to hand oxlint, and the
+ * two flags per rule that decide whether it is on. Generated into
+ * `lib/registry.ts` from the manifests, so a config never imports rule code
+ * that oxlint is going to load from the path anyway.
+ */
+export interface ModuleMeta {
+  meta: { name: `@ashstack/${string}` };
+  /** Absolute URL of the module's plugin file. */
+  url: string;
+  /** Enable when one of these is a dependency; absent = always on. */
+  packages?: string[];
+  /** Key in the entry options that forces the module on/off; absent = auto-only. */
+  option?: string;
+  restrictedImports?: RestrictedImports;
+  /** Rule name to the flags that gate it: off unless asked for, or gated on its own dependency. */
+  rules: Record<string, { defaultOff?: boolean; packages?: string[] }>;
+}
+
 /** A ban-only group: import bans gated on a library, with no rules of its own. */
 export interface BanGroup {
   packages: string[];

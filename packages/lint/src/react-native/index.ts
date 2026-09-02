@@ -1,28 +1,10 @@
-import { TEST_FILES, coreModules } from "../core/index.js";
+import { TEST_FILES } from "../core/index.js";
 import { effectPlugin } from "../lib/effect-plugin.js";
 import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
+import { coreRegistry, reactNativeRegistry, reactRegistry } from "../lib/registry.js";
 import type { BanGroup, OxlintConfig, ReactNativeOptions } from "../lib/types.js";
-import react, { reactModules } from "../react/index.js";
-import keyboardModule from "./rules/keyboard/index.js";
-import legendListModule from "./rules/legend-list/index.js";
-import legendStateModule from "./rules/legend-state/index.js";
-import reactNativeModule from "./rules/react-native/index.js";
-import reanimatedModule from "./rules/reanimated/index.js";
-import skiaModule from "./rules/skia/index.js";
-import turboImageModule from "./rules/turbo-image/index.js";
-import unistylesModule from "./rules/unistyles/index.js";
-
-export const reactNativeModules = [
-  reactNativeModule,
-  unistylesModule,
-  legendListModule,
-  legendStateModule,
-  reanimatedModule,
-  turboImageModule,
-  skiaModule,
-  keyboardModule,
-];
+import react from "../react/index.js";
 
 export const banGroups: BanGroup[] = [
   {
@@ -98,7 +80,7 @@ const ALLOW_GESTURE_AND_ANIMATION_EFFECTS = {
  * `rules` block always overrides.
  */
 const reactNative = (options: ReactNativeOptions = {}): OxlintConfig => {
-  const composed = composeModules([...coreModules, ...reactModules, ...reactNativeModules], options, banGroups);
+  const composed = composeModules([...coreRegistry, ...reactRegistry, ...reactNativeRegistry], options, banGroups);
 
   return mergeConfigs(react(options), {
     jsPlugins: composed.jsPlugins,
