@@ -11,8 +11,8 @@
 
 Two packages: [`@ashstack/lint`](packages/lint) and [`@ashstack/fmt`](packages/fmt). Install once per project instead of copying a lint config around and watching the copies drift.
 
-- **147 rules** on plain TypeScript, **227** with React, **238** on React Native, over 70 of them custom-built
-- library-specific rules ship only when you depend on that library: 13 self-detecting modules
+- <!-- rule-counts -->**118 rules** on plain TypeScript, **204** with React, **259** on React Native, 74 of them custom-built
+- library-specific rules ship only when you depend on that library: 13 self-detecting modules<!-- /rule-counts -->
 - every rule is in [RULES.md](packages/lint/RULES.md), with options and examples, generated and CI-checked
 - your `rules` block always wins
 
