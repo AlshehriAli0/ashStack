@@ -48,6 +48,27 @@ import { reactNative } from "@ashstack/lint/react-native";
 Each entry also has a default export, and carries its own options type
 (`CoreOptions`, `ReactOptions`, `ReactNativeOptions`).
 
+## Monorepos
+
+A nested config replaces the one above it rather than merging, so each workspace
+config extends an entry itself. Its own `plugins` array is unioned with the
+entry's, never swapped for it:
+
+```ts
+// apps/backend/oxlint.config.mts — a backend that also renders JSX templates
+import { core } from "@ashstack/lint/core";
+import { defineConfig } from "oxlint";
+
+export default defineConfig({
+  extends: [core()],
+  plugins: ["react", "jsx-a11y"],
+  rules: { "react/jsx-key": "error" },
+});
+```
+
+Drop the `extends` and the workspace keeps only the rules it names, with no
+diagnostic that the rest are gone.
+
 ## What each entry adds
 
 `core()` is a strict eslint / typescript / unicorn / promise / import base plus the `@ashstack/core/` convention rules. `react()` adds react, jsx-a11y, React Compiler and you-might-not-need-an-effect. `react-native()` adds the generic `@ashstack/react-native/` rules: leaked renders, view nesting, iOS-only keyboard events, remote images.
