@@ -1,8 +1,9 @@
-import { findInSubtree, memberPathOf, problem } from "../../../lib/ast.js";
+import { gate, importedNames, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
-import { ROUTER_MODULE, importedAs } from "./shared.js";
+import { ROUTER_MODULE } from "./shared.js";
 
-const ROUTER_STATE_SEARCH = "state.location.search";
+/** `router.state.location.search`, walked innermost-out from the `search` end. */
+const SEARCH_PATH = ["search", "location", "state"];
 
 const MESSAGES = {
   search:
@@ -17,12 +18,27 @@ const unwrapAssertions = (node: AstNode): AstNode => {
   return inner;
 };
 
-const callsOneOf = (node: AstNode, names: ReadonlySet<string>): boolean =>
-  findInSubtree(
-    node,
-    current =>
-      current.type === "CallExpression" && current.callee.type === "Identifier" && names.has(current.callee.name)
-  ) !== null;
+/** The name of a bare `foo()` call; `""` for a method call or anything that is not a call. */
+const bareCallName = (node: AstNode | null | undefined): string =>
+  node?.type === "CallExpression" && node.callee.type === "Identifier" ? node.callee.name : "";
+
+/** One step of a member chain: `a.search` and `a["search"]` both read as `search`. */
+const segmentName = (node: AstNode): string => {
+  if (node.type !== "MemberExpression") return "";
+  const { property } = node;
+  if (property.type === "Identifier") return node.computed ? "" : property.name;
+  return property.type === "Literal" ? String(property.value) : "";
+};
+
+/** Whatever `.state.location.search` hangs off, or `null` when the chain is not that. */
+const searchReceiver = (node: AstNode): AstNode | null => {
+  let current = node;
+  for (const segment of SEARCH_PATH) {
+    if (current.type !== "MemberExpression" || segmentName(current) !== segment) return null;
+    current = current.object;
+  }
+  return current;
+};
 
 export const noSearchCasts: Rule = problem(
   "Disallow an `as` assertion on a `useSearch()` result or on `router.state.location.search`. The route's `validateSearch` schema is what supplies the type.",
@@ -33,23 +49,26 @@ export const noSearchCasts: Rule = problem(
       const routerBindings = new Set<string>();
       const assertions: { node: AstNode; inner: AstNode }[] = [];
 
+      const isRouter = (receiver: AstNode): boolean =>
+        receiver.type === "Identifier" ? routerBindings.has(receiver.name) : routers.has(bareCallName(receiver));
+
       return {
         before() {
           search.clear();
           routers.clear();
           routerBindings.clear();
           assertions.length = 0;
-          return context.sourceCode.text.includes(ROUTER_MODULE);
+          return gate(context, ROUTER_MODULE);
         },
         ImportDeclaration(node) {
-          for (const { imported, local } of importedAs(node)) {
+          for (const { imported, local } of importedNames(node, ROUTER_MODULE)) {
             if (imported === "useSearch") search.add(local);
             else if (imported === "useRouter") routers.add(local);
           }
         },
         VariableDeclarator(node) {
-          if (node.id.type !== "Identifier" || !node.init) return;
-          if (callsOneOf(node.init, routers)) routerBindings.add(node.id.name);
+          if (node.id.type !== "Identifier") return;
+          if (routers.has(bareCallName(node.init))) routerBindings.add(node.id.name);
         },
         /** `x as unknown as T` nests two of these over one expression; the outer one is the report. */
         TSAsExpression(node) {
@@ -58,21 +77,13 @@ export const noSearchCasts: Rule = problem(
         },
         "Program:exit"() {
           for (const { node, inner } of assertions) {
-            if (
-              inner.type === "CallExpression" &&
-              inner.callee.type === "Identifier" &&
-              search.has(inner.callee.name)
-            ) {
+            if (search.has(bareCallName(inner))) {
               context.report({ node, message: MESSAGES.search });
               continue;
             }
 
-            const path = memberPathOf(inner);
-            if (!path.endsWith(ROUTER_STATE_SEARCH)) continue;
-            const root = path.split(".")[0] ?? "";
-            if (routerBindings.has(root) || callsOneOf(inner, routers)) {
-              context.report({ node, message: MESSAGES.routerState });
-            }
+            const receiver = searchReceiver(inner);
+            if (receiver && isRouter(receiver)) context.report({ node, message: MESSAGES.routerState });
           }
         },
       };

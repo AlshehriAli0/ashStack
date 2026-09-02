@@ -1073,7 +1073,7 @@ export const Static = () => <div className="flex items-center gap-2" />;
 
 #### `@ashstack/tailwind/use-logical-classes`
 
-Require a logical Tailwind utility over its physical left/right twin, so a right-to-left layout mirrors. Reads through variant prefixes and the `!` and `-` modifiers.
+Require a logical Tailwind utility over its physical left/right twin, so a right-to-left layout mirrors. Reads class props and bindings named after classes, through variant prefixes and the `!` and `-` modifiers.
 
 **Fails**
 

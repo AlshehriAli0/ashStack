@@ -1,6 +1,6 @@
-import { problem, subtreeHas } from "../../../lib/ast.js";
+import { gate, importedNames, problem, propertyValue } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
-import { ROUTER_MODULE, importedAs } from "./shared.js";
+import { ROUTER_MODULE } from "./shared.js";
 
 const BROAD_HOOKS = new Set(["useLocation", "useRouterState"]);
 
@@ -13,21 +13,13 @@ const MESSAGES = {
     "`useSearch({ strict: false })` subscribes to every route-search change. Add a `select` returning the keys this component reads.",
 };
 
-const keyNameOf = (node: AstNode): string => {
-  if (node.type !== "Property") return "";
-  const { key } = node;
-  if (key.type === "Identifier") return key.name;
-  return key.type === "Literal" ? String(key.value) : "";
+const hasSelect = (options: AstNode | undefined): boolean => propertyValue(options, "select") !== null;
+
+/** `strict: false` on the hook's own options object, not on some object nested inside it. */
+const isNonStrict = (options: AstNode | undefined): boolean => {
+  const strict = propertyValue(options, "strict");
+  return strict?.type === "Literal" && strict.value === false;
 };
-
-const propertyNamed = (node: AstNode, name: string): boolean =>
-  subtreeHas(node, current => keyNameOf(current) === name);
-
-const isNonStrict = (options: AstNode): boolean =>
-  subtreeHas(options, current => {
-    if (keyNameOf(current) !== "strict" || current.type !== "Property") return false;
-    return current.value.type === "Literal" && current.value.value === false;
-  });
 
 export const requireSelector: Rule = problem(
   "Require a `select` on `useLocation`, `useRouterState` and non-strict `useSearch`, so a component reads the smallest router value it needs instead of re-rendering on every navigation.",
@@ -42,10 +34,10 @@ export const requireSelector: Rule = problem(
           broad.clear();
           search.clear();
           calls.length = 0;
-          return context.sourceCode.text.includes(ROUTER_MODULE);
+          return gate(context, ROUTER_MODULE);
         },
         ImportDeclaration(node) {
-          for (const { imported, local } of importedAs(node)) {
+          for (const { imported, local } of importedNames(node, ROUTER_MODULE)) {
             if (BROAD_HOOKS.has(imported)) broad.add(local);
             else if (imported === "useSearch") search.add(local);
           }
@@ -58,13 +50,12 @@ export const requireSelector: Rule = problem(
           for (const { node, name, options } of calls) {
             if (broad.has(name)) {
               if (!options) context.report({ node, message: MESSAGES.whole });
-              else if (!propertyNamed(options, "select")) context.report({ node, message: MESSAGES.noSelect });
+              else if (!hasSelect(options)) context.report({ node, message: MESSAGES.noSelect });
               continue;
             }
 
-            if (!search.has(name) || !options) continue;
-            if (!isNonStrict(options)) continue;
-            if (!propertyNamed(options, "select")) context.report({ node, message: MESSAGES.search });
+            if (!search.has(name) || !isNonStrict(options)) continue;
+            if (!hasSelect(options)) context.report({ node, message: MESSAGES.search });
           }
         },
       };

@@ -1,6 +1,5 @@
-import { problem } from "../../../lib/ast.js";
+import { problem, propertyKeyName } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
-import { propertyKeyName } from "./shared.js";
 
 const MESSAGES = {
   inlineQueryKey:

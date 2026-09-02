@@ -46,6 +46,20 @@ export const Chip = () => <span className={helpers["build"]()} />;
 `,
       },
       {
+        name: "a method call that is not a join",
+        code: `declare const theme: { build: () => string };
+
+export const Chip = () => <span className={theme.build()} />;
+`,
+      },
+      {
+        name: "a curried call is not a composer",
+        code: `declare const make: () => () => string;
+
+export const Chip = () => <span className={make()()} />;
+`,
+      },
+      {
         name: "a destructured declaration is not a class binding",
         code: `declare const theme: { chipClasses: string };
 
@@ -135,6 +149,17 @@ export const Chip = () => {
         errors: [{ message: "Wrap this value in `cn(...)` where it reaches the class prop", line: 5 }],
       },
       {
+        name: "a declaration named after styles reports where it is declared",
+        code: `declare const active: boolean;
+
+export const Chip = () => {
+  const rowStyles = active ? "bg-black" : "bg-white";
+  return <span className={rowStyles} />;
+};
+`,
+        errors: [{ message: "Build this class value with `cn(...)`", line: 4 }],
+      },
+      {
         name: "a declaration named after classes reports where it is declared",
         code: `declare const active: boolean;
 declare const size: string;
@@ -144,7 +169,7 @@ export const chipClasses = [size, active && "ring-2"].join(" ");
         errors: [{ message: "Build this class value with `cn(...)`", line: 4 }],
       },
       {
-        name: "both the declaration and the attribute report",
+        name: "a class-named declaration reports once, not again at the attribute",
         code: `declare const active: boolean;
 
 export const Chip = () => {
@@ -174,6 +199,18 @@ export const Chip = () => {
       {
         name: "start and end insets",
         code: `export const Row = () => <div className="start-0 end-4" />;\n`,
+      },
+      {
+        name: "English prose that happens to read like a utility",
+        code: `export const label = "right-hand rule applies";\n`,
+      },
+      {
+        name: "more prose, on the other side",
+        code: `export const note = "left-over items remain";\n`,
+      },
+      {
+        name: "a physical name on a prop that carries no classes",
+        code: `export const Row = () => <div title="ml-2 is the old way" />;\n`,
       },
     ],
     invalid: [
@@ -229,6 +266,26 @@ export const Row = () => <div className={\`ml-2 \${active ? "" : ""}\`} />;
         name: "a class string held in a variable",
         code: `export const rowStyles = "pl-2 right-0";\n`,
         errors: [{ message: "Swap this for its logical twin", line: 1, column: 26 }],
+      },
+      {
+        name: "inside a cn call on a class prop",
+        code: `declare const cn: (...values: unknown[]) => string;
+declare const active: boolean;
+
+export const Row = () => <div className={cn("ml-2", active && "pr-4")} />;
+`,
+        errors: [
+          { message: "Swap this for its logical twin", line: 4, column: 45 },
+          { message: "Swap this for its logical twin", line: 4 },
+        ],
+      },
+      {
+        name: "a class-named binding built by hand",
+        code: `declare const active: boolean;
+
+export const rowClasses = active ? "text-left" : "text-center";
+`,
+        errors: [{ message: "Swap this for its logical twin", line: 3 }],
       },
     ],
   },

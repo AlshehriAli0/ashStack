@@ -12,11 +12,14 @@ import {
   findInSubtree,
   gate,
   hasAncestor,
+  importedNames,
   importedSpecifiers,
   isFunction,
   isMemberCall,
   isWithin,
   optionsOf,
+  propertyKeyName,
+  propertyValue,
   problem,
   receiverName,
   componentName,
@@ -483,6 +486,133 @@ describe("importedSpecifiers", () => {
   it("returns a copy, not the live specifier array", () => {
     const specifiers: AstNode[] = [];
     expect(importedSpecifiers(declaration("react-native", specifiers), "react-native")).not.toBe(specifiers);
+  });
+});
+
+describe("importedNames", () => {
+  const specifier = (imported: AstNode, local: string) =>
+    node({ type: "ImportSpecifier", imported, local: identifier(local), importKind: "value" });
+
+  const declaration = (source: string, specifiers: AstNode[]) =>
+    node({
+      type: "ImportDeclaration",
+      source: node({ type: "Literal", value: source, raw: `"${source}"` }),
+      specifiers,
+      attributes: [],
+      importKind: "value",
+    });
+
+  it("pairs the exported name with the local one", () => {
+    const declared = declaration("clsx", [specifier(identifier("clsx"), "classes")]);
+    expect(importedNames(declared, "clsx")).toEqual([{ imported: "clsx", local: "classes" }]);
+  });
+
+  it("returns nothing for a different source", () => {
+    expect(importedNames(declaration("clsx", [specifier(identifier("clsx"), "clsx")]), "cn")).toEqual([]);
+  });
+
+  it("skips a default or namespace specifier", () => {
+    const declared = declaration("clsx", [
+      node({ type: "ImportDefaultSpecifier", local: identifier("clsx") }),
+      node({ type: "ImportNamespaceSpecifier", local: identifier("everything") }),
+    ]);
+    expect(importedNames(declared, "clsx")).toEqual([]);
+  });
+
+  it("skips a specifier imported under a string name", () => {
+    const quoted = specifier(
+      node({ type: "Literal", value: "not-an-identifier", raw: '"not-an-identifier"' }),
+      "alias"
+    );
+    expect(importedNames(declaration("clsx", [quoted]), "clsx")).toEqual([]);
+  });
+
+  it("keeps every named specifier of one declaration", () => {
+    const declared = declaration("@tanstack/react-router", [
+      specifier(identifier("useSearch"), "useSearch"),
+      specifier(identifier("useRouter"), "router"),
+    ]);
+    expect(importedNames(declared, "@tanstack/react-router")).toEqual([
+      { imported: "useSearch", local: "useSearch" },
+      { imported: "useRouter", local: "router" },
+    ]);
+  });
+});
+
+describe("propertyKeyName", () => {
+  const property = (key: AstNode, computed = false) =>
+    node({
+      type: "Property",
+      key,
+      value: identifier("value"),
+      computed,
+      kind: "init",
+      shorthand: false,
+      method: false,
+    });
+
+  it("reads an identifier key", () => {
+    expect(propertyKeyName(property(identifier("select")))).toBe("select");
+  });
+
+  it("reads a quoted key", () => {
+    expect(propertyKeyName(property(node({ type: "Literal", value: "select", raw: '"select"' })))).toBe("select");
+  });
+
+  it("stringifies a numeric key", () => {
+    expect(propertyKeyName(property(node({ type: "Literal", value: 2, raw: "2" })))).toBe("2");
+  });
+
+  it("reads nothing off a computed key", () => {
+    expect(propertyKeyName(property(identifier("select"), true))).toBe("");
+  });
+
+  it("reads nothing off a key that is neither a name nor a literal", () => {
+    expect(propertyKeyName(property(node({ type: "TemplateLiteral", quasis: [], expressions: [] })))).toBe("");
+  });
+
+  it("reads nothing off a node that is not a property", () => {
+    expect(propertyKeyName(identifier("select"))).toBe("");
+  });
+});
+
+describe("propertyValue", () => {
+  const property = (name: string, value: AstNode) =>
+    node({
+      type: "Property",
+      key: identifier(name),
+      value,
+      computed: false,
+      kind: "init",
+      shorthand: false,
+      method: false,
+    });
+
+  const object = (properties: AstNode[]) => node({ type: "ObjectExpression", properties });
+
+  it("returns the value of a named property", () => {
+    const value = identifier("selector");
+    expect(propertyValue(object([property("select", value)]), "select")).toBe(value);
+  });
+
+  it("returns null when the object omits it", () => {
+    expect(propertyValue(object([property("from", identifier("route"))]), "select")).toBeNull();
+  });
+
+  it("looks at own properties only, not ones nested inside them", () => {
+    const nested = object([property("select", identifier("selector"))]);
+    expect(propertyValue(object([property("options", nested)]), "select")).toBeNull();
+  });
+
+  it("skips a spread element", () => {
+    const spread = node({ type: "SpreadElement", argument: identifier("rest") });
+    expect(propertyValue(object([spread]), "select")).toBeNull();
+  });
+
+  it("returns null for anything that is not an object literal", () => {
+    expect(propertyValue(identifier("options"), "select")).toBeNull();
+    expect(propertyValue(null, "select")).toBeNull();
+    expect(propertyValue(undefined, "select")).toBeNull();
   });
 });
 

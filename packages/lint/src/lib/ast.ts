@@ -105,24 +105,6 @@ export const receiverName = (node: AstNode | null | undefined): string | null =>
   return object.type === "Identifier" ? object.name : null;
 };
 
-/**
- * A member chain as a dotted string: `router.state.location.search` reads as
- * itself, a computed segment as `*`, and a call at the root as `()`.
- */
-export const memberPathOf = (node: AstNode | null | undefined): string => {
-  const parts: string[] = [];
-  let current = node;
-  while (current?.type === "MemberExpression") {
-    if (current.property.type === "Identifier") parts.unshift(current.property.name);
-    else if (current.property.type === "Literal") parts.unshift(String(current.property.value));
-    else parts.unshift("*");
-    current = current.object;
-  }
-  if (current?.type === "Identifier") parts.unshift(current.name);
-  else if (current?.type === "CallExpression") parts.unshift("()");
-  return parts.join(".");
-};
-
 /** The last segment of a JSX tag name: `Animated.View` reads as `View`. */
 export const tagIdentifier = (node: AstNode | null | undefined): string => {
   let current = node;
@@ -164,6 +146,38 @@ export const attributeName = (attribute: AstNode): string => {
 
 export const importedSpecifiers = (node: AstNode, source: string): AstNode[] =>
   node.type === "ImportDeclaration" && node.source.value === source ? [...node.specifiers] : [];
+
+/** Named imports from `source`, each as the exported name paired with the local one it was bound to. */
+export const importedNames = (node: AstNode, source: string): { imported: string; local: string }[] => {
+  const names: { imported: string; local: string }[] = [];
+  for (const specifier of importedSpecifiers(node, source)) {
+    if (specifier.type !== "ImportSpecifier") continue;
+    if (specifier.imported.type !== "Identifier") continue;
+    names.push({ imported: specifier.imported.name, local: specifier.local.name });
+  }
+  return names;
+};
+
+/** A property's key as a string: `{ select: f }` and `{ "select": f }` both read as `select`. */
+export const propertyKeyName = (node: AstNode): string => {
+  if (node.type !== "Property" || node.computed) return "";
+  const { key } = node;
+  if (key.type === "Identifier") return key.name;
+  return key.type === "Literal" ? String(key.value) : "";
+};
+
+/**
+ * The value an object literal gives one of its own properties, or `null` when
+ * it does not spell that property out. Own properties only: a `select` nested
+ * inside some other call's options is not this object's `select`.
+ */
+export const propertyValue = (node: AstNode | null | undefined, name: string): AstNode | null => {
+  if (node?.type !== "ObjectExpression") return null;
+  for (const property of node.properties) {
+    if (property.type === "Property" && propertyKeyName(property) === name) return property.value;
+  }
+  return null;
+};
 
 /** Function-ish node types, for ancestor walks. */
 export const FUNCTION_TYPES = new Set(["FunctionDeclaration", "FunctionExpression", "ArrowFunctionExpression"]);

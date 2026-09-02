@@ -75,6 +75,16 @@ export const Filters = () => {
 `,
       },
       {
+        name: "a strict:false nested in another option is not the hook's own",
+        code: `import { useSearch } from "@tanstack/react-router";
+
+export const Filters = () => {
+  const search = useSearch({ from: "/posts", context: { strict: false } });
+  return <span>{String(search)}</span>;
+};
+`,
+      },
+      {
         name: "someone else's function taking a strict flag",
         code: `import { useSearch } from "@tanstack/react-router";
 
@@ -174,6 +184,19 @@ export const Crumb = () => {
         errors: [{ message: "Pass a `select` that returns what it reads", line: 4 }],
       },
       {
+        name: "a select nested in another call does not count as the hook's own",
+        code: `import { useLocation } from "@tanstack/react-router";
+
+declare const withDefaults: (options: unknown) => { from: string };
+
+export const Crumb = () => {
+  const location = useLocation(withDefaults({ select: (l: { pathname: string }) => l.pathname }));
+  return <span>{location.pathname}</span>;
+};
+`,
+        errors: [{ message: "Add a `select` returning the smallest value it reads", line: 6 }],
+      },
+      {
         name: "two hooks in one file report twice",
         code: `import { useLocation, useRouterState } from "@tanstack/react-router";
 
@@ -223,6 +246,38 @@ export const Paged = () => {
 export const Raw = () => {
   const router = useRouter();
   return <span>{String(router.state.location.search)}</span>;
+};
+`,
+      },
+      {
+        name: "a router path that stops short of search",
+        code: `import { useRouter } from "@tanstack/react-router";
+
+export const Raw = () => {
+  const router = useRouter();
+  return <span>{router.state.location.pathname as string}</span>;
+};
+`,
+      },
+      {
+        name: "a search read off something that is not the router state",
+        code: `import { useRouter } from "@tanstack/react-router";
+
+export const Raw = () => {
+  const router = useRouter();
+  return <span>{router.state.search as string}</span>;
+};
+`,
+      },
+      {
+        name: "the router path shape on something that is not the router",
+        code: `import { useRouter } from "@tanstack/react-router";
+
+declare const store: { state: { location: { search: string } } };
+
+export const Raw = () => {
+  const router = useRouter();
+  return <span>{String(router.state.status) + (store.state.location.search as string)}</span>;
 };
 `,
       },
@@ -280,6 +335,17 @@ export const Raw = () => {
 export const Raw = () => <span>{String(useRouter().state.location.search as string)}</span>;
 `,
         errors: [{ message: "read validated search through `useSearch({ from: ... })`", line: 3 }],
+      },
+      {
+        name: "a quoted segment reads the same as a dotted one",
+        code: `import { useRouter } from "@tanstack/react-router";
+
+export const Raw = () => {
+  const router = useRouter();
+  return <span>{router.state["location"].search as string}</span>;
+};
+`,
+        errors: [{ message: "read validated search through `useSearch({ from: ... })`", line: 5 }],
       },
       {
         name: "an aliased useSearch is still the hook",

@@ -1,6 +1,12 @@
-import { FUNCTION_TYPES, crossesFunctionBefore, findInSubtree, gate, problem } from "../../../lib/ast.js";
+import {
+  crossesFunctionBefore,
+  findInSubtree,
+  FUNCTION_TYPES,
+  gate,
+  problem,
+  propertyKeyName,
+} from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
-import { propertyKeyName } from "./shared.js";
 
 const NEXT_PAGE_PARAM_NULL =
   "Return `undefined` to signal there are no more pages. `null` is a valid page param, so returning it reads as a real next cursor and the list keeps fetching forever.";
