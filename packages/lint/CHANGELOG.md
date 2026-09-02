@@ -1,5 +1,11 @@
 # @ashstack/lint
 
+## 0.3.0 (2026-09-02)
+
+### Other Changes
+
+- **shared:** build the changelog from the commits, not a typed summary ([`c5c6a0a`](https://github.com/AlshehriAli0/ashStack/commit/c5c6a0a))
+
 ## 0.2.0
 
 ### Minor Changes
