@@ -41,6 +41,9 @@ oxlint --type-aware --deny-warnings .
 oxfmt --check .
 ```
 
+Keep the `defineConfig` wrapper: it types the `rules` block, so a wrong rule
+option is a compile error and hovering a rule id documents it.
+
 > `.mts` config files are the only supported path: oxlint's JSON `extends` can't resolve npm packages, and oxfmt has no `extends` at all. Needs Node 22.18+.
 
 ## Why it's this strict

@@ -27,6 +27,11 @@ export default defineConfig({
 oxlint --type-aware --deny-warnings .
 ```
 
+Keep the `defineConfig` wrapper. It is what types the `rules` block, so a wrong
+rule option is a compile error and hovering a rule id shows what it does and
+links to its section here. A bare `export default { ... }` gets neither, silently
+— `satisfies OxlintConfig` works too if you would rather not wrap.
+
 Type-aware rules need the `oxlint-tsgolint` peer. Node 22.18+.
 
 Import the entry you use. There is no package root to import from, so nothing
