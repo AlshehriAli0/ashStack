@@ -133,7 +133,7 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`.
 | [`typescript/no-explicit-any`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-explicit-any.html) | `"error"` |
 | [`typescript/no-extra-non-null-assertion`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-extra-non-null-assertion.html) | `"error"` |
 | [`typescript/no-extraneous-class`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-extraneous-class.html) | `"error"` |
-| [`typescript/no-floating-promises`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-floating-promises.html) | `"error"` |
+| [`typescript/no-floating-promises`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-floating-promises.html) | `"off"` |
 | [`typescript/no-import-type-side-effects`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-import-type-side-effects.html) | `"error"` |
 | [`typescript/no-misused-new`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-misused-new.html) | `"error"` |
 | [`typescript/no-misused-promises`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-misused-promises.html) | `["error",{"checksVoidReturn":false}]` |

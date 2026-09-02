@@ -8,7 +8,7 @@ const RULES_PROVING_THE_PIPELINE = {
   builtInFromCore: "eqeqeq",
   correctnessCategory: "no-var",
   reactPluginFromEntry: "jsx-key",
-  typeAwareBackend: "no-floating-promises",
+  typeAwareBackend: "require-await",
   moduleDetectedFromDependency: "@ashstack/zod/prefer-enum",
   importBanFromModule: "no-restricted-imports",
   optInRuleWithOptions: "@ashstack/core/use-design-system",

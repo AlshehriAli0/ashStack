@@ -116,7 +116,7 @@ const BASE_RULES: RuleMap = {
   "typescript/no-explicit-any": "error",
   "typescript/no-extra-non-null-assertion": "error",
   "typescript/no-extraneous-class": "error",
-  "typescript/no-floating-promises": "error",
+  "typescript/no-floating-promises": "off",
   "typescript/no-import-type-side-effects": "error",
   "typescript/no-misused-new": "error",
   "typescript/no-misused-promises": ["error", { checksVoidReturn: false }],
@@ -180,8 +180,8 @@ export const TEST_FILES = [
  * Library modules (zod) auto-enable when the consumer depends on the library;
  * pass an explicit boolean to force either way.
  *
- * Some of the enabled `typescript/` rules are type-aware (`no-floating-promises`,
- * `no-unnecessary-condition`, …): they only report when oxlint runs with
+ * Some of the enabled `typescript/` rules are type-aware (`no-unnecessary-condition`,
+ * `no-unsafe-type-assertion`, …): they only report when oxlint runs with
  * `--type-aware` and the `oxlint-tsgolint` peer installed.
  */
 const core = (options: CoreOptions = {}): OxlintConfig => {
