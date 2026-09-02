@@ -12,10 +12,6 @@ on:
         type: choice
         options: [both, lint, fmt]
         default: both
-      summary:
-        description: One line for the changelog
-        type: string
-        required: true
 
 concurrency:
   group: release
@@ -44,29 +40,32 @@ jobs:
       - run: bun run format:check
       - run: bun run docs:rules:check
 
+      # The changeset carries the bump and nothing else: `changelog: false` in
+      # .changeset/config.json means its body is never read, because the notes
+      # come from the commits instead.
       - name: Write the changeset this release is asking for
         env:
           BUMP: ${{ inputs.bump }}
           PACKAGES: ${{ inputs.packages }}
-          SUMMARY: ${{ inputs.summary }}
         run: |
           {
             echo '---'
             [ "$PACKAGES" != fmt ] && echo "\"@ashstack/lint\": $BUMP"
             [ "$PACKAGES" != lint ] && echo "\"@ashstack/fmt\": $BUMP"
             echo '---'
-            echo
-            echo "$SUMMARY"
           } > .changeset/release.md
           cat .changeset/release.md
 
-      - name: Version and commit
+      - name: Version, write the notes, and commit
+        env:
+          PACKAGES: ${{ inputs.packages }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           bunx changeset version
+          summary=$(bun scripts/release-notes.ts "$PACKAGES")
           git add -A
-          git commit -m "chore: release ${{ inputs.summary }}"
+          git commit -m "chore: release $summary"
 
       # changeset publish tags what it actually shipped, so the tags only exist
       # once the publish succeeded. Push them together with the version commit.
