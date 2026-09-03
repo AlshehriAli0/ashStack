@@ -172,6 +172,7 @@ export const reactNativeRegistry: ModuleMeta[] = [
       "no-hardcoded-color": {},
       "no-hardcoded-spacing": {},
       "no-margin": {},
+      "no-paramless-dynamic-function": {},
       "no-style-spread": {},
       "no-unused-styles": {},
       "rtl-style-call": {},

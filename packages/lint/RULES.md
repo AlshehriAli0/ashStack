@@ -10,7 +10,7 @@ Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-marg
 
 Each entry lists the oxlint plugins it turns on, below. You never need to add them: your own `plugins` array is added to the entry's set, not swapped for it. A bare oxlint install runs `eslint`, `typescript`, `unicorn`, `oxc`; `import`, `promise`, `react`, `jsx-a11y`, `react-perf` come from here.
 
-Counting what each entry sets with every module on: **118** rules for plain TypeScript, **201** with React, **257** on React Native, 74 of them written for this package. oxlint's own `correctness` category runs alongside these.
+Counting what each entry sets with every module on: **118** rules for plain TypeScript, **201** with React, **258** on React Native, 75 of them written for this package. oxlint's own `correctness` category runs alongside these.
 
 - [`core()`](#core)
   - [`@ashstack/core`](#ashstackcore) — 6 rules
@@ -25,7 +25,7 @@ Counting what each entry sets with every module on: **118** rules for plain Type
   - [`@ashstack/effects`](#ashstackeffects) — 9 rules
 - [`react-native()`](#react-native)
   - [`@ashstack/react-native`](#ashstackreact-native) — 11 rules
-  - [`@ashstack/unistyles`](#ashstackunistyles) — 12 rules
+  - [`@ashstack/unistyles`](#ashstackunistyles) — 13 rules
   - [`@ashstack/legend-list`](#ashstacklegend-list) — 9 rules
   - [`@ashstack/legend-state`](#ashstacklegend-state) — 8 rules
   - [`@ashstack/reanimated`](#ashstackreanimated) — 11 rules
@@ -1791,6 +1791,40 @@ const STACK_OVERLAP = 12;
 export const styles = StyleSheet.create(theme => ({
   row: { gap: theme.spacing[2], paddingHorizontal: theme.spacing[4] },
   overlapped: { marginStart: -STACK_OVERLAP },
+}));
+```
+
+#### `@ashstack/unistyles/no-paramless-dynamic-function`
+
+Disallow a style written as a function that takes no arguments. It returns the same object on every render, and `theme` and `rt` reach a static style anyway, so the function only adds a call at each use site. The suggestion turns `() => ({ ... })` back into the object.
+
+**Fails**
+
+```tsx
+import { StyleSheet } from "react-native-unistyles";
+
+export const styles = StyleSheet.create((theme, rt) => ({
+  wrapper: () => ({
+    flex: 1,
+    paddingTop: rt.insets.top + theme.sizing.scale(170),
+  }),
+}));
+```
+
+**Passes**
+
+```tsx
+import { StyleSheet } from "react-native-unistyles";
+
+export const styles = StyleSheet.create((theme, rt) => ({
+  wrapper: {
+    flex: 1,
+    paddingTop: rt.insets.top + theme.sizing.scale(170),
+  },
+  row: (selected: boolean) => ({
+    gap: theme.spacing[2],
+    backgroundColor: selected ? theme.colors.accent : theme.colors.surface,
+  }),
 }));
 ```
 

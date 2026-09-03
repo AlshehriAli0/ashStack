@@ -6,6 +6,7 @@ import { insets } from "./insets.js";
 import { noHardcodedColor } from "./no-hardcoded-color.js";
 import { noHardcodedSpacing } from "./no-hardcoded-spacing.js";
 import { noMargin } from "./no-margin.js";
+import { noParamlessDynamicFunction } from "./no-paramless-dynamic-function.js";
 import { noStyleSpread } from "./no-style-spread.js";
 import { noUnusedStyles } from "./no-unused-styles.js";
 import { rtlStyleCall } from "./rtl-style-call.js";
@@ -22,6 +23,7 @@ export default defineModule({
     "no-hardcoded-color": noHardcodedColor,
     "no-hardcoded-spacing": noHardcodedSpacing,
     "no-margin": noMargin,
+    "no-paramless-dynamic-function": noParamlessDynamicFunction,
     "no-style-spread": noStyleSpread,
     "no-unused-styles": noUnusedStyles,
     "rtl-style-call": rtlStyleCall,

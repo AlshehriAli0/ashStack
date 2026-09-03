@@ -25,6 +25,7 @@ export type ReactNativeRuleId =
   | "@ashstack/unistyles/no-hardcoded-color"
   | "@ashstack/unistyles/no-hardcoded-spacing"
   | "@ashstack/unistyles/no-margin"
+  | "@ashstack/unistyles/no-paramless-dynamic-function"
   | "@ashstack/unistyles/no-style-spread"
   | "@ashstack/unistyles/no-unused-styles"
   | "@ashstack/unistyles/rtl-style-call"
@@ -172,6 +173,12 @@ declare module "oxlint" {
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesno-margin
      */
     "@ashstack/unistyles/no-margin"?: RuleSetting;
+    /**
+     * Disallow a style written as a function that takes no arguments. It returns the same object on every render, and `theme` and `rt` reach a static style anyway, so the function only adds a call at each use site. The suggestion turns `() => ({ ... })` back into the object.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesno-paramless-dynamic-function
+     */
+    "@ashstack/unistyles/no-paramless-dynamic-function"?: RuleSetting;
     /**
      * Disallow spreading a stylesheet style into another object. The spread reads through the Unistyles C++ proxy once, so the result stops reacting to the theme.
      *

@@ -1615,6 +1615,177 @@ const styles = StyleSheet.create({
     ],
   },
 
+  "no-paramless-dynamic-function": {
+    valid: [
+      {
+        name: "a static style object",
+        code: `${IMPORTS}
+const styles = StyleSheet.create((theme, rt) => ({
+  wrapper: { flex: 1, paddingTop: rt.insets.top + theme.spacing[4] },
+}));`,
+      },
+      {
+        name: "a dynamic function that takes a parameter",
+        code: `${IMPORTS}
+const styles = StyleSheet.create(theme => ({
+  row: selected => ({ backgroundColor: selected ? theme.colors.accent : theme.colors.surface }),
+}));`,
+      },
+      {
+        name: "a rest parameter counts as a parameter",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ row: (...tones) => ({ opacity: tones.length }) });`,
+      },
+      {
+        name: "a paramless arrow nested inside a style value, not the style itself",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ row: { opacity: compute(() => 1) } });`,
+      },
+      {
+        name: "a paramless arrow in an object that is not a stylesheet",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ row: { flex: 1 } });
+const handlers = { onPress: () => ({ done: true }) };`,
+      },
+      {
+        name: "a paramless arrow in a sheet built by a helper",
+        code: `${IMPORTS}
+const styles = makeStyles(theme => ({ row: () => ({ backgroundColor: theme.colors.bg }) }));`,
+      },
+      {
+        name: "StyleSheet.create handed a variable so no styles object is known",
+        code: `${IMPORTS}
+const factory = theme => ({ row: () => ({ backgroundColor: theme.colors.bg }) });
+const styles = StyleSheet.create(factory);`,
+      },
+      {
+        name: "a spread in the styles object is not a style property",
+        code: `${IMPORTS}
+const base = { row: () => ({ flex: 1 }) };
+const styles = StyleSheet.create({ ...base, cell: { flex: 1 } });`,
+      },
+      {
+        name: "the theme callback returns no object literal",
+        code: `${IMPORTS}
+const styles = StyleSheet.create(theme => buildSheet(theme));`,
+      },
+    ],
+    invalid: [
+      {
+        name: "a paramless dynamic function reading theme and rt",
+        code: `${IMPORTS}
+const styles = StyleSheet.create((theme, rt) => ({
+  wrapper: () => ({
+    flex: 1,
+    paddingTop: rt.insets.top + theme.sizing.scale(170),
+  }),
+}));`,
+        errors: [{ message: "Drop the `() =>` and keep the object", line: 5, column: 12 }],
+        output: `${IMPORTS}
+const styles = StyleSheet.create((theme, rt) => ({
+  wrapper: {
+    flex: 1,
+    paddingTop: rt.insets.top + theme.sizing.scale(170),
+  },
+}));`,
+      },
+      {
+        name: "a paramless dynamic function in a plain object sheet",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ row: () => ({ flex: 1 }) });`,
+        errors: [{ message: "style function is for a value the use site passes in", line: 4, column: 41 }],
+        output: `${IMPORTS}
+const styles = StyleSheet.create({ row: { flex: 1 } });`,
+      },
+      {
+        name: "the theme callback uses a block body with an explicit return",
+        code: `${IMPORTS}
+const styles = StyleSheet.create(theme => {
+  return { row: () => ({ backgroundColor: theme.colors.bg }) };
+});`,
+        errors: [{ message: "Drop the `() =>` and keep the object", line: 5 }],
+        output: `${IMPORTS}
+const styles = StyleSheet.create(theme => {
+  return { row: { backgroundColor: theme.colors.bg } };
+});`,
+      },
+      {
+        name: "a block-bodied style function is reported but not rewritten",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({
+  row: () => {
+    return { flex: 1 };
+  },
+});`,
+        errors: 1,
+        output: `${IMPORTS}
+const styles = StyleSheet.create({
+  row: () => {
+    return { flex: 1 };
+  },
+});`,
+      },
+      {
+        name: "a function expression is reported but not rewritten",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({
+  row: function () {
+    return { flex: 1 };
+  },
+});`,
+        errors: 1,
+        output: `${IMPORTS}
+const styles = StyleSheet.create({
+  row: function () {
+    return { flex: 1 };
+  },
+});`,
+      },
+      {
+        name: "a computed key is still a paramless style",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ [key]: () => ({ flex: 1 }) });`,
+        errors: 1,
+      },
+      {
+        name: "two paramless styles report once each",
+        code: `${IMPORTS}
+const styles = StyleSheet.create(theme => ({
+  row: () => ({ gap: theme.spacing[2] }),
+  cell: () => ({ padding: theme.spacing[4] }),
+}));`,
+        errors: [{ line: 5 }, { line: 6 }],
+        output: `${IMPORTS}
+const styles = StyleSheet.create(theme => ({
+  row: { gap: theme.spacing[2] },
+  cell: { padding: theme.spacing[4] },
+}));`,
+      },
+      {
+        name: "a paramless style beside a real dynamic one reports only the paramless one",
+        code: `${IMPORTS}
+const styles = StyleSheet.create(theme => ({
+  wrapper: () => ({ flex: 1 }),
+  row: selected => ({ opacity: selected ? 1 : 0.5, gap: theme.spacing[2] }),
+}));`,
+        errors: [{ line: 5 }],
+        output: `${IMPORTS}
+const styles = StyleSheet.create(theme => ({
+  wrapper: { flex: 1 },
+  row: selected => ({ opacity: selected ? 1 : 0.5, gap: theme.spacing[2] }),
+}));`,
+      },
+      {
+        name: "a nested StyleSheet.create is checked on its own styles object",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({
+  outer: { flex: has(StyleSheet.create({ inner: () => ({ flex: 1 }) })) ? 1 : 0 },
+});`,
+        errors: 1,
+      },
+    ],
+  },
+
   "no-style-spread": {
     valid: [
       {
