@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -44,6 +44,13 @@ export interface ValidCase {
 export interface InvalidCase extends ValidCase {
   /** An exact count, or one entry per diagnostic in source order. */
   errors: number | Expected[];
+  /**
+   * The file text after `oxlint --fix-suggestions`, which is how a rule's
+   * suggestions get asserted: the JSON formatter never reports them, so the
+   * only way to see one is to let oxlint apply it. Equal to `code` for a
+   * diagnostic that deliberately offers no suggestion.
+   */
+  output?: string;
 }
 
 export interface RuleCases {
@@ -69,6 +76,11 @@ interface Placed {
   path: string;
 }
 
+interface Linted {
+  byPath: Map<string, Diagnostic[]>;
+  fixedByPath: Map<string, string>;
+}
+
 const asCase = (input: string | ValidCase): ValidCase => (typeof input === "string" ? { code: input } : input);
 
 const label = (testCase: ValidCase): string =>
@@ -92,6 +104,21 @@ const runOxlint = async (dir: string, config: object): Promise<Diagnostic[]> => 
   } catch {
     throw new Error(`oxlint produced no JSON:\n${stdout.slice(0, 2000)}\n${stderr.slice(0, 2000)}`);
   }
+};
+
+/**
+ * Rewrite `paths` with every suggestion their rules offer, reusing the config
+ * `runOxlint` left in the bucket. Scoped to the paths a case asserts on, and only
+ * ever called once the bucket's diagnostics are in hand, since it edits in place.
+ */
+const applySuggestions = async (root: string, bucket: string, paths: string[]): Promise<void> => {
+  const config = join(bucket, "oxlint.config.json");
+  const run = Bun.spawn([OXLINT, "-c", config, "--disable-nested-config", "--fix-suggestions", ...paths], {
+    cwd: root,
+    stdout: "ignore",
+    stderr: "ignore",
+  });
+  await run.exited;
 };
 
 /**
@@ -126,6 +153,8 @@ export const moduleTests = (module: ModuleManifest, byRule: Record<string, RuleC
   const root = mkdtempSync(join(tmpdir(), `ashstack-${module.meta.name.replaceAll(/\W+/g, "-")}-`));
   const placedByKey = new Map<string, Placed>();
   const bucketRules = new Map<string, Record<string, unknown>>();
+  /** Per bucket, the paths whose case asserts an `output` and so needs reading back once fixed. */
+  const fixedByBucket = new Map<string, string[]>();
 
   for (const [rule, cases] of Object.entries(byRule)) {
     const place = (kind: "valid" | "invalid", index: number, input: string | ValidCase) => {
@@ -141,16 +170,26 @@ export const moduleTests = (module: ModuleManifest, byRule: Record<string, RuleC
       });
       mkdirSync(dirname(join(root, path)), { recursive: true });
       writeFileSync(join(root, path), testCase.code);
+      return { bucket, path };
     };
     cases.valid.forEach((input, index) => {
       place("valid", index, input);
     });
-    cases.invalid.forEach((input, index) => {
-      place("invalid", index, input);
+    cases.invalid.forEach((testCase, index) => {
+      const { bucket, path } = place("invalid", index, testCase);
+      if (testCase.output === undefined) return;
+      fixedByBucket.set(bucket, [...(fixedByBucket.get(bucket) ?? []), path]);
     });
   }
 
-  const lintEveryBucket = async (): Promise<Map<string, Diagnostic[]>> => {
+  /** The asserted files as the suggestion pass leaves them, which is the only way to see a suggestion. */
+  const readSuggested = async (): Promise<Map<string, string>> => {
+    await Promise.all([...fixedByBucket].map(([bucket, paths]) => applySuggestions(root, bucket, paths)));
+    const fixed = [...fixedByBucket.values()].flat();
+    return new Map(fixed.map(path => [path, readFileSync(join(root, path), "utf8")]));
+  };
+
+  const lintEveryBucket = async (): Promise<Linted> => {
     const byPath = new Map<string, Diagnostic[]>();
     try {
       const runs = [...bucketRules].map(async ([bucket, rules]) => {
@@ -163,10 +202,10 @@ export const moduleTests = (module: ModuleManifest, byRule: Record<string, RuleC
           byPath.set(path, [...(byPath.get(path) ?? []), diagnostic]);
         }
       }
+      return { byPath, fixedByPath: await readSuggested() };
     } finally {
       rmSync(root, { recursive: true, force: true });
     }
-    return byPath;
   };
 
   /**
@@ -174,18 +213,28 @@ export const moduleTests = (module: ModuleManifest, byRule: Record<string, RuleC
    * Settled either way so a failure surfaces inside a test rather than as an
    * unhandled rejection before any test has started.
    */
-  const linted = lintEveryBucket().then(
-    byPath => ({ byPath, failure: null }),
-    (failure: unknown) => ({ byPath: new Map<string, Diagnostic[]>(), failure })
+  const linted: Promise<{ result: Linted } | { failure: unknown }> = lintEveryBucket().then(
+    result => ({ result }),
+    (failure: unknown) => ({ failure })
   );
 
+  const settled = async (): Promise<Linted> => {
+    const outcome = await linted;
+    if ("failure" in outcome) throw outcome.failure;
+    return outcome.result;
+  };
+
   const firedOn = async (key: string): Promise<Diagnostic[]> => {
-    const { byPath, failure } = await linted;
-    if (failure !== null) throw failure;
+    const { byPath } = await settled();
     const placed = placedByKey.get(key)!;
     return (byPath.get(placed.path) ?? [])
       .filter(diagnostic => diagnostic.code === `${module.meta.name}(${placed.rule})`)
       .sort((a, b) => (spanOf(a)?.offset ?? 0) - (spanOf(b)?.offset ?? 0));
+  };
+
+  const suggestedFor = async (key: string): Promise<string> => {
+    const { fixedByPath } = await settled();
+    return fixedByPath.get(placedByKey.get(key)!.path)!;
   };
 
   const shown = (diagnostic: Diagnostic): string =>
@@ -216,6 +265,13 @@ export const moduleTests = (module: ModuleManifest, byRule: Record<string, RuleC
               if (expected.column !== undefined) expect(spanOf(got)?.column).toBe(expected.column);
             });
           });
+
+          const { output } = testCase;
+          if (output !== undefined) {
+            it(`suggests: ${label(testCase)}`, async () => {
+              expect(await suggestedFor(`${rule}::invalid::${index}`)).toBe(output);
+            });
+          }
         });
       });
     }
