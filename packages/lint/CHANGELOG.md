@@ -1,5 +1,11 @@
 # @ashstack/lint
 
+## 0.7.0 (2026-09-03)
+
+### Features
+
+- add unistyles/no-paramless-dynamic-function ([`d2005ec`](https://github.com/AlshehriAli0/ashStack/commit/d2005ec))
+
 ## 0.6.0 (2026-09-02)
 
 ### Breaking Changes
