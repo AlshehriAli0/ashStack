@@ -4,6 +4,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/@ashstack/lint"><img alt="npm" src="https://img.shields.io/npm/v/@ashstack/lint?color=%23111"></a>
+  <a href="https://www.npmjs.com/package/@ashstack/lint"><img alt="installs per month" src="https://img.shields.io/npm/dm/@ashstack/lint?label=installs%2Fmonth&color=%23111"></a>
   <a href="https://github.com/AlshehriAli0/ashStack/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/AlshehriAli0/ashStack/actions/workflows/ci.yml/badge.svg"></a>
 </p>
 
