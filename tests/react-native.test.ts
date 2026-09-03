@@ -339,7 +339,7 @@ export const Card = () => <View style={[styles.card, styles.padded]} />;
 `,
       },
       {
-        name: "the fix: a Unistyles dynamic style function",
+        name: "the fix: a Unistyles dynamic style",
         code: `
 import { View } from "react-native";
 
@@ -415,7 +415,7 @@ export const Card = ({ active }: { active: boolean }) => (
   <View style={[styles.card, active && styles.on]} />
 );
 `,
-        errors: [{ message: "Unistyles dynamic style function", line: 5, column: 30 }],
+        errors: [{ message: "Unistyles dynamic style", line: 5, column: 30 }],
       },
       {
         name: "a ternary entry",
@@ -426,7 +426,7 @@ export const Card = ({ big }: { big: boolean }) => (
   <View style={[styles.card, big ? styles.big : styles.small]} />
 );
 `,
-        errors: [{ message: "falsy hole", line: 5, column: 30 }],
+        errors: [{ message: "a falsy entry breaks the C++ proxy", line: 5, column: 30 }],
       },
       {
         name: "a logical || entry",
@@ -453,7 +453,7 @@ import { View } from "react-native";
 
 export const Card = ({ active }) => <View style={[active && styles.on, styles.card]} />;
 `,
-        errors: [{ message: "Unistyles dynamic style function", line: 4, column: 51 }],
+        errors: [{ message: "Unistyles dynamic style", line: 4, column: 51 }],
       },
       {
         name: "a single-element array holding only a conditional",
@@ -1037,7 +1037,7 @@ export const List = ({ items }: { items: string[] }) => (
   <View>{items.length && <Rows items={items} />}</View>
 );
 `,
-        errors: [{ message: "Text strings must be rendered within a <Text> component", line: 5, column: 10 }],
+        errors: [{ message: "crashes React Native", line: 5, column: 10 }],
       },
       {
         name: "inside a fragment",
@@ -1232,7 +1232,7 @@ export const useTotals = (rows: number[]) => {
   return useMemo(() => rows.reduce((a, b) => a + b, 0), [rows]);
 };
 `,
-        errors: [{ message: "so a `useMemo` is allowed", line: 5, column: 10 }],
+        errors: [{ message: "above this `useMemo`", line: 5, column: 10 }],
       },
       {
         name: "a bare useCallback",
@@ -1241,13 +1241,13 @@ import { useCallback } from "react";
 
 export const useRow = (id: string) => useCallback(() => select(id), [id]);
 `,
-        errors: [{ message: "so a `useCallback` is allowed", line: 4, column: 39 }],
+        errors: [{ message: "above this `useCallback`", line: 4, column: 39 }],
       },
       {
         name: "a bare memo on the very first line of the file",
         code: `export const Row = memo(RawRow);
 `,
-        errors: [{ message: "so a `memo` is allowed", line: 1, column: 20 }],
+        errors: [{ message: "above this `memo`", line: 1, column: 20 }],
       },
       {
         name: "React.memo",
@@ -1256,7 +1256,7 @@ import React from "react";
 
 export const Row = React.memo(RawRow);
 `,
-        errors: [{ message: "so a `memo` is allowed", line: 4, column: 20 }],
+        errors: [{ message: "above this `memo`", line: 4, column: 20 }],
       },
       {
         name: "all three React-namespaced APIs",
@@ -1268,9 +1268,9 @@ export const b = React.memo(Row);
 export const c = React.useCallback(fn, []);
 `,
         errors: [
-          { message: "so a `useMemo` is allowed", line: 4, column: 18 },
-          { message: "so a `memo` is allowed", line: 5, column: 18 },
-          { message: "so a `useCallback` is allowed", line: 6, column: 18 },
+          { message: "above this `useMemo`", line: 4, column: 18 },
+          { message: "above this `memo`", line: 5, column: 18 },
+          { message: "above this `useCallback`", line: 6, column: 18 },
         ],
       },
       {
@@ -1323,7 +1323,7 @@ import { useCallback, useMemo } from "react";
 export const total = useMemo(() => heavy(), []);
 export const handler = useCallback(fn, []);
 `,
-        errors: [{ message: "so a `useCallback` is allowed", line: 6, column: 24 }],
+        errors: [{ message: "above this `useCallback`", line: 6, column: 24 }],
       },
       {
         name: "a why: comment covers only the call whose line it precedes",
@@ -1358,7 +1358,7 @@ export const Screen = ({ rows }: { rows: number[] }) => {
 
 export const handler = useCallback(fn, []);
 `,
-        errors: [{ message: "so a `useCallback` is allowed", line: 15, column: 24 }],
+        errors: [{ message: "above this `useCallback`", line: 15, column: 24 }],
       },
       {
         name: "a multi-line call takes its line from where it starts",
@@ -1768,7 +1768,7 @@ import { Image } from "react-native";
 
 export const Avatar = ({ uri }) => <Image source={{ uri }} />;
 `,
-        errors: [{ message: "no disk cache", line: 4, column: 37 }],
+        errors: [{ message: "passing `resize` and `cachePolicy`", line: 4, column: 37 }],
       },
       {
         name: "a string uri key",
@@ -1804,7 +1804,7 @@ import { Image } from "react-native";
 
 export const Avatar = ({ base, url }) => <Image source={{ ...base, uri: url }} />;
 `,
-        errors: [{ message: "no decode sizing", line: 4, column: 43 }],
+        errors: [{ message: "keep react-native `<Image>` for local", line: 4, column: 43 }],
       },
       {
         name: "the aliased local binding is what the tag must match",
@@ -2121,7 +2121,7 @@ export const Screen = ({ setOffset }) => (
   <ScrollView onScroll={event => setOffset(event.nativeEvent.contentOffset.y)} />
 );
 `,
-        errors: [{ message: "re-renders the screen every frame", line: 5, column: 15 }],
+        errors: [{ message: "re-renders every frame", line: 5, column: 15 }],
       },
       {
         name: "onScrollBeginDrag calling a state setter",

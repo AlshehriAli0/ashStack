@@ -13,7 +13,7 @@ export default defineModule({
         name: "react-native",
         importNames: ["KeyboardAvoidingView"],
         message:
-          "Import `KeyboardAvoidingView` from `react-native-keyboard-controller` — same props, and it tracks the keyboard per frame instead of waiting for Android's post-animation `keyboardDidShow`. For a scrolling form use its `KeyboardAwareScrollView`; to just shift a view, use `rt.insets.ime`.",
+          "Import `KeyboardAvoidingView` from `react-native-keyboard-controller` — same props, tracked per frame. For a scrolling form, its `KeyboardAwareScrollView`.",
       },
     ],
   },

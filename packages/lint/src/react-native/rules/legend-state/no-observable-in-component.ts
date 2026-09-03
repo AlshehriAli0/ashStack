@@ -41,7 +41,7 @@ export const noObservableInComponent: Rule = problem(
           context.report({
             node,
             message:
-              "Use `useObservable()` for component-lifetime state, or move this observable into a store in `src/stores` and import it. `observable()` inside a component makes a new observable every render, so nothing that read the previous one is listening.",
+              "Use `useObservable()` for component-lifetime state, or move this observable into a store in `src/stores` — `observable()` here makes a new one every render.",
           });
         },
       };

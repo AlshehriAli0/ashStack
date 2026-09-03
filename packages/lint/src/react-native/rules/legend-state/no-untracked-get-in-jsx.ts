@@ -50,7 +50,7 @@ export const noUntrackedGetInJsx: Rule = problem(
           const target = textOf(context, object);
           context.report({
             node,
-            message: `Read it with \`useValue(${target})\` at the top of the component, or wrap this fragment in \`<Memo>\` so the read happens inside a tracking context. A \`get()\` here is a plain read, so it renders the first value and never updates.`,
+            message: `Read it with \`useValue(${target})\` at the top of the component, or wrap this fragment in \`<Memo>\` — a \`get()\` here renders the first value and never updates.`,
           });
         },
       };

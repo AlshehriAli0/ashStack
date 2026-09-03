@@ -3,7 +3,7 @@ import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 import { ANIMATED_STYLE_HOOKS } from "./shared.js";
 
 const GPU_PROPERTIES_ONLY =
-  "Animate `transform` and `opacity` instead: a panel that grows is `scaleY` with `transformOrigin`, a thing that slides is `translateY`. This property recalculates layout on every frame.";
+  "Animate `transform` and `opacity` instead — a panel that grows is `scaleY` with `transformOrigin`, a slide is `translateY`. This property relayouts every frame.";
 
 /** Style properties whose animation forces a layout pass. */
 const LAYOUT_PROPS = new Set([

@@ -12,9 +12,9 @@ import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGES = {
   hotBridgeUnguarded:
-    "Guard this `scheduleOnRN` by comparing the current and previous prepared results, so high-frequency input does not bridge to RN every frame.",
+    "Guard this `scheduleOnRN` on the current and previous prepared results differing, so high-frequency input does not bridge every frame.",
   hotBridgeNoPrevious:
-    "Take the previous prepared result as the callback's second parameter and guard `scheduleOnRN` on it differing from the current one, so high-frequency input does not bridge to RN every frame.",
+    "Take the previous prepared result as the callback's second parameter and guard `scheduleOnRN` on it differing from the current one.",
 };
 
 const REACTION_HOOKS = new Set(["useAnimatedReaction"]);
@@ -106,9 +106,7 @@ export const animatedReactionSafety: Rule = problem(
             if (!feedsOwnInput(node, reaction)) return;
             context.report({
               node,
-              message: `Have this result callback ${
-                name === "set" ? "write" : "modify"
-              } a shared value its prepare callback does not read, or gate the call on a comparison; feeding its own input loops forever.`,
+              message: `Have this result callback ${name === "set" ? "write" : "modify"} a shared value its prepare callback does not read, or gate the call on a comparison — feeding its own input loops forever.`,
             });
             return;
           }

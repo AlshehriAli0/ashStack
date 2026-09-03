@@ -3,7 +3,7 @@ import type { Rule, RuleContext } from "../../../lib/types.js";
 import { ANIMATED_STYLE_HOOKS } from "./shared.js";
 
 const UPDATER_SIDE_EFFECT =
-  "Schedule this RN side effect from an animation completion callback or `useAnimatedReaction` instead; `useAnimatedStyle`/`useAnimatedProps` updaters must stay pure.";
+  "Schedule this RN side effect from an animation completion callback or `useAnimatedReaction` — updaters must stay pure.";
 
 export const animatedUpdaterPurity: Rule = problem(
   "An updater passed to `useAnimatedStyle` or `useAnimatedProps` must stay pure, so it may not write a shared value or call `scheduleOnRN`.",
@@ -25,7 +25,7 @@ export const animatedUpdaterPurity: Rule = problem(
             if (node.callee.type !== "MemberExpression") return;
             context.report({
               node,
-              message: `Move this \`.${name}()\` write out to an event handler, an effect, a derived value, or \`useAnimatedReaction\`; \`useAnimatedStyle\`/\`useAnimatedProps\` updaters must stay pure.`,
+              message: `Move this \`.${name}()\` write out to an event handler, an effect, or \`useAnimatedReaction\` — updaters must stay pure.`,
             });
             return;
           }

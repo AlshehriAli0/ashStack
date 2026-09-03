@@ -3,9 +3,9 @@ import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGES = {
   zustandBare:
-    "Pass a selector to this store hook, for example `useSettingsStore(state => state.theme)`, so it re-renders only on that slice. Use `.getState()` instead for an imperative read.",
+    "Pass a selector to this store hook, e.g. `useSettingsStore(state => state.theme)`. Use `.getState()` for an imperative read.",
   zustandUndefined:
-    "Replace `undefined` with a selector such as `state => state.theme` — it still subscribes to the whole store otherwise. Use `.getState()` instead for an imperative read.",
+    "Replace `undefined` with a selector such as `state => state.theme`. Use `.getState()` for an imperative read.",
 };
 
 const STORE_MODULE = /^(?:@\/stores\/|(?:\.\.?\/)+stores\/)[^"']*-store$/;

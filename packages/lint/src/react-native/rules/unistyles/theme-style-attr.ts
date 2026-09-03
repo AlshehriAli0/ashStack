@@ -3,7 +3,7 @@ import type { Rule } from "../../../lib/types.js";
 import { readsTheme, themeConsumingComponent } from "./shared.js";
 
 const MESSAGE =
-  "Resolve theme-dependent style values inside `StyleSheet.create` instead of reading `theme` in a JSX `style` prop or passing it into a dynamic style function.";
+  "Resolve theme-dependent style values inside `StyleSheet.create` instead of reading `theme` in a JSX `style` prop.";
 
 export const themeStyleAttr: Rule = problem(
   "Theme-dependent values belong in `StyleSheet.create`, not in a JSX `style` prop that reads a `useUnistyles()` theme.",

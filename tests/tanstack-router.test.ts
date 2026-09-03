@@ -126,7 +126,7 @@ export const Crumb = () => {
   return <span>{location.pathname}</span>;
 };
 `,
-        errors: [{ message: "Pass a `select` that returns what it reads", line: 4, column: 20 }],
+        errors: [{ message: "Pass a `select` that returns what this component reads", line: 4, column: 20 }],
       },
       {
         name: "useRouterState with no argument",
@@ -137,7 +137,7 @@ export const Pending = () => {
   return <span>{state.status}</span>;
 };
 `,
-        errors: [{ message: "Pass a `select` that returns what it reads", line: 4 }],
+        errors: [{ message: "Pass a `select` that returns what this component reads", line: 4 }],
       },
       {
         name: "useLocation with options but no select",
@@ -148,7 +148,7 @@ export const Crumb = () => {
   return <span>{location.pathname}</span>;
 };
 `,
-        errors: [{ message: "Add a `select` returning the smallest value it reads", line: 4 }],
+        errors: [{ message: "Add a `select` returning the smallest value this component reads", line: 4 }],
       },
       {
         name: "non-strict useSearch with no select",
@@ -181,7 +181,7 @@ export const Crumb = () => {
   return <span>{location.pathname}</span>;
 };
 `,
-        errors: [{ message: "Pass a `select` that returns what it reads", line: 4 }],
+        errors: [{ message: "Pass a `select` that returns what this component reads", line: 4 }],
       },
       {
         name: "a select nested in another call does not count as the hook's own",
@@ -194,7 +194,7 @@ export const Crumb = () => {
   return <span>{location.pathname}</span>;
 };
 `,
-        errors: [{ message: "Add a `select` returning the smallest value it reads", line: 6 }],
+        errors: [{ message: "Add a `select` returning the smallest value this component reads", line: 6 }],
       },
       {
         name: "two hooks in one file report twice",
@@ -207,8 +207,8 @@ export const Crumb = () => {
 };
 `,
         errors: [
-          { message: "Pass a `select` that returns what it reads", line: 4 },
-          { message: "Pass a `select` that returns what it reads", line: 5 },
+          { message: "Pass a `select` that returns what this component reads", line: 4 },
+          { message: "Pass a `select` that returns what this component reads", line: 5 },
         ],
       },
     ],

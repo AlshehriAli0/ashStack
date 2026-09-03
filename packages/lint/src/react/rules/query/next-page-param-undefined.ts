@@ -9,7 +9,7 @@ import {
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const NEXT_PAGE_PARAM_NULL =
-  "Return `undefined` to signal there are no more pages. `null` is a valid page param, so returning it reads as a real next cursor and the list keeps fetching forever.";
+  "Return `undefined` to signal there are no more pages — `null` reads as a real next cursor, so the list keeps fetching forever.";
 
 const returnsNull = (node: AstNode): boolean =>
   node.type === "ReturnStatement" && node.argument?.type === "Literal" && node.argument.value === null;

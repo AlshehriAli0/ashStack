@@ -304,7 +304,7 @@ export const reactNativeRegistry: ModuleMeta[] = [
           name: "@shopify/react-native-skia",
           importNames: ["usePathValue", "usePathInterpolation"],
           message:
-            "Keep one stable `SkPath` buffer and mutate it inside `useDerivedValue`, with consumers reading the driving shared value. These legacy path-value hooks self-dirty Reanimated mappers and re-record idle canvases.",
+            "Keep one stable `SkPath` buffer and mutate it inside `useDerivedValue`, with consumers reading the driving shared value.",
         },
       ],
     },
@@ -323,7 +323,7 @@ export const reactNativeRegistry: ModuleMeta[] = [
           name: "react-native",
           importNames: ["KeyboardAvoidingView"],
           message:
-            "Import `KeyboardAvoidingView` from `react-native-keyboard-controller` — same props, and it tracks the keyboard per frame instead of waiting for Android's post-animation `keyboardDidShow`. For a scrolling form use its `KeyboardAwareScrollView`; to just shift a view, use `rt.insets.ime`.",
+            "Import `KeyboardAvoidingView` from `react-native-keyboard-controller` — same props, tracked per frame. For a scrolling form, its `KeyboardAwareScrollView`.",
         },
       ],
     },

@@ -205,7 +205,7 @@ export const useSync = (onChange) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 8, column: 7 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 8, column: 7 }],
       },
       {
         name: "result callback takes only the current value",
@@ -264,7 +264,7 @@ export const useSync = (offset, onChange) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 7, column: 27 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 7, column: 27 }],
       },
       {
         name: "an equality guard is not a difference guard",
@@ -280,7 +280,7 @@ export const useSync = (offset, onChange) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 8, column: 7 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 8, column: 7 }],
       },
       {
         name: "guard compares the current value against a literal",
@@ -295,7 +295,7 @@ export const useSync = (offset, onChange) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 7, column: 26 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 7, column: 26 }],
       },
       {
         name: "Object.is without the negation is not a guard",
@@ -310,7 +310,7 @@ export const useSync = (offset, onChange) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 7, column: 41 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 7, column: 41 }],
       },
       {
         name: "negated Object.is against an unrelated name",
@@ -325,7 +325,7 @@ export const useSync = (offset, onChange, last) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 7, column: 38 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 7, column: 38 }],
       },
       {
         name: "the guard is a sibling statement rather than an ancestor",
@@ -343,7 +343,7 @@ export const useSync = (offset, onChange, track) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 10, column: 7 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 10, column: 7 }],
       },
       {
         name: "result callback writes the shared value its prepare callback reads",
@@ -426,8 +426,8 @@ export const useSync = (offset, onChange) => {
 };
 `,
         errors: [
-          { message: "comparing the current and previous prepared results", line: 8, column: 9 },
-          { message: "comparing the current and previous prepared results", line: 11, column: 9 },
+          { message: "on the current and previous prepared results differing", line: 8, column: 9 },
+          { message: "on the current and previous prepared results differing", line: 11, column: 9 },
         ],
       },
       {
@@ -443,7 +443,7 @@ export const useSync = (offset, onChange, last) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 7, column: 30 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 7, column: 30 }],
       },
       {
         name: "a unary test that is not a negation is not a guard",
@@ -458,7 +458,7 @@ export const useSync = (offset, onChange) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 7, column: 42 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 7, column: 42 }],
       },
       {
         name: "a truthiness check on the previous value alone is not a guard",
@@ -473,7 +473,7 @@ export const useSync = (offset, onChange) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 7, column: 22 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 7, column: 22 }],
       },
       {
         name: "a negated helper that is not Object.is is not a guard",
@@ -489,7 +489,7 @@ export const useSync = (offset, onChange) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 8, column: 39 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 8, column: 39 }],
       },
       {
         name: "a destructured first parameter with a null guard on the previous one",
@@ -504,7 +504,7 @@ export const useSync = (offset, onChange) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 7, column: 30 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 7, column: 30 }],
       },
       {
         name: "a bridge in the prepare callback of a reaction whose result callback is hoisted",
@@ -527,7 +527,7 @@ export const useSync = (offset, onChange, log) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 15, column: 7 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 15, column: 7 }],
       },
       {
         name: "a bridge outside the reaction ahead of one inside it",
@@ -543,7 +543,7 @@ export const useSync = (offset, onChange) => {
   );
 };
 `,
-        errors: [{ message: "comparing the current and previous prepared results", line: 8, column: 7 }],
+        errors: [{ message: "on the current and previous prepared results differing", line: 8, column: 7 }],
       },
       {
         name: "a write loop and an unguarded bridge in the same reaction",
@@ -562,7 +562,7 @@ export const useLoop = (onChange) => {
 `,
         errors: [
           { message: "feeding its own input loops forever", line: 8, column: 7 },
-          { message: "comparing the current and previous prepared results", line: 9, column: 7 },
+          { message: "on the current and previous prepared results differing", line: 9, column: 7 },
         ],
       },
     ],
@@ -721,7 +721,7 @@ export const Card = () => {
   return <View style={[styles.card, cardStyle]} />;
 };
 `,
-        errors: [{ message: "the style is applied once at mount", line: 6, column: 16 }],
+        errors: [{ message: "the style applies once at mount", line: 6, column: 16 }],
       },
       {
         name: "useAnimatedProps result used as a style",
@@ -1088,9 +1088,9 @@ export const useBar = () => {
 };
 `,
         errors: [
-          { message: "recalculates layout on every frame", line: 5, column: 5 },
-          { message: "recalculates layout on every frame", line: 6, column: 5 },
-          { message: "recalculates layout on every frame", line: 7, column: 5 },
+          { message: "relayouts every frame", line: 5, column: 5 },
+          { message: "relayouts every frame", line: 6, column: 5 },
+          { message: "relayouts every frame", line: 7, column: 5 },
         ],
       },
       {
@@ -1098,7 +1098,7 @@ export const useBar = () => {
         code: `import { useAnimatedStyle } from "react-native-reanimated";
 export const useBar = (size) => useAnimatedStyle(() => ({ "padding": size.get() }));
 `,
-        errors: [{ message: "recalculates layout", line: 2, column: 59 }],
+        errors: [{ message: "relayouts every frame", line: 2, column: 59 }],
       },
       {
         name: "a layout property alongside a transform",
@@ -1109,7 +1109,7 @@ export const useSheet = (progress) =>
     paddingBottom: progress.get(),
   }));
 `,
-        errors: [{ message: "recalculates layout", line: 5, column: 5 }],
+        errors: [{ message: "relayouts every frame", line: 5, column: 5 }],
       },
       {
         name: "the flex boundary: flexBasis is a layout property, flexGrow is not",
@@ -1117,8 +1117,8 @@ export const useSheet = (progress) =>
 export const useBar = (size) => useAnimatedStyle(() => ({ flexGrow: 1, flex: 1, flexBasis: size.get() }));
 `,
         errors: [
-          { message: "recalculates layout", line: 2, column: 72 },
-          { message: "recalculates layout", line: 2, column: 81 },
+          { message: "relayouts every frame", line: 2, column: 72 },
+          { message: "relayouts every frame", line: 2, column: 81 },
         ],
       },
       {
@@ -1128,9 +1128,9 @@ export const useRow = (size) =>
   useAnimatedStyle(() => ({ gap: size.get(), rowGap: 1, columnGap: 2 }));
 `,
         errors: [
-          { message: "recalculates layout", line: 3, column: 29 },
-          { message: "recalculates layout", line: 3, column: 46 },
-          { message: "recalculates layout", line: 3, column: 57 },
+          { message: "relayouts every frame", line: 3, column: 29 },
+          { message: "relayouts every frame", line: 3, column: 46 },
+          { message: "relayouts every frame", line: 3, column: 57 },
         ],
       },
       {
@@ -1191,7 +1191,7 @@ export const useEverything = (size) =>
         code: `import { useAnimatedProps } from "react-native-reanimated";
 export const useRing = (progress) => useAnimatedProps(() => ({ height: progress.get() }));
 `,
-        errors: [{ message: "recalculates layout", line: 2, column: 64 }],
+        errors: [{ message: "relayouts every frame", line: 2, column: 64 }],
       },
       {
         name: "documents that any object inside the updater is checked, not just the returned style",
@@ -1202,7 +1202,7 @@ export const useBar = (progress) =>
     return { opacity: progress.get() * config.duration };
   });
 `,
-        errors: [{ message: "recalculates layout", line: 4, column: 37 }],
+        errors: [{ message: "relayouts every frame", line: 4, column: 37 }],
       },
     ],
   },
@@ -1530,8 +1530,7 @@ export const useHeader = (scroll) =>
 `,
         errors: [
           {
-            message:
-              "Pass `Extrapolation.CLAMP` as the fourth argument to `interpolate`. Without it the output keeps extrapolating past the input range, so a scroll offset of 400 against `[0, 100]` runs well past where it should stop.",
+            message: "Pass `Extrapolation.CLAMP` as the fourth argument to `interpolate`",
             line: 3,
             column: 38,
           },
@@ -1808,7 +1807,7 @@ export const useTick = () => {
   return tick;
 };
 `,
-        errors: [{ message: "A continuously evaluated worklet that schedules React state", line: 7, column: 5 }],
+        errors: [{ message: "a continuous worklet lands a Fabric commit on every frame", line: 7, column: 5 }],
       },
       {
         name: "state setter bridged out of useDerivedValue",
@@ -2301,7 +2300,7 @@ export const useHeader = () => {
         code: `import { useSharedValue } from "react-native-reanimated";
 export const useStart = () => useSharedValue(new Date());
 `,
-        errors: [{ message: "the eager call runs on every React render", line: 2, column: 31 }],
+        errors: [{ message: "Wrap this in a lazy initializer", line: 2, column: 31 }],
       },
       {
         name: "a namespaced constructor is still a NewExpression",
@@ -2416,7 +2415,7 @@ export const finish = (onDone) => {
   });
 };
 `,
-        errors: [{ message: "an inline callback has ambiguous runtime ownership", line: 3, column: 16 }],
+        errors: [{ message: "an inline callback can be created on the wrong runtime", line: 3, column: 16 }],
       },
       {
         name: "only the callback itself reports, not a function nested inside it",
@@ -2594,7 +2593,7 @@ export const Label = () => {
   return <Text>{progress.get()}</Text>;
 };
 `,
-        errors: [{ message: "A `.get()` while JSX is evaluated is untracked", line: 5, column: 17 }],
+        errors: [{ message: "a `.get()` during render is untracked", line: 5, column: 17 }],
       },
       {
         name: "a read inside an inline style object",
@@ -2605,7 +2604,7 @@ export const Card = () => {
   return <View style={{ opacity: progress.get() }} />;
 };
 `,
-        errors: [{ message: "A `.get()` while JSX is evaluated is untracked", line: 5, column: 34 }],
+        errors: [{ message: "a `.get()` during render is untracked", line: 5, column: 34 }],
       },
       {
         name: "a write while JSX is built",
@@ -2661,7 +2660,7 @@ export const useBox = () => {
   return move;
 };
 `,
-        errors: [{ message: "mutating a property returned by `.get()`", line: 5, column: 5 }],
+        errors: [{ message: "Assign a new value with `.set(...)`", line: 5, column: 5 }],
       },
       {
         name: "pushing into what get() returned",
@@ -2674,7 +2673,7 @@ export const useIds = () => {
   return add;
 };
 `,
-        errors: [{ message: "mutating the collection returned by `.get()`", line: 5, column: 5 }],
+        errors: [{ message: "Assign a new collection with `.set(...)`", line: 5, column: 5 }],
       },
       {
         name: "every mutating method in the set reports",
@@ -2712,7 +2711,7 @@ export const useBox = () => {
   return bump;
 };
 `,
-        errors: [{ message: "mutating a property returned by `.get()`", line: 5, column: 5 }],
+        errors: [{ message: "Assign a new value with `.set(...)`", line: 5, column: 5 }],
       },
       {
         name: "set on a Map returned by get() reads as a collection mutation",
@@ -2725,7 +2724,7 @@ export const useStore = () => {
   return put;
 };
 `,
-        errors: [{ message: "mutating the collection returned by `.get()`", line: 5, column: 5 }],
+        errors: [{ message: "Assign a new collection with `.set(...)`", line: 5, column: 5 }],
       },
       {
         name: "two reads in one component",

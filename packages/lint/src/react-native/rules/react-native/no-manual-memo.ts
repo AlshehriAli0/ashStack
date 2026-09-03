@@ -82,7 +82,7 @@ export const noManualMemo: Rule = problem(
 
             context.report({
               node,
-              message: `The React Compiler memoises on a best-effort basis, not a guarantee, so a \`${name}\` is allowed where you know the cost is real: something rendered per row in a list, or a computation you measured as heavy. Add a \`// why:\` line directly above it naming which of the two applies. If neither does, delete the \`${name}\`.`,
+              message: `Add a \`// why:\` line above this \`${name}\` naming the real cost — a list row, or a computation you measured as heavy. If neither applies, delete it.`,
             });
           }
         },

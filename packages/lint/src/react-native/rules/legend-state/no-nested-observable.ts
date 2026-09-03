@@ -17,7 +17,7 @@ export const noNestedObservable: Rule = problem(
           if (!argument || !isObservableRef(argument)) return;
           context.report({
             node: argument,
-            message: `Use the existing observable reference directly instead of passing it to \`${factory}()\`; wrapping it creates a second node whose reads and writes never reach the original.`,
+            message: `Use the existing observable reference directly instead of passing it to \`${factory}()\` — wrapping it creates a second node the original never sees.`,
           });
         },
       };

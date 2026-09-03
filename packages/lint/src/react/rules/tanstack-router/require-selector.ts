@@ -6,11 +6,11 @@ const BROAD_HOOKS = new Set(["useLocation", "useRouterState"]);
 
 const MESSAGES = {
   whole:
-    "This hook subscribes to the whole router value, so the component re-renders on every navigation. Pass a `select` that returns what it reads, e.g. `{ select: location => location.pathname }`.",
+    "Pass a `select` that returns what this component reads, e.g. `{ select: location => location.pathname }` — the whole router value re-renders on every navigation.",
   noSelect:
-    "This hook subscribes to the whole router value, so the component re-renders on every navigation. Add a `select` returning the smallest value it reads.",
+    "Add a `select` returning the smallest value this component reads — the whole router value re-renders on every navigation.",
   search:
-    "`useSearch({ strict: false })` subscribes to every route-search change. Add a `select` returning the keys this component reads.",
+    "Add a `select` returning the keys this component reads — `{ strict: false }` subscribes to every route-search change.",
 };
 
 const hasSelect = (options: AstNode | undefined): boolean => propertyValue(options, "select") !== null;

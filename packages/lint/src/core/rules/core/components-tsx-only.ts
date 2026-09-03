@@ -2,7 +2,7 @@ import { optionsOf } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const COMPONENTS_TSX_ONLY =
-  "Move this file to `src/utils` (helpers, pure logic), `src/hooks` (a hook), or `src/api/<feature>/` (data access). `components/` holds only files that render JSX, plus a barrel.";
+  "Move this file to `src/utils`, `src/hooks`, or `src/api/<feature>/` — `components/` holds only files that render JSX.";
 
 const DEFAULT_DIR = "src/components";
 

@@ -176,7 +176,7 @@ export const useFeed = () =>
     },
   });
 `,
-        errors: [{ message: "Return `undefined` to signal there are no more pages.", line: 9, column: 23 }],
+        errors: [{ message: "Return `undefined` to signal there are no more pages", line: 9, column: 23 }],
       },
       {
         name: "string literal key with a function expression value",
@@ -277,7 +277,7 @@ export const useRefresh = () => {
       {
         name: "a positional array key",
         code: 'client.invalidateQueries(["todos", id]);',
-        errors: [{ message: "TanStack Query v5 removed the positional `(queryKey)` form.", line: 1, column: 26 }],
+        errors: [{ message: "v5 removed the positional form", line: 1, column: 26 }],
       },
       {
         name: "a positional string key",

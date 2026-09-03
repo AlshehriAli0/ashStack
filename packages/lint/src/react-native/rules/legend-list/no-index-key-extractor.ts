@@ -23,7 +23,7 @@ export const noIndexKeyExtractor: Rule = problem(
         context.report({
           node: fn,
           message:
-            "Return a stable per-item id from this `keyExtractor` instead of the index. Legend List hangs cached sizes and recycled row state off the key, so one prepend re-points every measurement at the wrong item.",
+            "Return a stable per-item id from this `keyExtractor` instead of the index — Legend List hangs cached sizes and recycled row state off the key.",
         });
       },
     }),

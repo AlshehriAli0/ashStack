@@ -7,8 +7,7 @@ const LOGICAL_SPACING = new Set(["paddingLeft", "paddingRight", "marginLeft", "m
 const LEGACY_SHADOW = new Set(["shadowColor", "shadowOffset", "shadowOpacity", "shadowRadius", "elevation"]);
 
 const MESSAGES = {
-  logicalSpacing:
-    "Use `paddingStart`/`paddingEnd` or `marginStart`/`marginEnd` here so the directional spacing mirrors in RTL.",
+  logicalSpacing: "Use `paddingStart`/`paddingEnd` or `marginStart`/`marginEnd` here, so the spacing mirrors in RTL.",
   rtlInSheet: "Use `rt.rtl` for RTL-dependent styles so Unistyles tracks the dependency natively.",
   screenDimensions: "Use reactive `rt.screen` inside `StyleSheet.create` instead of a `Dimensions.get` snapshot.",
   pixelRatio: "Use reactive `rt.pixelRatio` inside `StyleSheet.create`.",
@@ -16,17 +15,17 @@ const MESSAGES = {
   statusBar: "Use reactive `rt.statusBar.height` inside `StyleSheet.create`.",
   colorScheme: "Use the Unistyles theme or reactive `rt.colorScheme` inside `StyleSheet.create`.",
   fullRuntime:
-    "Use the injected mini runtime (`rt`) inside `StyleSheet.create` instead of `UnistylesRuntime`, so the style recalculates on its own.",
+    "Use the injected mini runtime (`rt`) inside `StyleSheet.create` instead of `UnistylesRuntime`, so the style recalculates itself.",
   fullRuntimeDestructure:
     "Destructure from the injected mini runtime (`rt`) inside `StyleSheet.create`, not from `UnistylesRuntime`.",
   themeScreen:
-    "Use reactive `rt.screen`, or Unistyles breakpoints, instead of the theme's module-initialization screen snapshot.",
+    "Use reactive `rt.screen`, or Unistyles breakpoints — `theme.screen` is a module-initialization snapshot.",
   borderCurve:
-    'Add `borderCurve` (normally `"continuous"`) alongside `borderRadius`, or the corner renders as a circular arc rather than the squircle native iOS controls use.',
+    'Add `borderCurve` (normally `"continuous"`) alongside `borderRadius`, or the corner renders as a circular arc instead of a squircle.',
   legacyShadow:
-    'Use `boxShadow` with CSS syntax, e.g. `boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)"`, which renders on both platforms on the New Architecture, instead of the legacy `shadow*`/`elevation` props.',
+    'Use `boxShadow` with CSS syntax, e.g. `boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)"`, instead of the legacy `shadow*`/`elevation` props.',
   asConst:
-    "Drop `as const` here — the typed `StyleSheet.create` already narrows the literal. If TS still widens the value to `string`, fix the `StyleSheet` import instead.",
+    "Drop `as const` here — the typed `StyleSheet.create` already narrows the literal. If TS still widens it to `string`, fix the `StyleSheet` import instead.",
 };
 
 export const inSheet: Rule = inCreate(

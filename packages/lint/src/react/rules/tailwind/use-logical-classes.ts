@@ -19,7 +19,7 @@ const BOUNDARY = String.raw`[\s"'\`{}]`;
 const PHYSICAL_UTILITY = new RegExp(String.raw`(?:^|${BOUNDARY})(?:[^\s:]+:)*!?-?${UTILITY}(?:$|${BOUNDARY})`);
 
 const USE_LOGICAL =
-  "Swap this for its logical twin so the layout mirrors in Arabic and Hebrew: `ms`/`me` instead of `ml`/`mr`, `text-start` instead of `text-left`. Padding, insets, borders and corners follow the same pattern. Keep the physical utility only where the coordinate really is the screen rather than the reading order.";
+  "Swap this for its logical twin so the layout mirrors in RTL: `ms`/`me` for `ml`/`mr`, `text-start` for `text-left`. Insets, borders and corners follow.";
 
 /**
  * Whether a string sits somewhere a class value is expected. `right-hand` and

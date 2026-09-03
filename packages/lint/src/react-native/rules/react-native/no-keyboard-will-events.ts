@@ -4,7 +4,7 @@ import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 const IOS_ONLY_EVENT_NAMES = new Set(["keyboardWillShow", "keyboardWillHide", "keyboardWillChangeFrame"]);
 
 const MESSAGE =
-  "Drive this from `rt.insets.ime`, which updates per frame on both platforms, or from a `react-native-keyboard-controller` component. `keyboardWill*` events are iOS-only, so on Android the listener registers and never fires.";
+  "Drive this from `rt.insets.ime`, or a `react-native-keyboard-controller` component — `keyboardWill*` is iOS-only, so on Android the listener never fires.";
 
 const isIosOnlyEventName = (node: AstNode): boolean =>
   node.type === "Literal" && typeof node.value === "string" && IOS_ONLY_EVENT_NAMES.has(node.value);

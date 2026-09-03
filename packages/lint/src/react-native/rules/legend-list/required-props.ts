@@ -14,7 +14,7 @@ export const requiredProps: Rule = problem(
           context.report({
             node: node.openingElement,
             message:
-              "Add `keyExtractor={item => item.id}` returning a stable per-item identity. The index fallback pins cached measurements and recycled row state to a position, so a prepend leaves rows showing the previous row's data.",
+              "Add `keyExtractor={item => item.id}` returning a stable per-item identity — the index fallback pins cached measurements to a position, so a prepend shows the wrong data.",
           });
         }
 
@@ -22,7 +22,7 @@ export const requiredProps: Rule = problem(
           context.report({
             node: node.openingElement,
             message:
-              "Add `recycleItems={true}` — recycling is where most of the list's native speed comes from. If a row genuinely cannot be recycled, pass `recycleItems={false}` and state which part of the row required it.",
+              "Add `recycleItems={true}` — recycling is where most of the list's native speed comes from. If a row genuinely cannot recycle, pass `recycleItems={false}` with the reason.",
           });
         }
       },

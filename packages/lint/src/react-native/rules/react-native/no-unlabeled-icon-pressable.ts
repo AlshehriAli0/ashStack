@@ -5,7 +5,7 @@ const TOUCHABLES = new Set(["Pressable", "PressableScale", "TouchableOpacity", "
 
 const MESSAGES = {
   touchable:
-    "Add an `accessibilityLabel` (plus an `accessibilityHint` when the outcome is not obvious), or render a visible `<Text>` child, so this icon-only touchable has an accessible name.",
+    "Add an `accessibilityLabel` (plus an `accessibilityHint` when the outcome is not obvious), or a visible `<Text>` child, so this icon-only touchable has an accessible name.",
   expoButton:
     "Add a `label`, or an `accessibilityLabel(...)` modifier, so this icon-only Expo UI `<Button>` has an accessible name.",
 };

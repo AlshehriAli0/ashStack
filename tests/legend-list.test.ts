@@ -576,7 +576,7 @@ export const Feed = ({ rows }) => (
   <LegendList data={rows} renderItem={({ item }) => <Row tags={[item.id]} />} keyExtractor={k} />
 );
 `,
-        errors: [{ message: "A fresh array each render", line: 5 }],
+        errors: [{ message: "a fresh array each render", line: 5 }],
       },
       {
         name: "two inline literals on the same row",
@@ -609,7 +609,7 @@ export const Feed = ({ rows }) => (
   />
 );
 `,
-        errors: [{ message: "typing anywhere re-renders every visible row", line: 10 }],
+        errors: [{ message: "a fresh object each render blocks row skipping", line: 10 }],
       },
       {
         name: "a function expression renderItem opens the same scope",
@@ -1807,7 +1807,7 @@ export const Settings = ({ rows }) => (
   <Animated.ScrollView>{rows.map(row => <Row key={row.id} />)}</Animated.ScrollView>
 );
 `,
-        errors: [{ message: "200 rows cost 200 mounts", line: 5, column: 24 }],
+        errors: [{ message: "a ScrollView mounts every child up front", line: 5, column: 24 }],
       },
       {
         name: "documents current behaviour: only the first mapped child in a ScrollView reports",
@@ -1947,7 +1947,7 @@ export const Chat = ({ messages }) => (
   <LegendList data={messages} keyExtractor={k} recycleItems inverted renderItem={r} />
 );
 `,
-        errors: [{ message: "Legend List v3 has no such prop", line: 5, column: 61 }],
+        errors: [{ message: "Legend List v3 ignores it silently", line: 5, column: 61 }],
       },
       {
         name: "every unsupported prop reports once each",

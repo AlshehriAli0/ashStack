@@ -8,7 +8,7 @@ const MESSAGES = {
   insetsStyleCall:
     "Read safe-area values from `rt.insets` inside `StyleSheet.create` instead of passing `useSafeAreaInsets()` into a style function.",
   insetsAttribute:
-    "Resolve these safe-area values through `rt.insets` in `StyleSheet.create` instead of a hook-fed inline JSX style object.",
+    "Resolve these safe-area values through `rt.insets` in `StyleSheet.create` instead of a hook-fed inline style object.",
 };
 
 const boundNames = (id: AstNode): string[] => {

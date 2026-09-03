@@ -269,7 +269,7 @@ export const handlers = {
         code: `// keeps the tests honest
 export const flag = true;
 `,
-        errors: [{ message: "The `// what:` hatch carries one kind of fact", line: 1, column: 1 }],
+        errors: [{ message: "still owes the refactor", line: 1, column: 1 }],
       },
       {
         name: "a plain block comment",
@@ -323,7 +323,7 @@ export const ready = true;
 
 /** Everything above is the public surface. */
 `,
-        errors: [{ message: "A `/** */` block earns its place", line: 3, column: 1 }],
+        errors: [{ message: "Rename and Extract Function until the code reads without it", line: 3, column: 1 }],
       },
       {
         name: "jsdoc allow reports a block separated from its declaration by another comment",
@@ -1279,14 +1279,14 @@ export function twice(value: number) {
   return "hide";
 };
 `,
-        errors: [{ message: "holds 7 boolean operators and comparisons, past the 5", line: 2, column: 7 }],
+        errors: [{ message: "packs 7 operators, past the 5", line: 2, column: 7 }],
       },
       {
         name: "a ternary test",
         code: `export const label = (a: number, b: number, c: boolean) =>
   a === b && b > 0 && (c || a !== 0) ? "yes" : "no";
 `,
-        errors: [{ message: "holds 6 boolean operators and comparisons", line: 2 }],
+        errors: [{ message: "packs 6 operators", line: 2 }],
       },
       {
         name: "a while test",
@@ -1314,7 +1314,7 @@ export function twice(value: number) {
   return 0;
 };
 `,
-        errors: [{ message: "past the 1 a reader takes in at once" }],
+        errors: [{ message: "past the 1 a reader takes in" }],
       },
       {
         name: "negated groups count what they wrap",
@@ -1488,7 +1488,7 @@ export const PriceRow = ({ amount }: { amount: number }) => {
   return <>{formatter.format(amount)}</>;
 }
 `,
-        errors: [{ message: "constructing one per render is expensive", line: 2, column: 21 }],
+        errors: [{ message: "wrap it in `useMemo` keyed on the locale", line: 2, column: 21 }],
       },
       {
         name: "a class render method",
@@ -1730,8 +1730,7 @@ export const Button = Pressable;
 `,
         errors: [
           {
-            message:
-              'Import `Pressable` from "@/components/ui/pressable" instead of `Pressable` from react-native. The wrapper is where the theme tokens and app behavior live.',
+            message: 'Import `Pressable` from "@/components/ui/pressable" instead of `Pressable` from react-native.',
             line: 1,
             column: 10,
           },
@@ -1873,8 +1872,7 @@ export const Panel = View;
 `,
         errors: [
           {
-            message:
-              'Import `Card` from "@/components/ui/card" instead of `View` from react-native. The wrapper is where the theme tokens and app behavior live.',
+            message: 'Import `Card` from "@/components/ui/card" instead of `View` from react-native.',
             line: 1,
             column: 10,
           },
@@ -1918,7 +1916,7 @@ export const Cta = Button;
         errors: [
           {
             message:
-              'Import `Button` from "~/ui/button" instead of `Button` from react-native. The wrapper is where the theme tokens and app behavior live. It carries the haptics.',
+              'Import `Button` from "~/ui/button" instead of `Button` from react-native. It carries the haptics.',
             line: 1,
             column: 10,
           },
@@ -1931,7 +1929,7 @@ export const Cta = Button;
 
 export const Panel = View;
 `,
-        errors: [{ message: /behavior live\.$/, line: 1, column: 10 }],
+        errors: [{ message: /react-native\.$/, line: 1, column: 10 }],
       },
       {
         name: "a kebab-cased path is derived from the component name",

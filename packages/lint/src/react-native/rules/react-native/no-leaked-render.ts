@@ -2,7 +2,7 @@ import { problem } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGE =
-  'Compare explicitly (`list.length > 0 &&`), coerce with `!!`, or use a ternary ending in `null`. A falsy number or string leaks into the tree: `0` renders a bare zero, which crashes React Native with "Text strings must be rendered within a <Text> component".';
+  "Compare explicitly (`list.length > 0 &&`), coerce with `!!`, or use a ternary ending in `null` — a `0` leaks into the tree and crashes React Native.";
 
 const COUNT_PROPERTIES = new Set(["length", "size"]);
 const ARITHMETIC = new Set(["+", "-", "*", "/", "%", "**"]);

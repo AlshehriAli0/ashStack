@@ -40,30 +40,29 @@ const HATCH_MAX_LENGTH = 120;
 const HATCH_DEFAULT_BUDGET = 2;
 
 const REFACTOR_MOVES =
-  "Make the code say this, then delete the line — nearly every comment here is one rename or one refactor away from unnecessary. Reach for the move that fits: Rename the value, function or type to the plain word this sentence uses; Extract Function for the block it summarises, named after the claim it makes; Guard Clause for the nesting it walks the reader through; split the clever expression it decodes into named steps. You are done when the sentence's content is legible in an identifier, a signature or the control flow.";
+  "Make the code say this, then delete the line — rename, Extract Function, Guard Clause, or named steps. Done when the sentence reads off a name or the control flow.";
 
 const HATCH_OPEN =
-  " The `// what:` hatch carries one kind of fact: one that outlives this code — a platform bug, an upstream contract, a number measured on a device. A fact about what this code does fails that test, and the refactor is still owed.";
+  " `// what:` fits only a fact that outlives the code — a platform bug, an upstream contract, a measured number; what the code does is not one, and still owes the refactor.";
 
 const HATCH_CLOSED =
-  " This project runs with the `// what:` hatch turned off, so the refactor is the only way out. The one line left is `// why:`, which a kept `memo` requires.";
+  " This project runs with the `// what:` hatch turned off. The one line left is `// why:`, which a kept `memo` requires.";
 
 const refactorFirst = (escapeHatch: boolean): string => REFACTOR_MOVES + (escapeHatch ? HATCH_OPEN : HATCH_CLOSED);
 
 const FLOATING_JSDOC =
-  "Attach this block to the declaration it documents, or Rename and Extract Function until the code reads without it. A `/** */` block earns its place as documentation of the symbol directly beneath it.";
+  "Attach this block to the declaration it documents, or Rename and Extract Function until the code reads without it.";
 
 const HATCH_MESSAGES = {
   block:
-    "Rewrite this as a single `// what: <fact>` line comment. If the fact needs a paragraph, name the pieces in code until it fits on one line.",
+    "Rewrite this as a single `// what: <fact>` line comment; if the fact needs a paragraph, name the pieces in code instead.",
   shortFact: `Write the fact after \`what:\` (at least ${HATCH_MIN_FACT} characters), or delete the comment.`,
   tooLong: `Trim this \`what:\` line under ${HATCH_MAX_LENGTH} characters, moving what is left into names in the code.`,
-  stacked:
-    "Keep one `what:` line here — the single irreducible fact — and refactor what the others explain into named values and functions.",
+  stacked: "Keep one `what:` line here and refactor what the others explain into names.",
 };
 
 const overBudget = (budget: number, count: number): string =>
-  `Delete \`what:\` comments from this file until at most ${budget} remain (it has ${count}): move the logic each one annotates into a function whose name carries what the comment says.`;
+  `Delete \`what:\` comments from this file until at most ${budget} remain (it has ${count}): move each one's logic into a function named for it.`;
 
 const DECLARATION_TYPES = new Set([
   "ExportNamedDeclaration",

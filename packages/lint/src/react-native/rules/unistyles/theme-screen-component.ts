@@ -5,7 +5,7 @@ import { isStyleSheetCreate, memberPath, themeConsumingComponent } from "./share
 const THEME_SCREEN_PREFIX = "theme.screen.";
 
 const MESSAGE =
-  "Read current screen values from `useUnistyles().rt.screen` or `useWindowDimensions()` instead of the theme's module-initialization snapshot.";
+  "Read current screen values from `useUnistyles().rt.screen` or `useWindowDimensions()` — `theme.screen` is a module-initialization snapshot.";
 
 export const themeScreenComponent: Rule = problem(
   "`theme.screen.*` is a snapshot taken at module initialization, so a component that reads it never sees the current size. `useUnistyles().rt.screen` and `useWindowDimensions` do.",

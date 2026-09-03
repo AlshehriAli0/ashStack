@@ -25,7 +25,7 @@ export const typedItemsNeedItemType: Rule = problem(
           context.report({
             node: node.openingElement,
             message:
-              "Add `getItemType={item => item.type}` to match the branch this row makes on `item.type`. It gives each layout its own recycling pool and its own measured-size average, instead of handing a header's view to a photo row.",
+              "Add `getItemType={item => item.type}` to match the branch this row makes, so each layout gets its own recycling pool and measured-size average.",
           });
         }
       };

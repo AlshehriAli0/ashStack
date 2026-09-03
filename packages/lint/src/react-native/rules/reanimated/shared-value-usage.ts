@@ -12,14 +12,14 @@ import { isProducerCall } from "./shared.js";
 
 const MESSAGES = {
   renderRead:
-    "Read this inside `useAnimatedStyle`/`useAnimatedProps`, or mirror non-visual state through an explicit callback. A `.get()` while JSX is evaluated is untracked, so the rendered value never updates.",
+    "Read this inside `useAnimatedStyle`/`useAnimatedProps`, or mirror non-visual state through a callback — a `.get()` during render is untracked, so the value never updates.",
   renderWrite: "Move this write into an event handler, an effect, or an animation callback — render must stay pure.",
   destructure:
-    "Keep the SharedValue object itself and read or write it with `.get()` / `.set(...)`; destructuring detaches the value from Reanimated reactivity.",
+    "Keep the SharedValue object itself and use `.get()` / `.set(...)` — destructuring detaches the value from reactivity.",
   nestedProperty:
-    "Assign a new value with `.set(...)`, or use `.modify()` for a large object; mutating a property returned by `.get()` bypasses shared-value reactivity.",
+    "Assign a new value with `.set(...)`, or `.modify()` for a large object — mutating what `.get()` returns bypasses reactivity.",
   nestedCollection:
-    "Assign a new collection with `.set(...)`, or mutate inside `.modify()`; mutating the collection returned by `.get()` bypasses shared-value reactivity.",
+    "Assign a new collection with `.set(...)`, or mutate inside `.modify()` — mutating what `.get()` returns bypasses reactivity.",
 };
 
 const MUTATING_METHODS = new Set([

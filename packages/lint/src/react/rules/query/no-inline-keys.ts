@@ -3,7 +3,7 @@ import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGES = {
   inlineQueryKey:
-    "Define this key in the feature's `*.keys.ts` factory and reference it: `queryKey: someKeys.scope(...)`, so invalidation elsewhere matches the same key.",
+    "Define this key in the feature's `*.keys.ts` factory and reference it: `queryKey: someKeys.scope(...)`.",
   inlineGetQueryData: "Read through the feature's `*.keys.ts` factory: `getQueryData(someKeys.scope())`.",
   inlineSetQueryData: "Write through the feature's `*.keys.ts` factory: `setQueryData(someKeys.scope(), updater)`.",
 };

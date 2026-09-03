@@ -7,9 +7,9 @@ const SEARCH_PATH = ["search", "location", "state"];
 
 const MESSAGES = {
   search:
-    "Drop this assertion and let the route's `validateSearch` schema type the result. An `as` here claims a shape the URL never has to honour; widen the schema, or parse the value, if the type is wrong.",
+    "Drop this assertion and let the route's `validateSearch` schema type the result; widen the schema, or parse the value, if the type is wrong.",
   routerState:
-    "Drop this assertion and read validated search through `useSearch({ from: ... })`. `router.state.location.search` is whatever the URL held, so an `as` here is a claim about a string nobody checked.",
+    "Drop this assertion and read validated search through `useSearch({ from: ... })` — `router.state.location.search` is whatever the URL held.",
 };
 
 const unwrapAssertions = (node: AstNode): AstNode => {

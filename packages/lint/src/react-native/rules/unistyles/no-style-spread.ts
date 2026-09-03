@@ -3,7 +3,7 @@ import type { AstNode, Rule } from "../../../lib/types.js";
 import { isStyleSheetCreate } from "./shared.js";
 
 const MESSAGE =
-  "Compose styles with an array — `[styles.a, styles.b]` — instead of spreading. A spread reads the object once and breaks the Unistyles C++ proxy, so the style silently stops reacting to the theme.";
+  "Compose styles with an array — `[styles.a, styles.b]` — instead of spreading; a spread breaks the Unistyles C++ proxy, so the style stops reacting to the theme.";
 
 const spreadBase = (node: AstNode | null | undefined): string => {
   let current: AstNode | null | undefined = node;

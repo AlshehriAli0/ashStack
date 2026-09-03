@@ -4,9 +4,9 @@ import { isStyleSheetCreate, memberPath, propertyName, stylesObjectOf } from "./
 
 const MESSAGES = {
   contentContainerRuntime:
-    "Wrap this component with `withUnistyles`, or pass `contentContainerStyle` a plain hook-fed style. On a raw component `contentContainerStyle` never subscribes to Unistyles updates.",
+    "Wrap this component with `withUnistyles`, or pass `contentContainerStyle` a hook-fed style — on a raw component it never subscribes to Unistyles updates.",
   contentContainerTheme:
-    "Wrap this component with `withUnistyles`, or pass `contentContainerStyle` a plain hook-fed style. On a raw component `contentContainerStyle` never subscribes to theme changes.",
+    "Wrap this component with `withUnistyles`, or pass `contentContainerStyle` a hook-fed style — on a raw component it never subscribes to theme changes.",
 };
 
 export const contentContainer: Rule = problem(

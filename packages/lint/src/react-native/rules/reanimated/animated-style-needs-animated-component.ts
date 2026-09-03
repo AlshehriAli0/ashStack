@@ -3,7 +3,7 @@ import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 import { ANIMATED_STYLE_HOOKS } from "./shared.js";
 
 const NEEDS_ANIMATED_COMPONENT =
-  "Render this with the matching `Animated.*` component so the animated style takes effect. On a plain element the style is applied once at mount and never updates, and nothing errors.";
+  "Render this with the matching `Animated.*` component — on a plain element the style applies once at mount and never updates.";
 
 const ANIMATED_COMPONENT_FACTORIES = new Set(["createAnimatedComponent", "withUnistyles", "withAnimated"]);
 

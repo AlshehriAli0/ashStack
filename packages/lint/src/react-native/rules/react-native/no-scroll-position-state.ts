@@ -6,7 +6,7 @@ const SCROLL_HANDLERS = new Set(["onScroll", "onScrollBeginDrag", "onScrollEndDr
 const STATE_SETTER = /^set[A-Z]/;
 
 const MESSAGE =
-  "Use `useAnimatedScrollHandler` with a shared value when this drives an animation, or a ref when nothing renders from it. Scroll fires every frame, so a state setter here re-renders the screen every frame.";
+  "Use `useAnimatedScrollHandler` with a shared value when this drives an animation, or a ref when nothing renders from it — a state setter here re-renders every frame.";
 
 export const noScrollPositionState: Rule = problem(
   "Disallow a React state setter inside a scroll handler prop. Scroll fires every frame, and so would the re-render.",

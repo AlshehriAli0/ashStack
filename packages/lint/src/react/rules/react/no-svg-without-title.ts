@@ -5,7 +5,7 @@ import { childNames, namedBy, NAMING_ATTRIBUTES } from "./shared.js";
 const DECORATIVE_ROLES = new Set(["presentation", "none"]);
 
 const NO_SVG_NAME =
-  'Give this `<svg>` a `<title>` child with content, or an `aria-label`, so a screen reader can name it. If it carries no meaning of its own, mark it `aria-hidden="true"` or `role="presentation"` and let the text beside it do the naming.';
+  'Give this `<svg>` a `<title>` child with content, or an `aria-label`. If it carries no meaning of its own, mark it `aria-hidden="true"`.';
 
 /** `aria-hidden`, `aria-hidden="true"` and `aria-hidden={x}` all hide it; only an explicit false does not. */
 const hidesItself = (value: AstNode | null | undefined): boolean => {

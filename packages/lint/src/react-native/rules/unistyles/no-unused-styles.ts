@@ -36,7 +36,7 @@ export const noUnusedStyles: Rule = problem(
             if (readStyleKeys.has(`${sheet}.${name}`)) continue;
             context.report({
               node: keyNode,
-              message: `Delete \`${sheet}.${name}\` — nothing reads it, so it is dead weight that keeps a token alive nothing renders.`,
+              message: `Delete \`${sheet}.${name}\` — nothing reads it.`,
             });
           }
         }

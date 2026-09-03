@@ -32,7 +32,7 @@ const SPACING_AND_TYPE_SCALE = new Set([
 const SIGNIFICANT_NUMBER = /^-?[1-9][0-9]*(?:\.[0-9]+)?$/;
 
 const MESSAGE =
-  "Use `theme.spacing[...]` or `theme.sizing.scale(...)` for this value, so a rhythm change stays one edit. If no token fits, add one to the theme.";
+  "Use `theme.spacing[...]` or `theme.sizing.scale(...)` for this value; add a token to the theme if none fits.";
 
 const isThemeScaleHost = (node: AstNode): boolean =>
   hasAncestor(node, current => {

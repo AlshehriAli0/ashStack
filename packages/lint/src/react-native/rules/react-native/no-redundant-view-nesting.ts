@@ -35,7 +35,7 @@ export const noRedundantViewNesting: Rule = problem(
           if (!onlyLayoutProps(childOpening.attributes)) return;
           context.report({
             node: opening.name,
-            message: `Merge these two <${tag}> style objects into the inner one and delete the outer wrapper — each carries nothing but a style, and every extra host view is a real node in the native tree.`,
+            message: `Merge these two <${tag}> style objects into the inner one and delete the outer wrapper — every extra host view is a real node in the native tree.`,
           });
         },
       };

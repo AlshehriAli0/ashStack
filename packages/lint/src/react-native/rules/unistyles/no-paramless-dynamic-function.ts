@@ -2,8 +2,7 @@ import { gate, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 import { CREATE_MARKER, isStyleSheetCreate, stylesObjectOf } from "./shared.js";
 
-const MESSAGE =
-  "Drop the `() =>` and keep the object. A style function is for a value the use site passes in; `theme` and `rt` reach a static style already.";
+const MESSAGE = "Drop the `() =>` and keep the object — `theme` and `rt` reach a static style already.";
 
 /** A style value written as a function, which is only a dynamic function when it takes something. */
 const paramlessFunction = (node: AstNode | null | undefined): AstNode | null => {

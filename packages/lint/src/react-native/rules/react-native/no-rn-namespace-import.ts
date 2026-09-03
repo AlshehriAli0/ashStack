@@ -3,7 +3,7 @@ import type { Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGES = {
   namespaceImport:
-    'Import the react-native APIs by name instead: `import { View, Platform } from "react-native"`. A namespace import defeats Metro platform shaking, so dead `Platform.OS` branches ship in both bundles.',
+    'Import the react-native APIs by name instead: `import { View, Platform } from "react-native"` — a namespace import defeats Metro platform shaking.',
   platformReExport:
     "Drop this re-export and have each consumer import `Platform` straight from react-native; re-exporting it defeats Metro platform shaking.",
 };

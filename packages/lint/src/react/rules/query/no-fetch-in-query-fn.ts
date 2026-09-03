@@ -2,7 +2,7 @@ import { gate, problem, propertyKeyName, subtreeHas } from "../../../lib/ast.js"
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const FETCH_IN_QUERY_FN =
-  "Call a typed function from the feature's `*.requests.ts` module here instead of `fetch`. That client is what sends the auth header, applies the timeout, retries a 429 or 5xx, and throws the app's error type.";
+  "Call a typed function from the feature's `*.requests.ts` module here instead of `fetch` — it carries auth, retries and the app's error type.";
 
 const QUERY_FN_KEYS = new Set(["queryFn", "mutationFn"]);
 

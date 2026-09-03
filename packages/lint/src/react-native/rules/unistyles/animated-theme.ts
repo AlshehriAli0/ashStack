@@ -5,7 +5,7 @@ import { readsTheme } from "./shared.js";
 const WORKLET_HOOKS = new Set(["useAnimatedStyle", "useDerivedValue", "useAnimatedProps"]);
 
 const MESSAGE =
-  "Use `useAnimatedTheme()` and read its shared value inside the Reanimated worklet so theme changes reach the UI thread.";
+  "Use `useAnimatedTheme()` and read its shared value inside the worklet, so theme changes reach the UI thread.";
 
 export const animatedTheme: Rule = problem(
   "A Reanimated worklet hook cannot see `useUnistyles()` theme changes on the UI thread. Read the shared value from `useAnimatedTheme()` there instead.",

@@ -15,7 +15,7 @@ export const noRemountKey: Rule = problem(
         context.report({
           node: key,
           message:
-            "Pass `dataKey` instead of `key` here: it re-initialises the list for a different dataset from the inside, without the remount that discards every measurement, cached size and scroll position.",
+            "Pass `dataKey` instead of `key` here — it re-initialises the list without the remount that discards every measurement and the scroll position.",
         });
       },
     }),

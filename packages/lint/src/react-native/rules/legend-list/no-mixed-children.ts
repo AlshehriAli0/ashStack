@@ -25,7 +25,7 @@ export const noMixedChildren: Rule = problem(
         context.report({
           node: node.openingElement,
           message:
-            "Keep either `data` with `renderItem` or children mode here, and remove the other. Passing both fails silently, with no guarantee about which one is ignored.",
+            "Keep either `data` with `renderItem` or children mode here, and remove the other — passing both fails silently.",
         });
       },
     }),

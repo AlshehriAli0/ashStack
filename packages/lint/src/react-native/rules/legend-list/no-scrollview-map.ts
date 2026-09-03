@@ -20,7 +20,7 @@ export const noScrollviewMap: Rule = problem(
           context.report({
             node: child,
             message:
-              "Render this collection with `LegendList` from '@legendapp/list/react-native', passing the array as `data` and the mapped body as `renderItem`. A ScrollView mounts every child up front, so 200 rows cost 200 mounts to show ten.",
+              "Render this collection with `LegendList` from '@legendapp/list/react-native', passing the array as `data` and the mapped body as `renderItem` — a ScrollView mounts every child up front.",
           });
           return;
         }

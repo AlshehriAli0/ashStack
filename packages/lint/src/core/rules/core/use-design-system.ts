@@ -171,7 +171,7 @@ export const useDesignSystem: Rule = {
           const reason = replacement.reason ? ` ${replacement.reason}` : "";
           context.report({
             node: specifier,
-            message: `Import \`${replacement.name}\` from "${replacement.from}" instead of \`${imported.name}\` from ${source}. The wrapper is where the theme tokens and app behavior live.${reason}`,
+            message: `Import \`${replacement.name}\` from "${replacement.from}" instead of \`${imported.name}\` from ${source}.${reason}`,
           });
         }
       },

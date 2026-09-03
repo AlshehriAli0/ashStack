@@ -10,7 +10,7 @@ import {
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const CONTINUOUS_WORKLET_STATE =
-  "Keep this gate in shared or native state, or apply it through an imperative ref. A continuously evaluated worklet that schedules React state can land a Fabric commit or a Skia re-recording on an animation frame.";
+  "Keep this gate in shared or native state, or apply it through an imperative ref — a continuous worklet lands a Fabric commit on every frame.";
 
 /** Hooks whose callback is re-evaluated as the animation runs. */
 const CONTINUOUS_HOOKS = new Set([

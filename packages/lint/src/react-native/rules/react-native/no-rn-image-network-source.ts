@@ -2,7 +2,7 @@ import { componentName, gate, importedSpecifiers, problem } from "../../../lib/a
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGE =
-  "Render this network image with `TurboImage` (react-native-turbo-image), passing `resize` and `cachePolicy`; keep react-native `<Image>` for local `require(...)` assets. RN `<Image>` has no disk cache and no decode sizing, so it re-downloads and decodes at full size on every cold start.";
+  "Render this network image with `TurboImage` (react-native-turbo-image), passing `resize` and `cachePolicy`; keep react-native `<Image>` for local `require(...)` assets.";
 
 /** A property key reads by name (`{ uri }`) or, for a string key, by value (`{ "uri" }`). */
 const keyName = (key: AstNode): string | undefined => {

@@ -2,10 +2,8 @@ import { problem } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGES = {
-  nativeEnum:
-    "Call `z.enum()` here — it takes the same native enum object and params, and `z.nativeEnum()` is deprecated in Zod 4.",
-  literalUnion:
-    "Replace this union with `z.enum([...])` listing the same string values, so invalid input reports one issue and the options stay reusable.",
+  nativeEnum: "Call `z.enum()` here — same arguments, and `z.nativeEnum()` is deprecated in Zod 4.",
+  literalUnion: "Replace this union with `z.enum([...])` listing the same string values.",
 };
 
 type Call = Extract<AstNode, { type: "CallExpression" }>;

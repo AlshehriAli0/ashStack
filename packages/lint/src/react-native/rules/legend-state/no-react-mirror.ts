@@ -27,7 +27,7 @@ export const noReactMirror: Rule = problem(
           context.report({
             node,
             message:
-              "Drop this `useState` mirror and read the observable with `useValue(...)` where it renders, so the observable stays the single owner of the value.",
+              "Drop this `useState` mirror and read the observable with `useValue(...)` where it renders, so it stays the single owner of the value.",
           });
         },
       };

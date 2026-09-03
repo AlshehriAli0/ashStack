@@ -2,7 +2,7 @@ import { ancestors, calleeName, hasAncestor, isFunction, problem, subtreeHas } f
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const HOIST_INTL =
-  "Move this `Intl` formatter to module scope when the locale and options are static, or wrap it in `useMemo` keyed on the locale — constructing one per render is expensive.";
+  "Move this `Intl` formatter to module scope when the locale and options are static, or wrap it in `useMemo` keyed on the locale.";
 
 const MEMO_HOOKS = new Set(["useMemo", "useCallback"]);
 

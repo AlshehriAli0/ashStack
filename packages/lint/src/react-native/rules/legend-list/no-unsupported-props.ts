@@ -26,7 +26,7 @@ export const noUnsupportedProps: Rule = problem(
           context.report({
             node: attribute,
             message:
-              "Remove this prop: Legend List v3 has no such prop and ignores it silently rather than rejecting it. Build inverted chat lists from `maintainScrollAtEnd` / `initialScrollAtEnd` / `maintainVisibleContentPosition` instead.",
+              "Remove this prop — Legend List v3 ignores it silently. Inverted chat lists use `maintainScrollAtEnd` / `initialScrollAtEnd` / `maintainVisibleContentPosition`.",
           });
         }
       },

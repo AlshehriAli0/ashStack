@@ -2,7 +2,7 @@ import { attributeName, gate, importedSpecifiers, problem, tagPath } from "../..
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGE =
-  "Add an explicit `opaque` prop to this `<Canvas>`: `opaque={Platform.OS === 'android'}` for a fullscreen animated canvas, or `opaque={false}` when it needs transparency, view transforms, or ordinary stacking.";
+  "Add an explicit `opaque` prop to this `<Canvas>`: `opaque={Platform.OS === 'android'}` when fullscreen and animated, `opaque={false}` when it needs transparency or transforms.";
 
 export const canvasOpaque: Rule = problem(
   "Require an explicit `opaque` prop on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.",

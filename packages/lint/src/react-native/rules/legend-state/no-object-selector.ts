@@ -39,7 +39,7 @@ export const noObjectSelector: Rule = problem(
 
           context.report({
             node: returned,
-            message: `Return the primitive that decides the render from this selector, or call \`useValue\` once per field. A new ${kind} each run has a new identity, so the component re-renders on every store change.`,
+            message: `Return the primitive that decides the render from this selector, or call \`useValue\` once per field — a new ${kind} each run re-renders on every store change.`,
           });
         },
       };

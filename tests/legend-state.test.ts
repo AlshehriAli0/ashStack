@@ -159,7 +159,7 @@ export const useDraft = () => {
 
 export const $settings = observable({ theme: "dark" });
 `,
-        errors: [{ message: "Give this observable a trailing `$` and no other", line: 3, column: 14 }],
+        errors: [{ message: "Give this observable a single trailing `$` and no other", line: 3, column: 14 }],
       },
       {
         name: "a dollar in the middle is not a trailing dollar",
@@ -167,7 +167,7 @@ export const $settings = observable({ theme: "dark" });
 
 export const set$tings = observable({ theme: "dark" });
 `,
-        errors: [{ message: "Give this observable a trailing `$` and no other", line: 3, column: 14 }],
+        errors: [{ message: "Give this observable a single trailing `$` and no other", line: 3, column: 14 }],
       },
       {
         name: "let binding",
@@ -385,7 +385,7 @@ export const bump = () => {
   count$ += 1;
 };
 `,
-        errors: [{ message: "with `+=` replaces the observable", line: 4, column: 3 }],
+        errors: [{ message: "`+=` replaces the observable itself", line: 4, column: 3 }],
       },
       {
         name: "logical assignment is caught by the same handler",
@@ -749,7 +749,7 @@ import { user$ } from "../stores/user";
 
 export const useUser = () => useValue(() => ({ first: user$.first.get(), last: user$.last.get() }));
 `,
-        errors: [{ message: "A new object each run has a new identity", line: 4, column: 46 }],
+        errors: [{ message: "a new object each run re-renders on every store change", line: 4, column: 46 }],
       },
       {
         name: "an array literal selector names array in the message",
@@ -758,7 +758,7 @@ import { user$ } from "../stores/user";
 
 export const useNames = () => useValue(() => [user$.first.get(), user$.last.get()]);
 `,
-        errors: [{ message: "A new array each run has a new identity", line: 4, column: 46 }],
+        errors: [{ message: "a new array each run re-renders on every store change", line: 4, column: 46 }],
       },
       {
         name: "an empty object literal",
@@ -766,7 +766,7 @@ export const useNames = () => useValue(() => [user$.first.get(), user$.last.get(
 
 export const useEmpty = () => useValue(() => ({}));
 `,
-        errors: [{ message: "A new object each run", line: 3, column: 47 }],
+        errors: [{ message: "a new object each run", line: 3, column: 47 }],
       },
       {
         name: "an empty array literal",
@@ -774,7 +774,7 @@ export const useEmpty = () => useValue(() => ({}));
 
 export const useEmpty = () => useValue(() => []);
 `,
-        errors: [{ message: "A new array each run", line: 3, column: 46 }],
+        errors: [{ message: "a new array each run", line: 3, column: 46 }],
       },
       {
         name: "a second argument does not stop the first from being checked",
@@ -792,7 +792,7 @@ import { user$ } from "../stores/user";
 
 export const useUser = () => useValue(() => ({ profile: { first: user$.first.get() } }));
 `,
-        errors: [{ message: "A new object each run", line: 4, column: 46 }],
+        errors: [{ message: "a new object each run", line: 4, column: 46 }],
       },
       {
         name: "each offending selector reports once, in source order",
@@ -804,8 +804,8 @@ export const useCount = () => useValue(() => count$.get());
 export const useNames = () => useValue(() => [user$.first.get()]);
 `,
         errors: [
-          { message: "A new object each run", line: 4, column: 46 },
-          { message: "A new array each run", line: 6, column: 46 },
+          { message: "a new object each run", line: 4, column: 46 },
+          { message: "a new array each run", line: 6, column: 46 },
         ],
       },
     ],
@@ -939,7 +939,7 @@ export const Profile = () => {
   return local$;
 };
 `,
-        errors: [{ message: "makes a new observable every render", line: 4, column: 18 }],
+        errors: [{ message: "makes a new one every render", line: 4, column: 18 }],
       },
       {
         name: "observable() inside a custom hook",
@@ -1707,7 +1707,7 @@ export const Box = () => (
   <View style={style$.get()} />
 );
 `,
-        errors: [{ message: "plain read", line: 5, column: 16 }],
+        errors: [{ message: "renders the first value", line: 5, column: 16 }],
       },
       {
         name: "get() wrapped in a plain call is still at container depth",

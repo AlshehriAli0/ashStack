@@ -2,10 +2,10 @@ import { gate, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MISSING =
-  "Pass `Extrapolation.CLAMP` as the fourth argument to `interpolate`. Without it the output keeps extrapolating past the input range, so a scroll offset of 400 against `[0, 100]` runs well past where it should stop.";
+  "Pass `Extrapolation.CLAMP` as the fourth argument to `interpolate`, or the output keeps extrapolating past the input range.";
 
 const NOT_CLAMPING =
-  "Change this fourth argument to `Extrapolation.CLAMP`. `EXTEND` and `IDENTITY` both keep extrapolating past the input range, so a scroll offset of 400 against `[0, 100]` runs well past where it should stop.";
+  "Change this fourth argument to `Extrapolation.CLAMP` — `EXTEND` and `IDENTITY` keep extrapolating past the input range.";
 
 const NON_CLAMPING = new Set(["EXTEND", "IDENTITY", "extend", "identity"]);
 

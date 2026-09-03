@@ -4,7 +4,7 @@ import { isStyleSheetCreate, propertyName, stylesObjectOf } from "../../styleshe
 import { expressionOf, isListElement } from "./shared.js";
 
 const MESSAGE =
-  "Move `flex` onto `style` and keep `contentContainerStyle` for padding inside the content. On the content container it sizes the content to the viewport, so the list measures as zero height and renders a blank screen with no error.";
+  "Move `flex` onto `style` and keep `contentContainerStyle` for padding — on the content container the list measures as zero height and renders blank.";
 
 const hasFlexKey = (node: AstNode | null | undefined): boolean =>
   node?.type === "ObjectExpression" &&

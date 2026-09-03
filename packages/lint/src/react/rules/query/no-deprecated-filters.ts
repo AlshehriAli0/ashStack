@@ -1,7 +1,7 @@
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const DEPRECATED_FILTERS =
-  "Pass a filter object here: `.invalidateQueries({ queryKey: someKeys.scope(...) })`. TanStack Query v5 removed the positional `(queryKey)` form.";
+  "Pass a filter object here: `.invalidateQueries({ queryKey: someKeys.scope(...) })`; v5 removed the positional form.";
 
 const FILTER_METHODS = new Set([
   "invalidateQueries",

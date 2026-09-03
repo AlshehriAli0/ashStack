@@ -20,7 +20,7 @@ export const banGroups: BanGroup[] = [
             "TouchableNativeFeedback",
           ],
           message:
-            "Import `Pressable` from `react-native-gesture-handler` so it cooperates with the gesture system instead of competing with it. Exception: inside a SwiftUI/Compose host view touches never reach `GestureHandlerRootView` — keep React Native's `Pressable` there and suppress this rule with the host named in the reason.",
+            "Import `Pressable` from `react-native-gesture-handler`. Inside a SwiftUI/Compose host view, keep React Native's `Pressable` and suppress this rule naming the host.",
         },
       ],
     },

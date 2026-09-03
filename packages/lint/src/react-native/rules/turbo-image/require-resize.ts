@@ -2,7 +2,7 @@ import { attributeName, componentName, gate, problem } from "../../../lib/ast.js
 import type { Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGE =
-  "Add `resize` to this TurboImage, set slightly BELOW the rendered width in points, so the native decoder downsamples before the bitmap reaches memory. Rounding down costs nothing visible; a value above the rendered width keeps the full-resolution decode (a 4000px photo in a 100pt avatar holds roughly 48MB of pixels).";
+  "Add `resize` to this TurboImage, set slightly BELOW the rendered width in points, so the native decoder downsamples before the bitmap reaches memory.";
 
 export const requireResize: Rule = problem(
   "Require `resize` on a TurboImage so the native decoder downsamples before the bitmap reaches memory. A full-resolution decode wastes tens of megabytes and stalls the first frame.",

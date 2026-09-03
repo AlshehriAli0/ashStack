@@ -9,11 +9,11 @@ const ALWAYS_DYNAMIC = new Set(["ConditionalExpression", "LogicalExpression"]);
 
 const MESSAGES = {
   attribute:
-    "Wrap this class value in `cn(...)`. It folds the conditional inputs into one string and lets a later Tailwind utility win over an earlier one that sets the same property.",
+    "Wrap this class value in `cn(...)`, so a later Tailwind utility wins over an earlier one setting the same property.",
   precomputed:
-    "Wrap this value in `cn(...)` where it reaches the class prop, or build it with `cn(...)` where it is declared. Conflicting Tailwind utilities survive into the DOM otherwise.",
+    "Wrap this value in `cn(...)` where it reaches the class prop, or build it with `cn(...)` where it is declared.",
   declaration:
-    "Build this class value with `cn(...)` instead of joining it by hand, so conflicting Tailwind utilities resolve to the last one and falsy branches drop out.",
+    "Build this class value with `cn(...)` instead of joining it by hand, so conflicting utilities resolve and falsy branches drop out.",
 };
 
 /** A composer other than `cn`: it concatenates the parts without resolving Tailwind conflicts. */

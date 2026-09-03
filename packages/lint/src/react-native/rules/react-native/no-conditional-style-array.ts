@@ -2,7 +2,7 @@ import { problem } from "../../../lib/ast.js";
 import type { Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGE =
-  "Move the condition into a Unistyles dynamic style function: `card: (active: boolean) => ({ ... })`, then `style={styles.card(active)}`. A conditional entry can evaluate to a falsy hole, which shifts the array indices and breaks the Unistyles C++ proxy.";
+  "Move the condition into a Unistyles dynamic style: `card: (active: boolean) => ({ ... })`, then `style={styles.card(active)}` — a falsy entry breaks the C++ proxy.";
 
 export const noConditionalStyleArray: Rule = problem(
   "Disallow conditional and logical entries inside a JSX `style` array. A falsy entry leaves a hole that breaks the Unistyles C++ proxy.",

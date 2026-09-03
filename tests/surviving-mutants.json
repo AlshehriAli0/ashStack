@@ -21,7 +21,7 @@
     "react-native/rules/legend-state/no-peek-in-selector.js:18 && -> ||",
     "react-native/rules/legend-state/no-untracked-get-in-jsx.js:13 > -> >=",
     "react-native/rules/react-native/no-leaked-render.js:13 false -> true",
-    "react-native/rules/react-native/no-manual-memo.js:27 < -> <=",
+    "react-native/rules/react-native/no-manual-memo.js:26 < -> <=",
     "react-native/rules/react-native/no-rn-image-network-source.js:11 false -> true",
     "react-native/rules/react-native/no-rn-image-network-source.js:33 && -> ||",
     "react-native/rules/react-native/no-rn-image-network-source.js:42 && -> ||",

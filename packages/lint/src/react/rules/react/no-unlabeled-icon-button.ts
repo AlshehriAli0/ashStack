@@ -5,7 +5,7 @@ import { attributeHasContent, childNames, namedBy, NAMING_ATTRIBUTES } from "./s
 const BUTTON_TAGS = new Set(["button", "Button"]);
 
 const NO_ACCESSIBLE_NAME =
-  "Add an `aria-label` (or `aria-labelledby`), or render visible text, so this icon-only button has an accessible name. An `<img alt>` or an `<svg><title>` inside it counts too.";
+  "Add an `aria-label` (or `aria-labelledby`), or render visible text, so this icon-only button has an accessible name.";
 
 const hasAltText = (attribute: AstNode): boolean =>
   attribute.type === "JSXAttribute" && attributeName(attribute) === "alt" && attributeHasContent(attribute.value);

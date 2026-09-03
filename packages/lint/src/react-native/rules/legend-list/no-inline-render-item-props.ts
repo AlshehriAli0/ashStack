@@ -26,7 +26,7 @@ export const noInlineRenderItemProps: Rule = problem(
 
           context.report({
             node: value,
-            message: `Pass \`item\` or its primitive fields and build this ${kind} inside the row, or hoist it to module scope when it is static. A fresh ${kind} each render means the row can never be skipped, so typing anywhere re-renders every visible row.`,
+            message: `Pass \`item\` or its primitive fields and build this ${kind} inside the row, or hoist it to module scope when static — a fresh ${kind} each render blocks row skipping.`,
           });
         },
         "JSXAttribute:exit"(node) {

@@ -41,7 +41,7 @@ export const noPackedCondition: Rule = {
       if (count <= max) return;
       context.report({
         node: test,
-        message: `This condition holds ${count} boolean operators and comparisons, past the ${max} a reader takes in at once. Extract each part into an explaining variable, named so it reads on its own, like \`hasValue\` or \`priceChanged\`. Stop when the condition is just those names joined by \`&&\`/\`||\`.`,
+        message: `Extract each part into a named variable like \`hasValue\`, until this condition reads as those names joined by \`&&\`/\`||\` — it packs ${count} operators, past the ${max} a reader takes in.`,
       });
     };
 

@@ -1,8 +1,7 @@
 import { problem } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
-const DESTRUCTURE_QUERY_HOOK =
-  "Destructure this hook at the call site: `const { data } = useFooQuery()` rather than binding the whole result to one name.";
+const DESTRUCTURE_QUERY_HOOK = "Destructure this hook at the call site: `const { data } = useFooQuery()`.";
 
 const API_HOOK_MODULE = /^@\/api\/.*\.(?:queries|mutations)$/;
 

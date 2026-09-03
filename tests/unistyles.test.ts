@@ -162,7 +162,7 @@ export const Card = () => {
   const radius = useDerivedValue(() => theme.radii.lg);
   return <Animated.View style={{ borderRadius: radius }} />;
 };`,
-        errors: [{ message: /Reanimated worklet/, line: 6 }],
+        errors: [{ message: /inside the worklet/, line: 6 }],
       },
       {
         name: "useAnimatedProps reading a useUnistyles theme",
@@ -736,7 +736,7 @@ const styles = StyleSheet.create(() => {
         name: "theme.screen inside the sheet",
         code: `${IMPORTS}
 const styles = StyleSheet.create(theme => ({ container: { width: theme.screen.width } }));`,
-        errors: [{ message: "module-initialization screen snapshot", line: 4 }],
+        errors: [{ message: "module-initialization snapshot", line: 4 }],
       },
       {
         name: "a redundant as const inside the sheet",
@@ -1004,7 +1004,7 @@ export const Screen = () => {
   return <View style={styles.container(insets.top)} />;
 };`,
         errors: [
-          { message: "hook-fed inline JSX style object", line: 9, column: 16 },
+          { message: "hook-fed inline style object", line: 9, column: 16 },
           { message: "passing `useSafeAreaInsets()` into a style function", line: 9, column: 23 },
         ],
       },
@@ -1016,7 +1016,7 @@ export const Screen = () => {
   const insets = useSafeAreaInsets();
   return <View style={{ paddingTop: insets.top, paddingBottom: insets.bottom }} />;
 };`,
-        errors: [{ message: "hook-fed inline JSX style object", line: 7, column: 16 }],
+        errors: [{ message: "hook-fed inline style object", line: 7, column: 16 }],
       },
       {
         name: "a style call outside JSX reports only the call",
@@ -1110,7 +1110,7 @@ export const Screen = () => {
   const insets = useSafeAreaInsets();
   return <View style={[styles.base, { paddingTop: insets.top }]} />;
 };`,
-        errors: [{ message: "hook-fed inline JSX style object" }],
+        errors: [{ message: "hook-fed inline style object" }],
       },
       {
         name: "the sheet is declared after the component that uses it",
@@ -1693,7 +1693,7 @@ const styles = StyleSheet.create((theme, rt) => ({
         name: "a paramless dynamic function in a plain object sheet",
         code: `${IMPORTS}
 const styles = StyleSheet.create({ row: () => ({ flex: 1 }) });`,
-        errors: [{ message: "style function is for a value the use site passes in", line: 4, column: 41 }],
+        errors: [{ message: "`theme` and `rt` reach a static style already", line: 4, column: 41 }],
         output: `${IMPORTS}
 const styles = StyleSheet.create({ row: { flex: 1 } });`,
       },

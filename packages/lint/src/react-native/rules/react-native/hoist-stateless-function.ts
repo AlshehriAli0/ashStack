@@ -52,7 +52,7 @@ export const hoistStatelessFunction: Rule = problem(
 
         context.report({
           node,
-          message: `Move \`${name}\` to module scope: it reads nothing from the component, so out there it is created once and keeps a stable identity without memoising. If it was meant to read a prop or a piece of state, wire that read up instead.`,
+          message: `Move \`${name}\` to module scope — it reads nothing from the component. If it was meant to read a prop or a piece of state, wire that read up instead.`,
         });
       };
       return {

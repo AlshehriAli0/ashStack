@@ -19,8 +19,8 @@ export const naming: Rule = problem(
           context.report({
             node: id,
             message: name.includes("$")
-              ? `Give this observable a trailing \`$\` and no other. The suffix is how a reader tells an observable from a plain value, and every other observable rule keys off it.`
-              : `Rename this to \`${name}$\`. The trailing \`$\` is how a reader tells an observable from a plain value, and every other observable rule keys off it.`,
+              ? "Give this observable a single trailing `$` and no other."
+              : `Rename this to \`${name}$\` — every observable rule keys off the trailing \`$\`.`,
           });
         },
       };
