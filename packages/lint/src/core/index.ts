@@ -84,7 +84,6 @@ const BASE_RULES: RuleMap = {
   complexity: ["error", { max: 12 }],
   "max-depth": ["error", 3],
   "max-params": ["error", 4],
-  "max-lines": ["error", { max: 300, skipBlankLines: true, skipComments: true }],
   "max-lines-per-function": ["error", { max: 250, skipBlankLines: true, skipComments: true }],
   "eslint/no-await-in-loop": "error",
   "eslint/no-console": "off",
@@ -212,7 +211,7 @@ const core = (options: CoreOptions = {}): OxlintConfig => {
       {
         files: TEST_FILES,
         rules: {
-          "max-lines": "off",
+          "@ashstack/core/max-lines": "off",
           "max-lines-per-function": "off",
           "typescript/await-thenable": "off",
           "typescript/no-non-null-assertion": "off",

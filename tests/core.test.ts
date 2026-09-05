@@ -5,6 +5,10 @@ import { moduleTests } from "./harness.js";
 
 const hatchOfBodyLength = (length: number): string => `// what: ${"x".repeat(length - 6)}`;
 
+/** `count` lines that each count, for the cases that exercise `max-lines` at its own default. */
+const linesOfCode = (count: number): string =>
+  `${Array.from({ length: count }, (_, index) => `export const value${index} = ${index};`).join("\n")}\n`;
+
 const DESIGN_SYSTEM_FILE = "../../designsys/pressable.tsx";
 const NOT_EXEMPT = ["no-fragment-matches-this"];
 const ABSOLUTE_DESIGN_SYSTEM = join(
@@ -1978,6 +1982,171 @@ export const all = [Pressable, TouchableOpacity];
           },
           { message: 'Import `Touchable` from "~/ui/touchable" instead of `TouchableOpacity`', line: 1, column: 21 },
         ],
+      },
+    ],
+  },
+  "max-lines": {
+    valid: [
+      {
+        name: "a file under the cap",
+        options: 2,
+        code: `export const a = 1;
+export const b = 2;
+`,
+      },
+      {
+        name: "a unistyles theme table past the cap on its own",
+        options: 3,
+        code: `export const gap = 8;
+
+const styles = StyleSheet.create(theme => ({
+  box: { padding: theme.gap },
+  row: { flexDirection: "row" },
+  col: { flexDirection: "column" },
+}));
+`,
+      },
+      {
+        name: "a stylex table past the cap on its own",
+        options: 3,
+        code: `export const gap = 8;
+
+const styles = stylex.create({
+  box: { padding: 8 },
+  row: { flexDirection: "row" },
+  col: { flexDirection: "column" },
+});
+`,
+      },
+      {
+        name: "blank lines and comments do not count",
+        options: 2,
+        code: `// a leading note
+export const a = 1;
+
+/* a block
+   spanning lines */
+export const b = 2;
+`,
+      },
+      {
+        name: "a table built by something that is not a stylesheet still counts",
+        options: 6,
+        code: `const routes = Router.create({
+  home: "/",
+  about: "/about",
+  settings: "/settings",
+  profile: "/profile",
+});
+`,
+      },
+      {
+        name: "a stylesheet reached across a line break before create",
+        options: 3,
+        code: `export const gap = 8;
+
+const styles = StyleSheet
+  .create({
+    box: { padding: 8 },
+    row: { padding: 4 },
+  });
+`,
+      },
+      {
+        name: "a stylesheet declared inside the component it styles",
+        options: 5,
+        code: `export const Row = () => {
+  const styles = StyleSheet.create({
+    box: { padding: 8 },
+    row: { padding: 4 },
+  });
+  return null;
+};
+`,
+      },
+      {
+        name: "a stylesheet handed straight to another call",
+        options: 2,
+        code: `export const useRowStyles = () => useStyles(StyleSheet.create({
+  box: { padding: 8 },
+  row: { padding: 4 },
+}));
+`,
+      },
+      {
+        name: "several stylesheets in one file",
+        options: 5,
+        code: `const row = StyleSheet.create({
+  box: { padding: 8 },
+  gap: { padding: 4 },
+});
+
+const column = stylex.create({
+  box: { padding: 8 },
+  gap: { padding: 4 },
+});
+`,
+      },
+      {
+        name: "a file exactly at the cap",
+        options: 3,
+        code: `export const a = 1;
+export const b = 2;
+export const c = 3;
+`,
+      },
+      {
+        name: "a file at the default cap",
+        code: linesOfCode(300),
+      },
+    ],
+    invalid: [
+      {
+        name: "logic past the cap",
+        options: 2,
+        code: `export const a = 1;
+export const b = 2;
+export const c = 3;
+`,
+        errors: [{ message: "3 counted lines, past 2", line: 3, column: 1 }],
+      },
+      {
+        name: "a stylesheet does not rescue a file whose logic is past the cap",
+        options: 2,
+        code: `export const a = 1;
+export const b = 2;
+export const c = 3;
+
+const styles = StyleSheet.create({
+  box: { padding: 8 },
+  row: { padding: 4 },
+});
+`,
+        errors: [{ message: "5 counted lines, past 2", line: 5, column: 1 }],
+      },
+      {
+        name: "a computed create call is not a stylesheet",
+        options: 3,
+        code: `const styles = StyleSheet["create"]({
+  box: { padding: 8 },
+  row: { padding: 4 },
+});
+`,
+        errors: [{ message: "4 counted lines, past 3", line: 1, column: 1 }],
+      },
+      {
+        name: "a trailing comment does not excuse the code on its line",
+        options: 2,
+        code: `export const a = 1; // one
+export const b = 2; // two
+export const c = 3; // three
+`,
+        errors: [{ message: "3 counted lines, past 2" }],
+      },
+      {
+        name: "a file one line past the default cap",
+        code: linesOfCode(301),
+        errors: [{ message: "301 counted lines, past 300", line: 301, column: 1 }],
       },
     ],
   },

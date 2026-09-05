@@ -58,6 +58,15 @@ const renderIdentityRules = (reactCompiler: boolean): RuleMap => {
 
 const FILE_BASED_ROUTER_FILES = ["**/routes/**", "**/src/app/**", "**/app/**/_layout.tsx", "**/app/**/+*.tsx"];
 
+/**
+ * Tighter than core's 300, for the same reason `max-lines-per-function` is:
+ * a module of exported functions grows honestly, a component file past this
+ * is several components. Styles are already out of the count —
+ * `@ashstack/core/max-lines` discounts `StyleSheet.create` and
+ * `stylex.create` — so every line left is one a reader has to follow.
+ */
+export const COMPONENT_MAX_LINES = 250;
+
 const REACT_RULES: RuleMap = {
   ...ALLOW_EMPTY_NOOP_HANDLERS,
   "max-lines-per-function": ["error", { max: 120, skipBlankLines: true, skipComments: true }],
@@ -130,6 +139,7 @@ const react = (options: ReactOptions = {}): OxlintConfig => {
       ...renderIdentityRules(options.reactCompiler ?? true),
       ...EFFECT_RULES,
       ...composed.rules,
+      "@ashstack/core/max-lines": ["error", COMPONENT_MAX_LINES],
     },
     overrides: [
       {

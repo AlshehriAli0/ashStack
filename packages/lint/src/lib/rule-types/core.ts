@@ -13,6 +13,7 @@ export type CoreRuleId =
   | "@ashstack/core/use-design-system"
   | "@ashstack/core/components-tsx-only"
   | "@ashstack/core/hoist-intl"
+  | "@ashstack/core/max-lines"
   | "@ashstack/zod/prefer-enum";
 
 declare module "oxlint" {
@@ -71,6 +72,12 @@ declare module "oxlint" {
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcorehoist-intl
      */
     "@ashstack/core/hoist-intl"?: RuleSetting;
+    /**
+     * Cap the lines of code in one file, counting neither blank lines, comments, nor the style tables `StyleSheet.create` and `stylex.create` build. A stylesheet is data, and keeping it next to the component it styles is the point — it should not spend the budget that logic spends. The option says how many lines: 300 by default, which `core()` keeps, and 250 from `react()` down, where a file past it is several components rather than one long one. Replaces the built-in `max-lines`, which counts every line of all three.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoremax-lines
+     */
+    "@ashstack/core/max-lines"?: RuleSetting<[number]>;
     /**
      * Disallow `z.nativeEnum()` and any `z.union()` whose members are all `z.literal()` strings.
      *

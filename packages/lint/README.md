@@ -1,6 +1,6 @@
 # @ashstack/lint
 
-Strict shared [oxlint](https://oxc.rs) config: <!-- rule-counts -->118 rules on plain TypeScript, 201 with React, 258 on React Native, 75 of them custom-built<!-- /rule-counts -->. Three entries, each containing the one before it: `core()`, `react()`, `react-native()`.
+Strict shared [oxlint](https://oxc.rs) config: <!-- rule-counts -->118 rules on plain TypeScript, 201 with React, 258 on React Native, 76 of them custom-built<!-- /rule-counts -->. Three entries, each containing the one before it: `core()`, `react()`, `react-native()`.
 
 Library-specific rules ship only when you depend on that library, so nothing fires about code you don't have.
 

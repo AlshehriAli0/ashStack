@@ -3,7 +3,7 @@ import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
 import { coreRegistry, reactNativeRegistry, reactRegistry } from "../lib/registry.js";
 import type { BanGroup, OxlintConfig, ReactNativeOptions, RuleMap } from "../lib/types.js";
-import react from "../react/index.js";
+import react, { COMPONENT_MAX_LINES } from "../react/index.js";
 
 export const banGroups: BanGroup[] = [
   {
@@ -101,6 +101,7 @@ const reactNative = (options: ReactNativeOptions = {}): OxlintConfig => {
       ...ALLOW_GESTURE_AND_ANIMATION_EFFECTS,
       "no-restricted-imports": ["error", composed.restricted],
       ...composed.rules,
+      "@ashstack/core/max-lines": ["error", COMPONENT_MAX_LINES],
       ...compilerOnlyRules(options.reactCompiler ?? true),
     },
     ignorePatterns: ["**/.expo/**", "**/android/**", "**/ios/**"],

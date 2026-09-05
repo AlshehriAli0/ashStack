@@ -14,6 +14,25 @@ import {
 import { EFFECT_NAMESPACE } from "../packages/lint/dist/lib/effect-plugin.js";
 import { shortName } from "../packages/lint/dist/lib/module.js";
 import type { ModuleManifest, OxlintConfig, ReactNativeOptions } from "../packages/lint/dist/lib/types.js";
+import { codesFrom } from "./harness.js";
+
+const MAX_LINES_CODE = "@ashstack/core(max-lines)";
+
+/** A screen whose styles dwarf its logic: 280 lines of file, 20 of them decisions. */
+const screenWithStyleTable = (styleCount: number): string => {
+  const keys = Array.from({ length: styleCount }, (_, index) => `  box${index}: { padding: ${index} },`).join("\n");
+  return `import { View } from "react-native";
+import { StyleSheet } from "react-native-unistyles";
+
+export const Screen = ({ label }: { label: string }) => {
+  return <View style={styles.box0}>{label}</View>;
+};
+
+const styles = StyleSheet.create(theme => ({
+${keys}
+}));
+`;
+};
 
 const ALL_MODULES = [...coreModules, ...reactModules, ...reactNativeModules];
 const FIXTURES = join(import.meta.dir, "..", "packages", "lint", "fixtures");
@@ -162,6 +181,31 @@ describe("entry layering", () => {
     expect(react().ignorePatterns).toBeUndefined();
   });
 
+  it("caps file length at the rule's own default in core, and tighter from the react entry down", () => {
+    expect(core().rules?.["@ashstack/core/max-lines"]).toBe("error");
+    expect(react().rules?.["@ashstack/core/max-lines"]).toEqual(["error", 250]);
+    expect(reactNative().rules?.["@ashstack/core/max-lines"]).toEqual(["error", 250]);
+  });
+
+  it("leaves the built-in max-lines off, since the custom rule replaces it", () => {
+    expect(core().rules?.["max-lines"]).toBeUndefined();
+    expect(reactNative().rules?.["max-lines"]).toBeUndefined();
+  });
+
+  it("lets a colocated stylesheet run long without spending the file's budget", async () => {
+    const codes = await codesFrom(reactNative(), screenWithStyleTable(400));
+    expect(codes).not.toContain(MAX_LINES_CODE);
+  });
+
+  it("still reports the same file once its own code passes the cap", async () => {
+    const padded = `${screenWithStyleTable(400)}\n${Array.from(
+      { length: 260 },
+      (_, index) => `export const value${index} = ${index};`
+    ).join("\n")}\n`;
+    const codes = await codesFrom(reactNative(), padded);
+    expect(codes).toContain(MAX_LINES_CODE);
+  });
+
   it("loads no duplicate plugin file", () => {
     const plugins = (reactNative(ALL_ON).jsPlugins ?? []).map(plugin => JSON.stringify(plugin));
     expect(new Set(plugins).size).toBe(plugins.length);
@@ -275,7 +319,10 @@ describe("module toggles", () => {
 
   it("sets every enabled custom rule to error", () => {
     const rules = reactNative(ALL_ON).rules ?? {};
-    for (const id of ourIds(reactNative(ALL_ON))) expect(rules[id]).toBe("error");
+    for (const id of ourIds(reactNative(ALL_ON))) {
+      const setting = rules[id];
+      expect(Array.isArray(setting) ? setting[0] : setting).toBe("error");
+    }
   });
 
   it("gives every custom rule id a namespace matching its module", () => {

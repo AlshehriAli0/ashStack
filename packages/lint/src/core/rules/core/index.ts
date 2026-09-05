@@ -1,6 +1,7 @@
 import { defineModule } from "../../../lib/module.js";
 import { componentsTsxOnly } from "./components-tsx-only.js";
 import { hoistIntl } from "./hoist-intl.js";
+import { maxLines } from "./max-lines.js";
 import { noComments } from "./no-comments.js";
 import { noNamingConvention } from "./no-naming-convention.js";
 import { noPackedCondition } from "./no-packed-condition.js";
@@ -17,5 +18,6 @@ export default defineModule({
     "use-design-system": useDesignSystem,
     "components-tsx-only": componentsTsxOnly,
     "hoist-intl": hoistIntl,
+    "max-lines": maxLines,
   },
 });

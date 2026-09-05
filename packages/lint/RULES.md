@@ -10,10 +10,10 @@ Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-marg
 
 Each entry lists the oxlint plugins it turns on, below. You never need to add them: your own `plugins` array is added to the entry's set, not swapped for it. A bare oxlint install runs `eslint`, `typescript`, `unicorn`, `oxc`; `import`, `promise`, `react`, `jsx-a11y`, `react-perf` come from here.
 
-Counting what each entry sets with every module on: **118** rules for plain TypeScript, **201** with React, **258** on React Native, 75 of them written for this package. oxlint's own `correctness` category runs alongside these.
+Counting what each entry sets with every module on: **118** rules for plain TypeScript, **201** with React, **258** on React Native, 76 of them written for this package. oxlint's own `correctness` category runs alongside these.
 
 - [`core()`](#core)
-  - [`@ashstack/core`](#ashstackcore) — 6 rules
+  - [`@ashstack/core`](#ashstackcore) — 7 rules
   - [`@ashstack/zod`](#ashstackzod) — 1 rule
 - [`react()`](#react)
   - [`@ashstack/react`](#ashstackreact) — 2 rules
@@ -112,7 +112,6 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`.
 | [`complexity`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/complexity.html) | `["error",{"max":12}]` |
 | [`max-depth`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/max-depth.html) | `["error",3]` |
 | [`max-params`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/max-params.html) | `["error",4]` |
-| [`max-lines`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/max-lines.html) | `["error",{"max":300,"skipBlankLines":true,"skipComments":true}]` |
 | [`max-lines-per-function`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/max-lines-per-function.html) | `["error",{"max":250,"skipBlankLines":true,"skipComments":true}]` |
 | [`eslint/no-await-in-loop`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-await-in-loop.html) | `"error"` |
 | [`eslint/no-console`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-console.html) | `"off"` |
@@ -506,6 +505,84 @@ import { View } from "react-native";
 const formatter = new Intl.NumberFormat("en-US");
 
 export const Price = () => <View accessibilityValue={{ text: formatter.format(10) }} />;
+```
+
+#### `@ashstack/core/max-lines`
+
+Cap the lines of code in one file, counting neither blank lines, comments, nor the style tables `StyleSheet.create` and `stylex.create` build. A stylesheet is data, and keeping it next to the component it styles is the point — it should not spend the budget that logic spends. The option says how many lines: 300 by default, which `core()` keeps, and 250 from `react()` down, where a file past it is several components rather than one long one. Replaces the built-in `max-lines`, which counts every line of all three.
+
+**Options**
+
+```jsonc
+[
+  {
+    "type": "integer",
+    "minimum": 1
+  }
+]
+```
+
+**Fails**
+
+```tsx
+export const step0 = (value: number) => value + 0;
+export const step1 = (value: number) => value + 1;
+export const step2 = (value: number) => value + 2;
+export const step3 = (value: number) => value + 3;
+export const step4 = (value: number) => value + 4;
+export const step5 = (value: number) => value + 5;
+export const step6 = (value: number) => value + 6;
+export const step7 = (value: number) => value + 7;
+export const step8 = (value: number) => value + 8;
+export const step9 = (value: number) => value + 9;
+export const step10 = (value: number) => value + 10;
+export const step11 = (value: number) => value + 11;
+```
+
+**Passes**
+
+```tsx
+export const step0 = (value: number) => value + 0;
+export const step1 = (value: number) => value + 1;
+export const step2 = (value: number) => value + 2;
+export const step3 = (value: number) => value + 3;
+export const step4 = (value: number) => value + 4;
+export const step5 = (value: number) => value + 5;
+export const step6 = (value: number) => value + 6;
+export const step7 = (value: number) => value + 7;
+
+const styles = StyleSheet.create(theme => ({
+  box0: { padding: 0 },
+  box1: { padding: 1 },
+  box2: { padding: 2 },
+  box3: { padding: 3 },
+  box4: { padding: 4 },
+  box5: { padding: 5 },
+  box6: { padding: 6 },
+  box7: { padding: 7 },
+  box8: { padding: 8 },
+  box9: { padding: 9 },
+  box10: { padding: 10 },
+  box11: { padding: 11 },
+  box12: { padding: 12 },
+  box13: { padding: 13 },
+  box14: { padding: 14 },
+  box15: { padding: 15 },
+  box16: { padding: 16 },
+  box17: { padding: 17 },
+  box18: { padding: 18 },
+  box19: { padding: 19 },
+  box20: { padding: 20 },
+  box21: { padding: 21 },
+  box22: { padding: 22 },
+  box23: { padding: 23 },
+  box24: { padding: 24 },
+  box25: { padding: 25 },
+  box26: { padding: 26 },
+  box27: { padding: 27 },
+  box28: { padding: 28 },
+  box29: { padding: 29 },
+}));
 ```
 
 ### `@ashstack/zod`

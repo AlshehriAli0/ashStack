@@ -13,6 +13,11 @@ const shortName = (module: { meta: { name: string } }): string => module.meta.na
 
 export interface Composed {
   jsPlugins: string[];
+  /**
+   * Every enabled module rule at a bare `"error"`. These are defaults, so an
+   * entry that wants one at a different severity or with options has to spread
+   * its own setting after this block, not before it.
+   */
   rules: Record<string, "error">;
   restricted: Required<RestrictedImports>;
 }

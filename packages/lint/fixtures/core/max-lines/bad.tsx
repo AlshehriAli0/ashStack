@@ -1,0 +1,12 @@
+export const step0 = (value: number) => value + 0;
+export const step1 = (value: number) => value + 1;
+export const step2 = (value: number) => value + 2;
+export const step3 = (value: number) => value + 3;
+export const step4 = (value: number) => value + 4;
+export const step5 = (value: number) => value + 5;
+export const step6 = (value: number) => value + 6;
+export const step7 = (value: number) => value + 7;
+export const step8 = (value: number) => value + 8;
+export const step9 = (value: number) => value + 9;
+export const step10 = (value: number) => value + 10;
+export const step11 = (value: number) => value + 11;
