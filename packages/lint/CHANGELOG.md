@@ -1,5 +1,11 @@
 # @ashstack/lint
 
+## 0.8.0 (2026-09-06)
+
+### Features
+
+- add core/max-lines, which does not count style tables ([`45405c7`](https://github.com/AlshehriAli0/ashStack/commit/45405c7))
+
 ## 0.7.0 (2026-09-03)
 
 ### Features
