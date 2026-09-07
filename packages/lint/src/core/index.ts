@@ -81,7 +81,6 @@ const BASE_RULES: RuleMap = {
     },
   ],
   "no-use-before-define": "off",
-  complexity: ["error", { max: 12 }],
   "max-depth": ["error", 3],
   "max-params": ["error", 4],
   "max-lines-per-function": ["error", { max: 250, skipBlankLines: true, skipComments: true }],

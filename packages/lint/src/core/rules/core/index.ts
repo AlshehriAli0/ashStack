@@ -1,6 +1,7 @@
 import { defineModule } from "../../../lib/module.js";
 import { componentsTsxOnly } from "./components-tsx-only.js";
 import { hoistIntl } from "./hoist-intl.js";
+import { maxComplexity } from "./max-complexity.js";
 import { maxLines } from "./max-lines.js";
 import { noComments } from "./no-comments.js";
 import { noNamingConvention } from "./no-naming-convention.js";
@@ -19,5 +20,6 @@ export default defineModule({
     "components-tsx-only": componentsTsxOnly,
     "hoist-intl": hoistIntl,
     "max-lines": maxLines,
+    "max-complexity": maxComplexity,
   },
 });

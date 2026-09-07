@@ -10,10 +10,10 @@ Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-marg
 
 Each entry lists the oxlint plugins it turns on, below. You never need to add them: your own `plugins` array is added to the entry's set, not swapped for it. A bare oxlint install runs `eslint`, `typescript`, `unicorn`, `oxc`; `import`, `promise`, `react`, `jsx-a11y`, `react-perf` come from here.
 
-Counting what each entry sets with every module on: **118** rules for plain TypeScript, **201** with React, **258** on React Native, 76 of them written for this package. oxlint's own `correctness` category runs alongside these.
+Counting what each entry sets with every module on: **118** rules for plain TypeScript, **201** with React, **258** on React Native, 77 of them written for this package. oxlint's own `correctness` category runs alongside these.
 
 - [`core()`](#core)
-  - [`@ashstack/core`](#ashstackcore) — 7 rules
+  - [`@ashstack/core`](#ashstackcore) — 8 rules
   - [`@ashstack/zod`](#ashstackzod) — 1 rule
 - [`react()`](#react)
   - [`@ashstack/react`](#ashstackreact) — 2 rules
@@ -109,7 +109,6 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`.
 | [`valid-typeof`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/valid-typeof.html) | `"error"` |
 | [`no-unused-vars`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-unused-vars.html) | `["error",{"args":"after-used","argsIgnorePattern":"^_","caughtErrors":"all","caughtErrorsIgnorePattern":"^_","varsIgnorePattern":"^_","destructuredArrayIgnorePattern":"^_","ignoreRestSiblings":true,"fix":{"imports":"safe-fix"}}]` |
 | [`no-use-before-define`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/no-use-before-define.html) | `"off"` |
-| [`complexity`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/complexity.html) | `["error",{"max":12}]` |
 | [`max-depth`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/max-depth.html) | `["error",3]` |
 | [`max-params`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/max-params.html) | `["error",4]` |
 | [`max-lines-per-function`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/max-lines-per-function.html) | `["error",{"max":250,"skipBlankLines":true,"skipComments":true}]` |
@@ -583,6 +582,53 @@ const styles = StyleSheet.create(theme => ({
   box28: { padding: 28 },
   box29: { padding: 29 },
 }));
+```
+
+#### `@ashstack/core/max-complexity`
+
+Cap the cognitive complexity of one function: the branches a reader has to hold, weighted by how deep they nest. An `if`, `switch`, loop, `catch` or ternary costs a point plus one for every such structure it already sits inside; an `else` or `else if` costs a flat point; each run of `&&`/`||` costs a point, and `??` costs nothing, since a default is not a decision. A nested function is scored on its own rather than charged to the one around it, so extracting a callback is a real fix rather than a way of hiding the count. The option says the cap: 15 by default, which `core()` keeps, and 10 from `react()` down, where the branching belongs in the tree rather than in the function. Replaces the built-in `complexity`, which counts every branch flat and so reads a 20-case `switch` as 20 decisions.
+
+**Options**
+
+```jsonc
+[
+  {
+    "type": "integer",
+    "minimum": 1
+  }
+]
+```
+
+**Fails**
+
+```tsx
+export const priceOf = (rows: number[], tier?: string, coupon?: string) => {
+  let total = 0;
+  for (const row of rows) {
+    if (row > 0) {
+      if (tier === "pro" || tier === "team") {
+        total += row * 0.8;
+      } else {
+        total += row;
+      }
+    }
+  }
+  return coupon === undefined ? total : total - 5;
+};
+```
+
+**Passes**
+
+```tsx
+const rateFor = (tier?: string) => (tier === "pro" || tier === "team" ? 0.8 : 1);
+
+const discounted = (total: number, coupon?: string) => (coupon === undefined ? total : total - 5);
+
+export const priceOf = (rows: number[], tier?: string, coupon?: string) => {
+  const charged = rows.filter(row => row > 0);
+  const total = charged.reduce((sum, row) => sum + row * rateFor(tier), 0);
+  return discounted(total, coupon);
+};
 ```
 
 ### `@ashstack/zod`

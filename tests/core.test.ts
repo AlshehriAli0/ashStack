@@ -9,6 +9,14 @@ const hatchOfBodyLength = (length: number): string => `// what: ${"x".repeat(len
 const linesOfCode = (count: number): string =>
   `${Array.from({ length: count }, (_, index) => `export const value${index} = ${index};`).join("\n")}\n`;
 
+/** `count` flat guards, a point each, for the cases that exercise `max-complexity` at its own default. */
+const guards = (count: number): string =>
+  `export const pick = (value: number) => {
+${Array.from({ length: count }, (_, index) => `  if (value === ${index}) return ${index};`).join("\n")}
+  return -1;
+};
+`;
+
 const DESIGN_SYSTEM_FILE = "../../designsys/pressable.tsx";
 const NOT_EXEMPT = ["no-fragment-matches-this"];
 const ABSOLUTE_DESIGN_SYSTEM = join(
@@ -2147,6 +2155,186 @@ export const c = 3; // three
         name: "a file one line past the default cap",
         code: linesOfCode(301),
         errors: [{ message: "301 counted lines, past 300", line: 301, column: 1 }],
+      },
+    ],
+  },
+  "max-complexity": {
+    valid: [
+      {
+        name: "a function with no branches at all",
+        options: 1,
+        code: `export const sum = (a: number, b: number) => a + b;
+`,
+      },
+      {
+        name: "flat guards, exactly at the cap",
+        options: 3,
+        code: `export const rank = (a: number, b: number) => {
+  if (a > 0) return 1;
+  if (b > 0) return 2;
+  if (a === b) return 3;
+  return 0;
+};
+`,
+      },
+      {
+        name: "a switch costs one point rather than one per case",
+        options: 1,
+        code: `export const weight = (value: string) => {
+  switch (value) {
+    case "a":
+      return 1;
+    case "b":
+      return 2;
+    case "c":
+      return 3;
+    default:
+      return 0;
+  }
+};
+`,
+      },
+      {
+        name: "an else if is the next branch, not a decision inside the one above",
+        options: 3,
+        code: `export const rank = (value: number) => {
+  if (value === 1) return 1;
+  else if (value === 2) return 2;
+  else return 0;
+};
+`,
+      },
+      {
+        name: "a run of like operators is one decision",
+        options: 2,
+        code: `export const ready = (a: boolean, b: boolean, c: boolean, d: boolean) => {
+  if (a && b && c && d) return 1;
+  return 0;
+};
+`,
+      },
+      {
+        name: "a default chain of ?? is not a decision",
+        options: 1,
+        code: `export const label = (a?: string, b?: string, c?: string) => a ?? b ?? c ?? "anon";
+`,
+      },
+      {
+        name: "a callback carries its own nesting rather than the loop's",
+        options: 1,
+        code: `export const defer = (rows: number[], out: (() => number)[]) => {
+  for (const row of rows) {
+    out.push(() => {
+      if (row > 0) return row;
+      return 0;
+    });
+  }
+};
+`,
+      },
+      {
+        name: "one ternary in a tree",
+        options: 1,
+        code: `export const Badge = ({ on }: { on: boolean }) => <View>{on ? <On /> : <Off />}</View>;
+`,
+      },
+      {
+        name: "a function at the default cap",
+        code: guards(15),
+      },
+    ],
+    invalid: [
+      {
+        name: "one flat guard past the cap",
+        options: 2,
+        code: `export const rank = (a: number, b: number) => {
+  if (a > 0) return 1;
+  if (b > 0) return 2;
+  if (a === b) return 3;
+  return 0;
+};
+`,
+        errors: [{ message: "3 cognitive complexity, past 2", line: 1, column: 21 }],
+      },
+      {
+        name: "depth is what costs",
+        options: 6,
+        code: `export const priceOf = (rows: number[], tier?: string) => {
+  let total = 0;
+  for (const row of rows) {
+    if (row > 0) {
+      if (tier === "pro") {
+        total += row * 0.8;
+      } else {
+        total += row;
+      }
+    }
+  }
+  return total;
+};
+`,
+        errors: [{ message: "7 cognitive complexity, past 6", line: 1, column: 24 }],
+      },
+      {
+        name: "an else costs a point of its own",
+        options: 1,
+        code: `export const rank = (value: number) => {
+  if (value === 1) return 1;
+  else return 0;
+};
+`,
+        errors: [{ message: "2 cognitive complexity, past 1" }],
+      },
+      {
+        name: "mixed operators are two decisions",
+        options: 1,
+        code: `export const ready = (a: boolean, b: boolean, c: boolean) => (a && b) || c;
+`,
+        errors: [{ message: "2 cognitive complexity, past 1" }],
+      },
+      {
+        name: "a nested ternary costs the depth it adds",
+        options: 2,
+        code: `export const Badge = ({ on, muted }: { on: boolean; muted: boolean }) =>
+  on ? <On /> : muted ? <Muted /> : <Off />;
+`,
+        errors: [{ message: "3 cognitive complexity, past 2" }],
+      },
+      {
+        name: "every loop and a catch each cost a point",
+        options: 4,
+        code: `export const drain = (queue: number[], seen: Record<string, boolean>) => {
+  while (queue.length > 0) queue.pop();
+  do {
+    queue.push(1);
+  } while (queue.length < 2);
+  for (const key in seen) delete seen[key];
+  for (let index = 0; index < 2; index++) queue.push(index);
+  try {
+    queue.pop();
+  } catch {
+    queue.push(0);
+  }
+};
+`,
+        errors: [{ message: "5 cognitive complexity, past 4" }],
+      },
+      {
+        name: "the callback is reported, not the function holding it",
+        options: 1,
+        code: `export const named = (values: number[]) =>
+  values.map(value => {
+    if (value === 1) return "one";
+    if (value === 2) return "two";
+    return "many";
+  });
+`,
+        errors: [{ message: "2 cognitive complexity, past 1", line: 2, column: 14 }],
+      },
+      {
+        name: "a function one point past the default cap",
+        code: guards(16),
+        errors: [{ message: "16 cognitive complexity, past 15", line: 1, column: 21 }],
       },
     ],
   },

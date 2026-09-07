@@ -16,6 +16,35 @@ export const contentContainer: Rule = problem(
       const sheetStyles = new Map<string, Map<string, AstNode>>();
       const wrapped = new Set<string>();
       const attributes: Extract<AstNode, { type: "JSXAttribute" }>[] = [];
+
+      /** What one `contentContainerStyle` earns, or null when the style it names depends on neither. */
+      const complaintFor = (attribute: Extract<AstNode, { type: "JSXAttribute" }>): string | null => {
+        const reference = findInSubtree(
+          attribute.value,
+          current =>
+            current.type === "MemberExpression" &&
+            current.object.type === "Identifier" &&
+            sheetStyles.has(current.object.name)
+        );
+        if (reference?.type !== "MemberExpression") return null;
+
+        const owner = attribute.parent;
+        if (owner.type === "JSXOpeningElement" && wrapped.has(tagIdentifier(owner.name))) return null;
+
+        const { object, property } = reference;
+        if (object.type !== "Identifier") return null;
+        const definition = sheetStyles.get(object.name)?.get(property.type === "Identifier" ? property.name : "");
+        if (!definition) return null;
+
+        const reads = (prefix: string): boolean =>
+          subtreeHas(
+            definition,
+            current => current.type === "MemberExpression" && memberPath(current).startsWith(prefix)
+          );
+        if (reads("rt.")) return MESSAGES.contentContainerRuntime;
+        return reads("theme.") ? MESSAGES.contentContainerTheme : null;
+      };
+
       return {
         before() {
           sheetStyles.clear();
@@ -46,33 +75,8 @@ export const contentContainer: Rule = problem(
         },
         "Program:exit"() {
           for (const attribute of attributes) {
-            const reference = findInSubtree(
-              attribute.value,
-              current =>
-                current.type === "MemberExpression" &&
-                current.object.type === "Identifier" &&
-                sheetStyles.has(current.object.name)
-            );
-            if (reference?.type !== "MemberExpression") continue;
-            const owner = attribute.parent;
-            if (owner.type === "JSXOpeningElement" && wrapped.has(tagIdentifier(owner.name))) continue;
-            const { object, property } = reference;
-            if (object.type !== "Identifier") continue;
-            const definition = sheetStyles.get(object.name)?.get(property.type === "Identifier" ? property.name : "");
-            if (!definition) continue;
-            const usesRuntime = subtreeHas(
-              definition,
-              current => current.type === "MemberExpression" && memberPath(current).startsWith("rt.")
-            );
-            if (usesRuntime) {
-              context.report({ node: attribute, message: MESSAGES.contentContainerRuntime });
-              continue;
-            }
-            const usesTheme = subtreeHas(
-              definition,
-              current => current.type === "MemberExpression" && memberPath(current).startsWith("theme.")
-            );
-            if (usesTheme) context.report({ node: attribute, message: MESSAGES.contentContainerTheme });
+            const message = complaintFor(attribute);
+            if (message !== null) context.report({ node: attribute, message });
           }
         },
       };

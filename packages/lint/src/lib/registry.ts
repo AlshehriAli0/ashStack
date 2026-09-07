@@ -16,6 +16,7 @@ export const coreRegistry: ModuleMeta[] = [
       "components-tsx-only": { defaultOff: true },
       "hoist-intl": {},
       "max-lines": {},
+      "max-complexity": {},
     },
   },
   {

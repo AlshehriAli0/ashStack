@@ -14,6 +14,7 @@ export type CoreRuleId =
   | "@ashstack/core/components-tsx-only"
   | "@ashstack/core/hoist-intl"
   | "@ashstack/core/max-lines"
+  | "@ashstack/core/max-complexity"
   | "@ashstack/zod/prefer-enum";
 
 declare module "oxlint" {
@@ -78,6 +79,12 @@ declare module "oxlint" {
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoremax-lines
      */
     "@ashstack/core/max-lines"?: RuleSetting<[number]>;
+    /**
+     * Cap the cognitive complexity of one function: the branches a reader has to hold, weighted by how deep they nest. An `if`, `switch`, loop, `catch` or ternary costs a point plus one for every such structure it already sits inside; an `else` or `else if` costs a flat point; each run of `&&`/`||` costs a point, and `??` costs nothing, since a default is not a decision. A nested function is scored on its own rather than charged to the one around it, so extracting a callback is a real fix rather than a way of hiding the count. The option says the cap: 15 by default, which `core()` keeps, and 10 from `react()` down, where the branching belongs in the tree rather than in the function. Replaces the built-in `complexity`, which counts every branch flat and so reads a 20-case `switch` as 20 decisions.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoremax-complexity
+     */
+    "@ashstack/core/max-complexity"?: RuleSetting<[number]>;
     /**
      * Disallow `z.nativeEnum()` and any `z.union()` whose members are all `z.literal()` strings.
      *

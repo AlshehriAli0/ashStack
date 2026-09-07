@@ -17,6 +17,26 @@ import type { ModuleManifest, OxlintConfig, ReactNativeOptions } from "../packag
 import { codesFrom } from "./harness.js";
 
 const MAX_LINES_CODE = "@ashstack/core(max-lines)";
+const MAX_COMPLEXITY_CODE = "@ashstack/core(max-complexity)";
+
+/** `count` flat guards: a point each under cognitive complexity, a branch each under the built-in rule. */
+const guards = (count: number): string =>
+  `export const pick = (value: number) => {
+${Array.from({ length: count }, (_, index) => `  if (value === ${index}) return ${index};`).join("\n")}
+  return -1;
+};
+`;
+
+/** A switch a reader takes in at a glance: one decision, however many cases it lists. */
+const flatSwitch = (cases: number): string =>
+  `export const weight = (value: number) => {
+  switch (value) {
+${Array.from({ length: cases }, (_, index) => `    case ${index}:\n      return ${index};`).join("\n")}
+    default:
+      return -1;
+  }
+};
+`;
 
 /** A screen whose styles dwarf its logic: 280 lines of file, 20 of them decisions. */
 const screenWithStyleTable = (styleCount: number): string => {
@@ -190,6 +210,27 @@ describe("entry layering", () => {
   it("leaves the built-in max-lines off, since the custom rule replaces it", () => {
     expect(core().rules?.["max-lines"]).toBeUndefined();
     expect(reactNative().rules?.["max-lines"]).toBeUndefined();
+  });
+
+  it("caps complexity at the rule's own default in core, and tighter from the react entry down", () => {
+    expect(core().rules?.["@ashstack/core/max-complexity"]).toBe("error");
+    expect(react().rules?.["@ashstack/core/max-complexity"]).toEqual(["error", 10]);
+    expect(reactNative().rules?.["@ashstack/core/max-complexity"]).toEqual(["error", 10]);
+  });
+
+  it("leaves the built-in complexity off, since the custom rule replaces it", () => {
+    expect(core().rules?.complexity).toBeUndefined();
+    expect(reactNative().rules?.complexity).toBeUndefined();
+  });
+
+  it("reports a function past the cap through the entry, not just in the module", async () => {
+    expect(await codesFrom(core(), guards(16))).toContain(MAX_COMPLEXITY_CODE);
+  });
+
+  it("says nothing about a long flat switch, which the built-in complexity rule read as 20 decisions", async () => {
+    const codes = await codesFrom(core(), flatSwitch(20));
+    expect(codes).not.toContain(MAX_COMPLEXITY_CODE);
+    expect(codes).not.toContain("eslint(complexity)");
   });
 
   it("lets a colocated stylesheet run long without spending the file's budget", async () => {

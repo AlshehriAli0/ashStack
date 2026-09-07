@@ -67,6 +67,15 @@ const FILE_BASED_ROUTER_FILES = ["**/routes/**", "**/src/app/**", "**/app/**/_la
  */
 export const COMPONENT_MAX_LINES = 250;
 
+/**
+ * Tighter than core's 15, because a component's branching belongs in the tree
+ * it returns rather than in the function that returns it: a guard or two, a
+ * ternary or two, and the rest is JSX. Extracting a handler or a `map`
+ * callback drops the count on its own —
+ * `@ashstack/core/max-complexity` scores every function separately.
+ */
+export const COMPONENT_MAX_COMPLEXITY = 10;
+
 const REACT_RULES: RuleMap = {
   ...ALLOW_EMPTY_NOOP_HANDLERS,
   "max-lines-per-function": ["error", { max: 120, skipBlankLines: true, skipComments: true }],
@@ -140,6 +149,7 @@ const react = (options: ReactOptions = {}): OxlintConfig => {
       ...EFFECT_RULES,
       ...composed.rules,
       "@ashstack/core/max-lines": ["error", COMPONENT_MAX_LINES],
+      "@ashstack/core/max-complexity": ["error", COMPONENT_MAX_COMPLEXITY],
     },
     overrides: [
       {
