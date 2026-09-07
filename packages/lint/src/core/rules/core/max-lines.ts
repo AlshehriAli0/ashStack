@@ -41,9 +41,16 @@ export const maxLines: Rule = {
     type: "problem",
     docs: {
       description:
-        "Cap the lines of code in one file, counting neither blank lines, comments, nor the style tables `StyleSheet.create` and `stylex.create` build. A stylesheet is data, and keeping it next to the component it styles is the point — it should not spend the budget that logic spends. The option says how many lines: 300 by default, which `core()` keeps, and 250 from `react()` down, where a file past it is several components rather than one long one. Replaces the built-in `max-lines`, which counts every line of all three.",
+        "Cap the lines of code in one file. Blank lines, comments and the style tables `StyleSheet.create` and `stylex.create` build are not counted, so a colocated stylesheet costs the file nothing. Replaces the built-in `max-lines`, which counts all of them.",
     },
-    schema: [{ type: "integer", minimum: 1 }],
+    schema: [
+      {
+        type: "integer",
+        minimum: 1,
+        default: DEFAULT_MAX,
+        description: "Highest number of code lines one file may hold.",
+      },
+    ],
   },
   createOnce(context: RuleContext) {
     let styles: Range[] = [];

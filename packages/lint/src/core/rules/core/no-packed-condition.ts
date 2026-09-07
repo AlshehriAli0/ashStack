@@ -28,9 +28,16 @@ export const noPackedCondition: Rule = {
     type: "problem",
     docs: {
       description:
-        "Require a condition to be split into named booleans once it holds too many boolean operators and comparisons. The option says how many, defaulting to 5.",
+        "Require a condition to be split into named booleans once it holds too many boolean operators and comparisons.",
     },
-    schema: [{ type: "integer", minimum: 1 }],
+    schema: [
+      {
+        type: "integer",
+        minimum: 1,
+        default: DEFAULT_MAX,
+        description: "Highest number of operators one condition may pack.",
+      },
+    ],
   },
   createOnce(context: RuleContext) {
     let max = DEFAULT_MAX;

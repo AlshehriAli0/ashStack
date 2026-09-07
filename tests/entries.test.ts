@@ -13,11 +13,27 @@ import {
 } from "../packages/lint/dist/index.js";
 import { EFFECT_NAMESPACE } from "../packages/lint/dist/lib/effect-plugin.js";
 import { shortName } from "../packages/lint/dist/lib/module.js";
-import type { ModuleManifest, OxlintConfig, ReactNativeOptions } from "../packages/lint/dist/lib/types.js";
+import type { ModuleManifest, OxlintConfig, ReactNativeOptions, Rule } from "../packages/lint/dist/lib/types.js";
 import { codesFrom } from "./harness.js";
 
 const MAX_LINES_CODE = "@ashstack/core(max-lines)";
 const MAX_COMPLEXITY_CODE = "@ashstack/core(max-complexity)";
+
+/** Room for a scoring model, and no room for the paragraph a description used to grow into. */
+const MAX_DESCRIPTION = 400;
+
+type Option = Extract<NonNullable<Rule["meta"]["schema"]>, unknown[]>[number];
+
+/** Every option a rule declares, labelled the way the docs name it: a property key, or a position. */
+const optionSchemas = (rule: Rule): [label: string, option: Option][] => {
+  const { schema } = rule.meta;
+  if (!Array.isArray(schema)) return [];
+  const [first] = schema;
+  if (schema.length === 1 && first?.type === "object" && first.properties !== undefined) {
+    return Object.entries(first.properties);
+  }
+  return schema.map((option, index) => [`[${index}]`, option]);
+};
 
 /** `count` flat guards: a point each under cognitive complexity, a branch each under the built-in rule. */
 const guards = (count: number): string =>
@@ -120,6 +136,26 @@ describe("the module registry", () => {
         expect(`${module.meta.name}/${name}: ${description}`).toMatch(/: [`A-Z].*\.$/s);
       }
     }
+  });
+
+  it("keeps every description short enough to read at a hover", () => {
+    const overLong = ALL_MODULES.flatMap(module =>
+      Object.entries(module.rules)
+        .filter(([, rule]) => rule.meta.docs.description.length > MAX_DESCRIPTION)
+        .map(([name, rule]) => `${module.meta.name}/${name}: ${rule.meta.docs.description.length} chars`)
+    );
+    expect(overLong).toEqual([]);
+  });
+
+  it("documents every option it declares, so the docs table is never blank", () => {
+    const undocumented = ALL_MODULES.flatMap(module =>
+      Object.entries(module.rules).flatMap(([name, rule]) =>
+        optionSchemas(rule)
+          .filter(([, option]) => option.default === undefined || option.description === undefined)
+          .map(([option]) => `${module.meta.name}/${name} option ${option}`)
+      )
+    );
+    expect(undocumented).toEqual([]);
   });
 
   it("marks every rule as a problem or a suggestion", () => {

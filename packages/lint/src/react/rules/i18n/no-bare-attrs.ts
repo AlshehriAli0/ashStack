@@ -9,13 +9,20 @@ export const noBareAttrs: Rule = {
   meta: {
     type: "problem",
     docs: {
-      description:
-        "Disallow a plain string literal on a configurable list of user-visible JSX attributes, defaulting to placeholder, accessibilityLabel, accessibilityHint and title.",
+      description: "Disallow a plain string literal on a user-visible JSX attribute.",
     },
     schema: [
       {
         type: "object",
-        properties: { attributes: { type: "array", items: { type: "string" }, minItems: 1 } },
+        properties: {
+          attributes: {
+            type: "array",
+            items: { type: "string" },
+            minItems: 1,
+            default: NATIVE_TRANSLATABLE_ATTRIBUTES,
+            description: "Attributes checked for bare strings. Replaces the list rather than adding to it.",
+          },
+        },
         additionalProperties: false,
       },
     ],

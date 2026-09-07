@@ -193,33 +193,19 @@ _always on via `core()` and every entry above it._
 
 #### `@ashstack/core/no-comments`
 
-Disallow every comment that is neither a `// what: <fact>` line, a `// why:` marker, nor a tooling directive. The message names the refactoring that removes it: Rename, Extract Function, Guard Clause. Surviving `// what:` lines are held to one short line each, at most `budget` per file (default 2); `escapeHatch: false` removes that hatch, so no discretionary prose survives. A `// why:` line is the marker `@ashstack/react-native/no-manual-memo` requires above a kept `memo`: held to the same one-line shape, never counted against `budget`, and kept even with `escapeHatch: false`, so the two rules run together. With `jsdoc: "allow"`, a `/** */` block documenting the declaration directly beneath it is kept, while a floating one still reports.
+Disallow every comment that is not a `// what:` fact, a `// why:` marker, or a tooling directive. The diagnostic names the refactor that removes it. A `// why:` line is what `@ashstack/react-native/no-manual-memo` requires above a kept `memo`, so it survives whatever the options say.
 
 **Options**
 
-```jsonc
-[
-  {
-    "type": "object",
-    "properties": {
-      "jsdoc": {
-        "enum": [
-          "allow",
-          "report"
-        ]
-      },
-      "escapeHatch": {
-        "type": "boolean"
-      },
-      "budget": {
-        "type": "integer",
-        "minimum": 0
-      }
-    },
-    "additionalProperties": false
-  }
-]
+```ts
+[{ jsdoc?: "allow" | "report"; escapeHatch?: boolean; budget?: number }]
 ```
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `jsdoc` | `"allow" \| "report"` | `"report"` | With `"allow"`, a `/** */` block attached to the declaration below it is kept. A floating one still reports. |
+| `escapeHatch` | `boolean` | `true` | With `false`, the `// what:` hatch goes away and only `// why:` is left. |
+| `budget` | `number` | `2` | How many `// what:` lines one file may keep. `// why:` lines never count against it. |
 
 **Fails**
 
@@ -296,18 +282,11 @@ export const Panel = () => <View />;
 
 #### `@ashstack/core/no-packed-condition`
 
-Require a condition to be split into named booleans once it holds too many boolean operators and comparisons. The option says how many, defaulting to 5.
+Require a condition to be split into named booleans once it holds too many boolean operators and comparisons.
 
 **Options**
 
-```jsonc
-[
-  {
-    "type": "integer",
-    "minimum": 1
-  }
-]
-```
+Takes a `number`, default `5`. Highest number of operators one condition may pack.
 
 **Fails**
 
@@ -340,18 +319,13 @@ export const pick = (a: boolean, b: boolean, count: number) => {
 
 #### `@ashstack/core/max-lines`
 
-Cap the lines of code in one file, counting neither blank lines, comments, nor the style tables `StyleSheet.create` and `stylex.create` build. A stylesheet is data, and keeping it next to the component it styles is the point — it should not spend the budget that logic spends. The option says how many lines: 300 by default, which `core()` keeps, and 250 from `react()` down, where a file past it is several components rather than one long one. Replaces the built-in `max-lines`, which counts every line of all three.
+Cap the lines of code in one file. Blank lines, comments and the style tables `StyleSheet.create` and `stylex.create` build are not counted, so a colocated stylesheet costs the file nothing. Replaces the built-in `max-lines`, which counts all of them.
 
 **Options**
 
-```jsonc
-[
-  {
-    "type": "integer",
-    "minimum": 1
-  }
-]
-```
+Takes a `number`, default `300`. Highest number of code lines one file may hold.
+
+Set by: `react()` → `["error",250]`
 
 **Fails**
 
@@ -418,18 +392,13 @@ const styles = StyleSheet.create(theme => ({
 
 #### `@ashstack/core/max-complexity`
 
-Cap the cognitive complexity of one function: the branches a reader has to hold, weighted by how deep they nest. An `if`, `switch`, loop, `catch` or ternary costs a point plus one for every such structure it already sits inside; an `else` or `else if` costs a flat point; each run of `&&`/`||` costs a point, and `??` costs nothing, since a default is not a decision. A nested function is scored on its own rather than charged to the one around it, so extracting a callback is a real fix rather than a way of hiding the count. The option says the cap: 15 by default, which `core()` keeps, and 10 from `react()` down, where the branching belongs in the tree rather than in the function. Replaces the built-in `complexity`, which counts every branch flat and so reads a 20-case `switch` as 20 decisions.
+Cap the cognitive complexity of one function: its branches, weighted by nesting depth. An `if`, `switch`, loop, `catch` or ternary costs a point plus one per enclosing structure. An `else` or a run of `&&`/`||` costs a flat point, `??` costs nothing. A nested function is scored on its own. Replaces the built-in `complexity`, which reads a 20-case `switch` as 20 decisions.
 
 **Options**
 
-```jsonc
-[
-  {
-    "type": "integer",
-    "minimum": 1
-  }
-]
-```
+Takes a `number`, default `15`. Highest cognitive complexity one function may reach.
+
+Set by: `react()` → `["error",10]`
 
 **Fails**
 
@@ -699,99 +668,35 @@ Disallow importing a raw primitive your design system already wraps. Wrappers co
 
 **Options**
 
+```ts
+[{ dir?: string; alias?: string; use?: Record<string, string | Array<string> | { replaces: string | Array<string>; from?: string; path?: string; reason?: string }>; exempt?: Array<string> }]
+```
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `dir` | `string` | `"src/components/ui"` | Directory scanned for wrapper components. Every `.tsx` file in it becomes a wrapper. |
+| `alias` | `string` | `"@/components/ui"` | Import prefix the diagnostic points at, and a second folder counted as the design system. |
+| `use` | `Record<string, string \| Array<string> \| { replaces: string \| Array<string>; from?: string; path?: string; reason?: string }>` | `{}` | Wrappers the scan cannot find, keyed by component name. |
+| `exempt` | `Array<string>` | `[]` | Extra path fragments to skip, added to the design system's own folders. |
+
+Each `use` value takes one of these shapes:
+
 ```jsonc
-[
-  {
-    "type": "object",
-    "properties": {
-      "dir": {
-        "type": "string",
-        "minLength": 1,
-        "default": "src/components/ui",
-        "description": "Directory scanned for wrapper components. Every `.tsx` file in it becomes a wrapper."
-      },
-      "alias": {
-        "type": "string",
-        "minLength": 1,
-        "default": "@/components/ui",
-        "description": "Import prefix the diagnostic points at, and a second folder counted as the design system."
-      },
-      "use": {
-        "type": "object",
-        "additionalProperties": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "replaces": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  ]
-                },
-                "from": {
-                  "type": "string"
-                },
-                "path": {
-                  "type": "string"
-                },
-                "reason": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "replaces"
-              ],
-              "additionalProperties": false
-            }
-          ]
-        },
-        "default": {},
-        "description": "Wrappers the scan cannot find, keyed by component name.",
-        "examples": [
-          {
-            "Button": "Pressable",
-            "Text": [
-              "Text",
-              "RNText"
-            ],
-            "Sheet": {
-              "replaces": "Modal",
-              "from": "react-native",
-              "path": "@/ui/sheet",
-              "reason": "It owns insets."
-            }
-          }
-        ]
-      },
-      "exempt": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        },
-        "default": [],
-        "description": "Extra path fragments to skip, added to the design system's own folders."
-      }
-    },
-    "additionalProperties": false
+{
+  "use": {
+    "Button": "Pressable",
+    "Text": [
+      "Text",
+      "RNText"
+    ],
+    "Sheet": {
+      "replaces": "Modal",
+      "from": "react-native",
+      "path": "@/ui/sheet",
+      "reason": "It owns insets."
+    }
   }
-]
+}
 ```
 
 **Fails**
@@ -828,22 +733,13 @@ Require every file under the components directory to render JSX or be a re-expor
 
 **Options**
 
-```jsonc
-[
-  {
-    "type": "object",
-    "properties": {
-      "dir": {
-        "type": "string",
-        "minLength": 1,
-        "default": "src/components",
-        "description": "Directory whose files must render JSX."
-      }
-    },
-    "additionalProperties": false
-  }
-]
+```ts
+[{ dir?: string }]
 ```
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `dir` | `string` | `"src/components"` | Directory whose files must render JSX. |
 
 **Fails**
 
@@ -1109,27 +1005,17 @@ export const Greeting = () => {
 
 #### `@ashstack/i18n/no-bare-attrs`
 
-Disallow a plain string literal on a configurable list of user-visible JSX attributes, defaulting to placeholder, accessibilityLabel, accessibilityHint and title.
+Disallow a plain string literal on a user-visible JSX attribute.
 
 **Options**
 
-```jsonc
-[
-  {
-    "type": "object",
-    "properties": {
-      "attributes": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        },
-        "minItems": 1
-      }
-    },
-    "additionalProperties": false
-  }
-]
+```ts
+[{ attributes?: Array<string> }]
 ```
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `attributes` | `Array<string>` | `["placeholder","accessibilityLabel","accessibilityHint","title"]` | Attributes checked for bare strings. Replaces the list rather than adding to it. |
 
 **Fails**
 
@@ -1642,7 +1528,7 @@ export function GoodHoist({ count }: { count: number }) {
 
 #### `@ashstack/react-native/no-manual-memo`
 
-Require a `// why:` line above every kept `useMemo`, `useCallback` and `memo`. The React Compiler memoises on a best-effort basis, not a guarantee, so a memo is allowed where the cost is real: something rendered per list row, or a computation measured as heavy. The `// why:` line names which of the two applies. `@ashstack/core/no-comments` keeps that line and never counts it against its `budget`, so both rules run together. Assumes the compiler is on — pass `reactCompiler: false` to the entry and this rule turns off, since without it a hand-written memo is the only memo there is.
+Require a `// why:` line above every kept `useMemo`, `useCallback` and `memo`. The React Compiler memoises on a best-effort basis, so a memo is allowed where the cost is real: a list row, or a computation measured as heavy. Turns off with `reactCompiler: false`.
 
 **Fails**
 

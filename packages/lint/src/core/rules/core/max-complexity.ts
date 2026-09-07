@@ -49,9 +49,18 @@ const nestingOf = (node: AstNode): number => {
 };
 
 export const maxComplexity: Rule = problem(
-  "Cap the cognitive complexity of one function: the branches a reader has to hold, weighted by how deep they nest. An `if`, `switch`, loop, `catch` or ternary costs a point plus one for every such structure it already sits inside; an `else` or `else if` costs a flat point; each run of `&&`/`||` costs a point, and `??` costs nothing, since a default is not a decision. A nested function is scored on its own rather than charged to the one around it, so extracting a callback is a real fix rather than a way of hiding the count. The option says the cap: 15 by default, which `core()` keeps, and 10 from `react()` down, where the branching belongs in the tree rather than in the function. Replaces the built-in `complexity`, which counts every branch flat and so reads a 20-case `switch` as 20 decisions.",
+  "Cap the cognitive complexity of one function: its branches, weighted by nesting depth. An `if`, `switch`, loop, `catch` or ternary costs a point plus one per enclosing structure. An `else` or a run of `&&`/`||` costs a flat point, `??` costs nothing. A nested function is scored on its own. Replaces the built-in `complexity`, which reads a 20-case `switch` as 20 decisions.",
   {
-    meta: { schema: [{ type: "integer", minimum: 1 }] },
+    meta: {
+      schema: [
+        {
+          type: "integer",
+          minimum: 1,
+          default: DEFAULT_MAX,
+          description: "Highest cognitive complexity one function may reach.",
+        },
+      ],
+    },
     createOnce(context: RuleContext) {
       let max = DEFAULT_MAX;
       let score = 0;

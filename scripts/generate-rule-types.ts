@@ -20,7 +20,7 @@ import { effectsModule, emit, formatGenerated, type Generated, ruleNotes, sectio
  */
 const outDir = join(import.meta.dir, "..", "packages", "lint", "src", "lib", "rule-types");
 
-type Schema = Extract<NonNullable<Rule["meta"]["schema"]>, unknown[]>[number];
+export type Schema = Extract<NonNullable<Rule["meta"]["schema"]>, unknown[]>[number];
 
 const IDENTIFIER = /^[A-Za-z_$][A-Za-z0-9_$]*$/;
 

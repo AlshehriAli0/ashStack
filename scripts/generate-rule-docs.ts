@@ -18,6 +18,7 @@ import type {
   RestrictedImports,
   Rule,
 } from "../packages/lint/dist/lib/types.js";
+import { type EntryConfig, optionsDoc } from "./rule-options-doc.js";
 import { anchor, effectsModule, emit, type Generated, RULES_URL, ruleNotes } from "./shared.js";
 
 const lintDir = join(import.meta.dir, "..", "packages", "lint");
@@ -53,9 +54,9 @@ const fixtureSource = (moduleDir: string, rule: string, fixture: "bad" | "good")
   return existsSync(path) ? readFileSync(path, "utf8").trim() : null;
 };
 
-const activationNotes = (meta: Rule["meta"]): string[] => [
-  ...ruleNotes(meta).flatMap(note => [`> ${note}`, ""]),
-  ...(meta.schema ? ["**Options**", "", "```jsonc", JSON.stringify(meta.schema, null, 2), "```", ""] : []),
+const activationNotes = (rule: Rule, id: string): string[] => [
+  ...ruleNotes(rule.meta).flatMap(note => [`> ${note}`, ""]),
+  ...optionsDoc(rule, id, entryConfigs),
 ];
 
 const examples = (moduleDir: string, name: string): string[] => {
@@ -72,7 +73,7 @@ const ruleSection = (module: ModuleManifest, name: string, rule: ModuleManifest[
   "",
   rule.meta.docs.description,
   "",
-  ...activationNotes(rule.meta),
+  ...activationNotes(rule, `${module.meta.name}/${name}`),
   ...examples(shortName(module), name),
 ];
 
@@ -151,6 +152,13 @@ const detectingModules = (modules: ModuleManifest[]): number =>
 const coreConfig = core();
 const reactConfig = react();
 const reactNativeConfig = reactNative();
+
+/** Layering order, so a rule's `Set by:` line reads top down and skips what an entry inherits. */
+const entryConfigs: EntryConfig[] = [
+  ["core()", coreConfig],
+  ["react()", reactConfig],
+  ["react-native()", reactNativeConfig],
+];
 
 const reactAll = [...coreModules, ...reactModules];
 const reactDocsModules = [...reactModules, await effectsModule()];

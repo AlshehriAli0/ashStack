@@ -126,7 +126,7 @@ declare module "oxlint" {
      */
     "@ashstack/i18n/no-bare-text"?: RuleSetting;
     /**
-     * Disallow a plain string literal on a configurable list of user-visible JSX attributes, defaulting to placeholder, accessibilityLabel, accessibilityHint and title.
+     * Disallow a plain string literal on a user-visible JSX attribute.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacki18nno-bare-attrs
      */

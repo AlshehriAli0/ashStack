@@ -17,7 +17,7 @@ export type CoreRuleId =
 declare module "oxlint" {
   interface DummyRuleMap {
     /**
-     * Disallow every comment that is neither a `// what: <fact>` line, a `// why:` marker, nor a tooling directive. The message names the refactoring that removes it: Rename, Extract Function, Guard Clause. Surviving `// what:` lines are held to one short line each, at most `budget` per file (default 2); `escapeHatch: false` removes that hatch, so no discretionary prose survives. A `// why:` line is the marker `@ashstack/react-native/no-manual-memo` requires above a kept `memo`: held to the same one-line shape, never counted against `budget`, and kept even with `escapeHatch: false`, so the two rules run together. With `jsdoc: "allow"`, a `/** *\/` block documenting the declaration directly beneath it is kept, while a floating one still reports.
+     * Disallow every comment that is not a `// what:` fact, a `// why:` marker, or a tooling directive. The diagnostic names the refactor that removes it. A `// why:` line is what `@ashstack/react-native/no-manual-memo` requires above a kept `memo`, so it survives whatever the options say.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreno-comments
      */
@@ -31,19 +31,19 @@ declare module "oxlint" {
      */
     "@ashstack/core/no-naming-convention"?: RuleSetting;
     /**
-     * Require a condition to be split into named booleans once it holds too many boolean operators and comparisons. The option says how many, defaulting to 5.
+     * Require a condition to be split into named booleans once it holds too many boolean operators and comparisons.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreno-packed-condition
      */
     "@ashstack/core/no-packed-condition"?: RuleSetting<[number]>;
     /**
-     * Cap the lines of code in one file, counting neither blank lines, comments, nor the style tables `StyleSheet.create` and `stylex.create` build. A stylesheet is data, and keeping it next to the component it styles is the point — it should not spend the budget that logic spends. The option says how many lines: 300 by default, which `core()` keeps, and 250 from `react()` down, where a file past it is several components rather than one long one. Replaces the built-in `max-lines`, which counts every line of all three.
+     * Cap the lines of code in one file. Blank lines, comments and the style tables `StyleSheet.create` and `stylex.create` build are not counted, so a colocated stylesheet costs the file nothing. Replaces the built-in `max-lines`, which counts all of them.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoremax-lines
      */
     "@ashstack/core/max-lines"?: RuleSetting<[number]>;
     /**
-     * Cap the cognitive complexity of one function: the branches a reader has to hold, weighted by how deep they nest. An `if`, `switch`, loop, `catch` or ternary costs a point plus one for every such structure it already sits inside; an `else` or `else if` costs a flat point; each run of `&&`/`||` costs a point, and `??` costs nothing, since a default is not a decision. A nested function is scored on its own rather than charged to the one around it, so extracting a callback is a real fix rather than a way of hiding the count. The option says the cap: 15 by default, which `core()` keeps, and 10 from `react()` down, where the branching belongs in the tree rather than in the function. Replaces the built-in `complexity`, which counts every branch flat and so reads a 20-case `switch` as 20 decisions.
+     * Cap the cognitive complexity of one function: its branches, weighted by nesting depth. An `if`, `switch`, loop, `catch` or ternary costs a point plus one per enclosing structure. An `else` or a run of `&&`/`||` costs a flat point, `??` costs nothing. A nested function is scored on its own. Replaces the built-in `complexity`, which reads a 20-case `switch` as 20 decisions.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoremax-complexity
      */

@@ -164,15 +164,29 @@ export const noComments: Rule = {
     type: "problem",
     docs: {
       description:
-        'Disallow every comment that is neither a `// what: <fact>` line, a `// why:` marker, nor a tooling directive. The message names the refactoring that removes it: Rename, Extract Function, Guard Clause. Surviving `// what:` lines are held to one short line each, at most `budget` per file (default 2); `escapeHatch: false` removes that hatch, so no discretionary prose survives. A `// why:` line is the marker `@ashstack/react-native/no-manual-memo` requires above a kept `memo`: held to the same one-line shape, never counted against `budget`, and kept even with `escapeHatch: false`, so the two rules run together. With `jsdoc: "allow"`, a `/** */` block documenting the declaration directly beneath it is kept, while a floating one still reports.',
+        "Disallow every comment that is not a `// what:` fact, a `// why:` marker, or a tooling directive. The diagnostic names the refactor that removes it. A `// why:` line is what `@ashstack/react-native/no-manual-memo` requires above a kept `memo`, so it survives whatever the options say.",
     },
     schema: [
       {
         type: "object",
         properties: {
-          jsdoc: { enum: ["allow", "report"] },
-          escapeHatch: { type: "boolean" },
-          budget: { type: "integer", minimum: 0 },
+          jsdoc: {
+            enum: ["allow", "report"],
+            default: "report",
+            description:
+              'With `"allow"`, a `/** */` block attached to the declaration below it is kept. A floating one still reports.',
+          },
+          escapeHatch: {
+            type: "boolean",
+            default: true,
+            description: "With `false`, the `// what:` hatch goes away and only `// why:` is left.",
+          },
+          budget: {
+            type: "integer",
+            minimum: 0,
+            default: HATCH_DEFAULT_BUDGET,
+            description: "How many `// what:` lines one file may keep. `// why:` lines never count against it.",
+          },
         },
         additionalProperties: false,
       },
