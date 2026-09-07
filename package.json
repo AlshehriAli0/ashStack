@@ -10,7 +10,6 @@
     "build": "rm -rf packages/lint/dist && tsc -p packages/lint",
     "check:duplicates": "bun run build && bun scripts/check-duplicates.ts",
     "check:fixtures": "bun run build && bun scripts/check-fixtures.ts",
-    "check:mutants": "bun run build && bun scripts/check-mutants.ts",
     "check:pack": "bun scripts/check-pack.ts",
     "check:smoke": "bun run build && bun scripts/check-smoke.ts",
     "docs:rules": "bun run build && bun scripts/generate-rule-docs.ts",
