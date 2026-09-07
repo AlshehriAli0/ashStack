@@ -21,13 +21,27 @@ export const anchor = (heading: string): string =>
 /** The RULES.md section for a heading's text, e.g. `core()` or `@ashstack/core/no-comments`. */
 export const sectionLink = (heading: string): string => `${RULES_URL}#${anchor(heading)}`;
 
-/** What gates a rule, as plain sentences: RULES.md quotes them, the hover types spell them out. */
-export const ruleNotes = (meta: Rule["meta"]): string[] => [
-  ...(meta.defaultOff === true ? ["Off by default — opt in per project."] : []),
-  ...(meta.packages
-    ? [`Enabled only when one of ${meta.packages.map(name => `\`${name}\``).join(", ")} is a dependency.`]
-    : []),
-];
+/** `a`, `b` and `c`, for a conjunction the caller picks. */
+export const list = (names: string[], conjunction: "and" | "or"): string => {
+  const last = names.at(-1) ?? "";
+  return names.length < 2 ? last : `${names.slice(0, -1).join(", ")} ${conjunction} ${last}`;
+};
+
+/**
+ * Whether a rule is on if you do nothing, as one line every rule carries.
+ * Stated even when the answer is a plain yes: a reader who sees a note on some
+ * rules and nothing on others cannot tell "on" from "nobody wrote it down".
+ *
+ * A rule is off only when it asks to be. Otherwise it follows its module, which
+ * is either always on or detected from a dependency.
+ */
+export const ruleStatus = (module: ModuleManifest, rule: Rule): string => {
+  if (rule.meta.defaultOff === true) return "**Default: off.** Turn it on by id in your `rules` block.";
+  const gates = rule.meta.packages ?? module.packages;
+  if (gates === undefined) return "**Default: on.**";
+  const backticked = gates.map(name => `\`${name}\``);
+  return `**Default: on**, when ${list(backticked, "or")} is a dependency.`;
+};
 
 interface VendoredRule {
   meta?: { docs?: { description?: string; url?: string } };

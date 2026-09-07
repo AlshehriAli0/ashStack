@@ -19,6 +19,8 @@ declare module "oxlint" {
     /**
      * Disallow every comment that is not a `// what:` fact, a `// why:` marker, or a tooling directive. The diagnostic names the refactor that removes it. A `// why:` line is what `@ashstack/react-native/no-manual-memo` requires above a kept `memo`, so it survives whatever the options say.
      *
+     * **Default: on.**
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreno-comments
      */
     "@ashstack/core/no-comments"?: RuleSetting<
@@ -27,11 +29,15 @@ declare module "oxlint" {
     /**
      * Require a variable, object property, type member or enum member to use one of the casings allowed for its kind.
      *
+     * **Default: on.**
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreno-naming-convention
      */
     "@ashstack/core/no-naming-convention"?: RuleSetting;
     /**
      * Require a condition to be split into named booleans once it holds too many boolean operators and comparisons.
+     *
+     * **Default: on.**
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreno-packed-condition
      */
@@ -39,17 +45,23 @@ declare module "oxlint" {
     /**
      * Cap the lines of code in one file. Blank lines, comments and the style tables `StyleSheet.create` and `stylex.create` build are not counted, so a colocated stylesheet costs the file nothing. Replaces the built-in `max-lines`, which counts all of them.
      *
+     * **Default: on.**
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoremax-lines
      */
     "@ashstack/core/max-lines"?: RuleSetting<[number]>;
     /**
      * Cap the cognitive complexity of one function: its branches, weighted by nesting depth. An `if`, `switch`, loop, `catch` or ternary costs a point plus one per enclosing structure. An `else` or a run of `&&`/`||` costs a flat point, `??` costs nothing. A nested function is scored on its own. Replaces the built-in `complexity`, which reads a 20-case `switch` as 20 decisions.
      *
+     * **Default: on.**
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoremax-complexity
      */
     "@ashstack/core/max-complexity"?: RuleSetting<[number]>;
     /**
      * Disallow `z.nativeEnum()` and any `z.union()` whose members are all `z.literal()` strings.
+     *
+     * **Default: on**, when `zod` is a dependency.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackzodprefer-enum
      */

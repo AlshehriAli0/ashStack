@@ -16,11 +16,12 @@ const rule = (description: string, meta: Partial<Rule["meta"]> = {}): Rule => ({
 
 const withSchema = (schema: Schema[]): Rule => rule("Does a thing.", { schema });
 
-const moduleWith = (name: string, rules: Record<string, Rule>): ModuleManifest => ({
+const moduleWith = (name: string, rules: Record<string, Rule>, packages?: string[]): ModuleManifest => ({
   meta: { name: `@ashstack/${name}` },
   rules,
   url: import.meta.url,
   docsWhen: "always on",
+  ...(packages === undefined ? {} : { packages }),
 });
 
 const tierOf = (modules: ModuleManifest[]): Tier => ({
@@ -111,7 +112,8 @@ describe("settingType", () => {
 });
 
 describe("ruleMember", () => {
-  const doc = (one: Rule): string => ruleMember(["@ashstack/core/probe", one]).join("\n");
+  const doc = (one: Rule, module = moduleWith("core", {})): string =>
+    ruleMember({ id: "@ashstack/core/probe", rule: one, module }).join("\n");
 
   it("documents the rule and links its RULES.md section", () => {
     const text = doc(rule("Requires a thing."));
@@ -122,10 +124,32 @@ describe("ruleMember", () => {
     expect(text).toContain('"@ashstack/core/probe"?: RuleSetting;');
   });
 
-  it("says when a rule is off by default or gated on a dependency", () => {
-    const text = doc(rule("Requires a thing.", { defaultOff: true, packages: ["zod"] }));
-    expect(text).toContain("Off by default");
-    expect(text).toContain("Enabled only when one of `zod` is a dependency.");
+  it("says a rule is on when nothing gates it, so silence never has to be read as yes", () => {
+    expect(doc(rule("Requires a thing."))).toContain("**Default: on.**");
+  });
+
+  it("says a rule is off by default, and how to turn it on", () => {
+    const text = doc(rule("Requires a thing.", { defaultOff: true }));
+    expect(text).toContain("**Default: off.**");
+    expect(text).toContain("`rules` block");
+  });
+
+  it("names the dependency a rule waits on, reading it off the module", () => {
+    const gated = moduleWith("zod", {}, ["zod"]);
+    expect(doc(rule("Requires a thing."), gated)).toContain("**Default: on**, when `zod` is a dependency.");
+  });
+
+  it("lets a rule's own gate win over its module's", () => {
+    const gated = moduleWith("zod", {}, ["zod"]);
+    const text = doc(rule("Requires a thing.", { packages: ["valibot"] }), gated);
+    expect(text).toContain("`valibot` is a dependency");
+  });
+
+  it("says off without a dependency, since an opt-in rule stays off either way", () => {
+    const gated = moduleWith("zod", {}, ["zod"]);
+    const text = doc(rule("Requires a thing.", { defaultOff: true }), gated);
+    expect(text).toContain("**Default: off.**");
+    expect(text).not.toContain("dependency");
   });
 
   it("escapes a description that would close the block early", () => {
@@ -166,7 +190,7 @@ describe("the generated files", () => {
   it("type every rule this package ships", () => {
     const all = TIERS.map(generated).join("\n");
     const missing = rulesOf(ALL)
-      .map(([id]) => id)
+      .map(({ id }) => id)
       .filter(id => !all.includes(`${JSON.stringify(id)}?:`));
     expect(missing).toEqual([]);
   });

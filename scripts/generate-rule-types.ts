@@ -2,7 +2,7 @@ import { join } from "node:path";
 
 import type { ModuleManifest, Rule } from "../packages/lint/dist/lib/types.js";
 import { coreModules, reactModules, reactNativeModules } from "../packages/lint/dist/modules.js";
-import { effectsModule, emit, formatGenerated, type Generated, ruleNotes, sectionLink } from "./shared.js";
+import { effectsModule, emit, formatGenerated, type Generated, ruleStatus, sectionLink } from "./shared.js";
 
 /**
  * Write the `oxlint` module augmentation that types every rule id this package
@@ -80,16 +80,21 @@ const jsdoc = (paragraphs: string[]): string[] => [
 ];
 
 /** One rule as a documented member of the augmented map. */
-export const ruleMember = ([id, rule]: RuleEntry): string[] =>
-  jsdoc([rule.meta.docs.description, ...ruleNotes(rule.meta), `@see ${sectionLink(id)}`]).concat(
+export const ruleMember = ({ id, rule, module }: RuleEntry): string[] =>
+  jsdoc([rule.meta.docs.description, ruleStatus(module, rule), `@see ${sectionLink(id)}`]).concat(
     `${JSON.stringify(id)}?: ${settingType(rule)};`
   );
 
-export type RuleEntry = [id: string, rule: Rule];
+/** A rule with the id it answers to and the module whose activation it follows. */
+export interface RuleEntry {
+  id: string;
+  rule: Rule;
+  module: ModuleManifest;
+}
 
 export const rulesOf = (modules: ModuleManifest[]): RuleEntry[] =>
   modules.flatMap(module =>
-    Object.entries(module.rules).map(([name, rule]): RuleEntry => [`${module.meta.name}/${name}`, rule])
+    Object.entries(module.rules).map(([name, rule]): RuleEntry => ({ id: `${module.meta.name}/${name}`, rule, module }))
   );
 
 export interface Tier {
@@ -113,7 +118,7 @@ export const fileFor = ({ typeName, entry, modules }: Tier): string => {
     "type RuleSetting<Options extends unknown[] = []> = AllowWarnDeny | [AllowWarnDeny, ...Partial<Options>];",
     "",
     `/** Every rule id \`${entry}\` adds on top of the entry below it. */`,
-    `export type ${typeName} = ${rules.map(([id]) => JSON.stringify(id)).join(" | ")};`,
+    `export type ${typeName} = ${rules.map(({ id }) => JSON.stringify(id)).join(" | ")};`,
     "",
     'declare module "oxlint" {',
     "interface DummyRuleMap {",

@@ -40,11 +40,15 @@ declare module "oxlint" {
     /**
      * Require an accessible name on an icon-only `<button>` or `<Button>`. Without a label, visible text or image alt text, a screen reader cannot reach the control.
      *
+     * **Default: on.**
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreactno-unlabeled-icon-button
      */
     "@ashstack/react/no-unlabeled-icon-button"?: RuleSetting;
     /**
      * Require an accessible name on an inline `<svg>`: a `<title>` child with content, an `aria-label`, or a marker that it is decorative. Every child counts, and a self-closing `<svg />` reports.
+     *
+     * **Default: on.**
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreactno-svg-without-title
      */
@@ -52,13 +56,15 @@ declare module "oxlint" {
     /**
      * Disallow `new Intl.*` inside a function that renders JSX, unless the call already sits in `useMemo` or `useCallback`.
      *
+     * **Default: on.**
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreacthoist-intl
      */
     "@ashstack/react/hoist-intl"?: RuleSetting;
     /**
      * Disallow importing a raw primitive your design system already wraps. Wrappers come from scanning the design-system directory and from the `use` map. Files inside the design system are skipped.
      *
-     * Off by default — opt in per project.
+     * **Default: off.** Turn it on by id in your `rules` block.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreactprefer-design-system
      */
@@ -78,7 +84,7 @@ declare module "oxlint" {
     /**
      * Require every file under the components directory to render JSX or be a re-export barrel.
      *
-     * Off by default — opt in per project.
+     * **Default: off.** Turn it on by id in your `rules` block.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreactcomponents-tsx-only
      */
@@ -86,11 +92,15 @@ declare module "oxlint" {
     /**
      * Disallow a query key written as an array literal at the call site instead of coming from a keys factory.
      *
+     * **Default: on**, when `@tanstack/react-query` is a dependency.
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackqueryno-inline-keys
      */
     "@ashstack/query/no-inline-keys"?: RuleSetting;
     /**
      * Disallow the positional key argument that TanStack Query v5 removed from `invalidateQueries` and its sibling methods. The suggestion rewrites it to the filter-object form.
+     *
+     * **Default: on**, when `@tanstack/react-query` is a dependency.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackqueryno-deprecated-filters
      */
@@ -98,11 +108,15 @@ declare module "oxlint" {
     /**
      * Require destructuring the result of a hook imported from an `@/api/*.queries` or `@/api/*.mutations` module.
      *
+     * **Default: on**, when `@tanstack/react-query` is a dependency.
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackqueryrequire-destructured-hooks
      */
     "@ashstack/query/require-destructured-hooks"?: RuleSetting;
     /**
      * Disallow a bare `fetch(` inside a `queryFn` or `mutationFn`.
+     *
+     * **Default: on**, when `@tanstack/react-query` is a dependency.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackqueryno-fetch-in-query-fn
      */
@@ -110,11 +124,15 @@ declare module "oxlint" {
     /**
      * Disallow `return null` in the body of a `getNextPageParam`.
      *
+     * **Default: on**, when `@tanstack/react-query` is a dependency.
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackquerynext-page-param-undefined
      */
     "@ashstack/query/next-page-param-undefined"?: RuleSetting;
     /**
      * Require a selector on a store hook, rather than no arguments or `undefined` in its place.
+     *
+     * **Default: on**, when `zustand` is a dependency.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackzustandrequire-selector
      */
@@ -122,11 +140,15 @@ declare module "oxlint" {
     /**
      * Disallow a JSX element that carries no attributes and whose single child is plain literal text.
      *
+     * **Default: on**, when `i18next`, `react-i18next`, `@lingui/core`, `react-intl`, `use-intl`, `next-intl` or `expo-localization` is a dependency.
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacki18nno-bare-text
      */
     "@ashstack/i18n/no-bare-text"?: RuleSetting;
     /**
      * Disallow a plain string literal on a user-visible JSX attribute.
+     *
+     * **Default: on**, when `i18next`, `react-i18next`, `@lingui/core`, `react-intl`, `use-intl`, `next-intl` or `expo-localization` is a dependency.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacki18nno-bare-attrs
      */
@@ -134,11 +156,15 @@ declare module "oxlint" {
     /**
      * Disallow a `toast.*` call whose only argument is a string literal.
      *
+     * **Default: on**, when `i18next`, `react-i18next`, `@lingui/core`, `react-intl`, `use-intl`, `next-intl` or `expo-localization` is a dependency.
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacki18nno-bare-toast
      */
     "@ashstack/i18n/no-bare-toast"?: RuleSetting;
     /**
      * Require a dynamic class value to go through `cn(...)` before it reaches a `class`, `className` or `*ClassName` prop. Reports both where the value reaches the prop and where a variable named after classes is declared.
+     *
+     * **Default: on**, when `tailwindcss` is a dependency.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktailwindprefer-cn
      */
@@ -146,11 +172,15 @@ declare module "oxlint" {
     /**
      * Require a logical Tailwind utility over its physical left/right twin, so a right-to-left layout mirrors. Reads class props and bindings named after classes, through variant prefixes and the `!` and `-` modifiers.
      *
+     * **Default: on**, when `tailwindcss` is a dependency.
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktailwinduse-logical-classes
      */
     "@ashstack/tailwind/use-logical-classes"?: RuleSetting;
     /**
      * Require a `select` on `useLocation`, `useRouterState` and non-strict `useSearch`, so a component reads the smallest router value it needs instead of re-rendering on every navigation.
+     *
+     * **Default: on**, when `@tanstack/react-router` is a dependency.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktanstack-routerrequire-selector
      */
@@ -158,11 +188,15 @@ declare module "oxlint" {
     /**
      * Disallow an `as` assertion on a `useSearch()` result or on `router.state.location.search`. The route's `validateSearch` schema is what supplies the type.
      *
+     * **Default: on**, when `@tanstack/react-router` is a dependency.
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktanstack-routerno-search-casts
      */
     "@ashstack/tanstack-router/no-search-casts"?: RuleSetting;
     /**
      * Disallow storing derived state in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#updating-state-based-on-props-or-state)
+     *
+     * **Default: on.**
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-derived-state
      */
@@ -170,11 +204,15 @@ declare module "oxlint" {
     /**
      * Disallow chaining state changes in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#chains-of-computations)
      *
+     * **Default: on.**
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-chain-state-updates
      */
     "@ashstack/effects/no-chain-state-updates"?: RuleSetting;
     /**
      * Disallow using state and an effect as an event handler. [Why](https://react.dev/learn/you-might-not-need-an-effect#sharing-logic-between-event-handlers)
+     *
+     * **Default: on.**
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-event-handler
      */
@@ -182,11 +220,15 @@ declare module "oxlint" {
     /**
      * Disallow adjusting state in an effect when a prop changes. [Why](https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)
      *
+     * **Default: on.**
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-adjust-state-on-prop-change
      */
     "@ashstack/effects/no-adjust-state-on-prop-change"?: RuleSetting;
     /**
      * Disallow resetting all state in an effect when a prop changes. [Why](https://react.dev/learn/you-might-not-need-an-effect#resetting-all-state-when-a-prop-changes)
+     *
+     * **Default: on.**
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-reset-all-state-on-prop-change
      */
@@ -194,11 +236,15 @@ declare module "oxlint" {
     /**
      * Disallow passing live state to parents in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#notifying-parent-components-about-state-changes)
      *
+     * **Default: on.**
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-pass-live-state-to-parent
      */
     "@ashstack/effects/no-pass-live-state-to-parent"?: RuleSetting;
     /**
      * Disallow passing data to parents in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#passing-data-to-the-parent)
+     *
+     * **Default: on.**
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-pass-data-to-parent
      */
@@ -206,11 +252,15 @@ declare module "oxlint" {
     /**
      * Disallow subscribing to an external store in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#subscribing-to-an-external-store)
      *
+     * **Default: on.**
+     *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-external-store-subscription
      */
     "@ashstack/effects/no-external-store-subscription"?: RuleSetting;
     /**
      * Disallow initializing state in an effect. [Why](https://tkdodo.eu/blog/avoiding-hydration-mismatches-with-use-sync-external-store)
+     *
+     * **Default: on.**
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-initialize-state
      */

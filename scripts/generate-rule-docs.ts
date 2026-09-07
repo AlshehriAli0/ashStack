@@ -19,7 +19,7 @@ import type {
   Rule,
 } from "../packages/lint/dist/lib/types.js";
 import { type EntryConfig, optionsDoc } from "./rule-options-doc.js";
-import { anchor, effectsModule, emit, type Generated, RULES_URL, ruleNotes } from "./shared.js";
+import { anchor, effectsModule, emit, type Generated, list, RULES_URL, ruleStatus } from "./shared.js";
 
 const lintDir = join(import.meta.dir, "..", "packages", "lint");
 const outPath = join(lintDir, "RULES.md");
@@ -54,8 +54,9 @@ const fixtureSource = (moduleDir: string, rule: string, fixture: "bad" | "good")
   return existsSync(path) ? readFileSync(path, "utf8").trim() : null;
 };
 
-const activationNotes = (rule: Rule, id: string): string[] => [
-  ...ruleNotes(rule.meta).flatMap(note => [`> ${note}`, ""]),
+const activationNotes = (module: ModuleManifest, rule: Rule, id: string): string[] => [
+  ruleStatus(module, rule),
+  "",
   ...optionsDoc(rule, id, entryConfigs),
 ];
 
@@ -73,7 +74,7 @@ const ruleSection = (module: ModuleManifest, name: string, rule: ModuleManifest[
   "",
   rule.meta.docs.description,
   "",
-  ...activationNotes(rule, `${module.meta.name}/${name}`),
+  ...activationNotes(module, rule, `${module.meta.name}/${name}`),
   ...examples(shortName(module), name),
 ];
 
@@ -172,11 +173,6 @@ const counts = {
   detecting: detectingModules(reactNativeAll),
 };
 
-const andList = (names: string[]): string => {
-  const last = names.at(-1) ?? "";
-  return names.length < 2 ? last : `${names.slice(0, -1).join(", ")} and ${last}`;
-};
-
 /**
  * The rules a consumer has to ask for, named in full. Read off the
  * `defaultOff` flags themselves, so a rule that stops being opt-in cannot
@@ -191,7 +187,7 @@ const optInIds = reactNativeAll.flatMap(module =>
 const optIn =
   optInIds.length === 0
     ? "Every rule is on by default."
-    : `Off by default, since they need a team decision first: ${andList(optInIds)}.`;
+    : `Off by default, since they need a team decision first: ${list(optInIds, "and")}.`;
 
 /** On in a bare oxlint install, so listing them as ours would be a lie. */
 const OXLINT_DEFAULT_PLUGINS = ["eslint", "typescript", "unicorn", "oxc"];
@@ -207,7 +203,7 @@ const doc = [
   "",
   "# @ashstack/lint rules",
   "",
-  "Find a rule by the id in its diagnostic, e.g. `@ashstack/unistyles/no-margin`. Each one lists what it enforces, its options, and a failing and a passing example. The diagnostic itself names the fix.",
+  "Find a rule by the id in its diagnostic, e.g. `@ashstack/unistyles/no-margin`. Each one states whether it is on if you do nothing, then lists its options and a failing and a passing example. The diagnostic itself names the fix.",
   "",
   "`core()`, `react()` and `react-native()` each contain the one before, so a section's built-in table lists only the settings that entry changes. Built-in rules link to their upstream page.",
   "",

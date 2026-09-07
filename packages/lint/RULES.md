@@ -2,7 +2,7 @@
 
 # @ashstack/lint rules
 
-Find a rule by the id in its diagnostic, e.g. `@ashstack/unistyles/no-margin`. Each one lists what it enforces, its options, and a failing and a passing example. The diagnostic itself names the fix.
+Find a rule by the id in its diagnostic, e.g. `@ashstack/unistyles/no-margin`. Each one states whether it is on if you do nothing, then lists its options and a failing and a passing example. The diagnostic itself names the fix.
 
 `core()`, `react()` and `react-native()` each contain the one before, so a section's built-in table lists only the settings that entry changes. Built-in rules link to their upstream page.
 
@@ -195,6 +195,8 @@ _always on via `core()` and every entry above it._
 
 Disallow every comment that is not a `// what:` fact, a `// why:` marker, or a tooling directive. The diagnostic names the refactor that removes it. A `// why:` line is what `@ashstack/react-native/no-manual-memo` requires above a kept `memo`, so it survives whatever the options say.
 
+**Default: on.**
+
 **Options**
 
 ```ts
@@ -243,6 +245,8 @@ export const SettingsPanel = () => {
 
 Require a variable, object property, type member or enum member to use one of the casings allowed for its kind.
 
+**Default: on.**
+
 **Fails**
 
 ```tsx
@@ -284,6 +288,8 @@ export const Panel = () => <View />;
 
 Require a condition to be split into named booleans once it holds too many boolean operators and comparisons.
 
+**Default: on.**
+
 **Options**
 
 Takes a `number`, default `5`. Highest number of operators one condition may pack.
@@ -320,6 +326,8 @@ export const pick = (a: boolean, b: boolean, count: number) => {
 #### `@ashstack/core/max-lines`
 
 Cap the lines of code in one file. Blank lines, comments and the style tables `StyleSheet.create` and `stylex.create` build are not counted, so a colocated stylesheet costs the file nothing. Replaces the built-in `max-lines`, which counts all of them.
+
+**Default: on.**
 
 **Options**
 
@@ -394,6 +402,8 @@ const styles = StyleSheet.create(theme => ({
 
 Cap the cognitive complexity of one function: its branches, weighted by nesting depth. An `if`, `switch`, loop, `catch` or ternary costs a point plus one per enclosing structure. An `else` or a run of `&&`/`||` costs a flat point, `??` costs nothing. A nested function is scored on its own. Replaces the built-in `complexity`, which reads a 20-case `switch` as 20 decisions.
 
+**Default: on.**
+
 **Options**
 
 Takes a `number`, default `15`. Highest cognitive complexity one function may reach.
@@ -439,6 +449,8 @@ _auto-enabled when `zod` is a dependency._
 #### `@ashstack/zod/prefer-enum`
 
 Disallow `z.nativeEnum()` and any `z.union()` whose members are all `z.literal()` strings.
+
+**Default: on**, when `zod` is a dependency.
 
 **Fails**
 
@@ -570,11 +582,13 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 
 ### `@ashstack/react`
 
-_always on via `react()` and every entry above it (opt-in rules noted per rule)._
+_always on via `react()` and every entry above it._
 
 #### `@ashstack/react/no-unlabeled-icon-button`
 
 Require an accessible name on an icon-only `<button>` or `<Button>`. Without a label, visible text or image alt text, a screen reader cannot reach the control.
+
+**Default: on.**
 
 **Fails**
 
@@ -610,6 +624,8 @@ export const Labelled = () => (
 
 Require an accessible name on an inline `<svg>`: a `<title>` child with content, an `aria-label`, or a marker that it is decorative. Every child counts, and a self-closing `<svg />` reports.
 
+**Default: on.**
+
 **Fails**
 
 ```tsx
@@ -639,6 +655,8 @@ export const Decorative = () => <svg viewBox="0 0 16 16" aria-hidden="true" />;
 
 Disallow `new Intl.*` inside a function that renders JSX, unless the call already sits in `useMemo` or `useCallback`.
 
+**Default: on.**
+
 **Fails**
 
 ```tsx
@@ -664,7 +682,7 @@ export const Price = () => <View accessibilityValue={{ text: formatter.format(10
 
 Disallow importing a raw primitive your design system already wraps. Wrappers come from scanning the design-system directory and from the `use` map. Files inside the design system are skipped.
 
-> Off by default — opt in per project.
+**Default: off.** Turn it on by id in your `rules` block.
 
 **Options**
 
@@ -729,7 +747,7 @@ export const Panel = () => (
 
 Require every file under the components directory to render JSX or be a re-export barrel.
 
-> Off by default — opt in per project.
+**Default: off.** Turn it on by id in your `rules` block.
 
 **Options**
 
@@ -762,6 +780,8 @@ _auto-enabled by `react()` when `@tanstack/react-query` is a dependency._
 #### `@ashstack/query/no-inline-keys`
 
 Disallow a query key written as an array literal at the call site instead of coming from a keys factory.
+
+**Default: on**, when `@tanstack/react-query` is a dependency.
 
 **Fails**
 
@@ -796,6 +816,8 @@ export const PostList = () => {
 
 Disallow the positional key argument that TanStack Query v5 removed from `invalidateQueries` and its sibling methods. The suggestion rewrites it to the filter-object form.
 
+**Default: on**, when `@tanstack/react-query` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -828,6 +850,8 @@ export const RefreshPanel = () => {
 
 Require destructuring the result of a hook imported from an `@/api/*.queries` or `@/api/*.mutations` module.
 
+**Default: on**, when `@tanstack/react-query` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -857,6 +881,8 @@ export const PostList = () => {
 #### `@ashstack/query/no-fetch-in-query-fn`
 
 Disallow a bare `fetch(` inside a `queryFn` or `mutationFn`.
+
+**Default: on**, when `@tanstack/react-query` is a dependency.
 
 **Fails**
 
@@ -893,6 +919,8 @@ export const PostList = () => {
 #### `@ashstack/query/next-page-param-undefined`
 
 Disallow `return null` in the body of a `getNextPageParam`.
+
+**Default: on**, when `@tanstack/react-query` is a dependency.
 
 **Fails**
 
@@ -948,6 +976,8 @@ _auto-enabled by `react()` when `zustand` is a dependency._
 
 Require a selector on a store hook, rather than no arguments or `undefined` in its place.
 
+**Default: on**, when `zustand` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -982,6 +1012,8 @@ _auto-enabled by `react()` when an i18n library (i18next, lingui, react-intl, us
 
 Disallow a JSX element that carries no attributes and whose single child is plain literal text.
 
+**Default: on**, when `i18next`, `react-i18next`, `@lingui/core`, `react-intl`, `use-intl`, `next-intl` or `expo-localization` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -1006,6 +1038,8 @@ export const Greeting = () => {
 #### `@ashstack/i18n/no-bare-attrs`
 
 Disallow a plain string literal on a user-visible JSX attribute.
+
+**Default: on**, when `i18next`, `react-i18next`, `@lingui/core`, `react-intl`, `use-intl`, `next-intl` or `expo-localization` is a dependency.
 
 **Options**
 
@@ -1041,6 +1075,8 @@ export const NameField = () => {
 
 Disallow a `toast.*` call whose only argument is a string literal.
 
+**Default: on**, when `i18next`, `react-i18next`, `@lingui/core`, `react-intl`, `use-intl`, `next-intl` or `expo-localization` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -1072,6 +1108,8 @@ _auto-enabled by `react()` when `tailwindcss` is a dependency._
 #### `@ashstack/tailwind/prefer-cn`
 
 Require a dynamic class value to go through `cn(...)` before it reaches a `class`, `className` or `*ClassName` prop. Reports both where the value reaches the prop and where a variable named after classes is declared.
+
+**Default: on**, when `tailwindcss` is a dependency.
 
 **Fails**
 
@@ -1108,6 +1146,8 @@ export const Static = () => <div className="flex items-center gap-2" />;
 
 Require a logical Tailwind utility over its physical left/right twin, so a right-to-left layout mirrors. Reads class props and bindings named after classes, through variant prefixes and the `!` and `-` modifiers.
 
+**Default: on**, when `tailwindcss` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -1129,6 +1169,8 @@ _auto-enabled by `react()` when `@tanstack/react-router` is a dependency._
 #### `@ashstack/tanstack-router/require-selector`
 
 Require a `select` on `useLocation`, `useRouterState` and non-strict `useSearch`, so a component reads the smallest router value it needs instead of re-rendering on every navigation.
+
+**Default: on**, when `@tanstack/react-router` is a dependency.
 
 **Fails**
 
@@ -1165,6 +1207,8 @@ export const Filters = () => {
 #### `@ashstack/tanstack-router/no-search-casts`
 
 Disallow an `as` assertion on a `useSearch()` result or on `router.state.location.search`. The route's `validateSearch` schema is what supplies the type.
+
+**Default: on**, when `@tanstack/react-router` is a dependency.
 
 **Fails**
 
@@ -1206,37 +1250,55 @@ _always on via `react()` and every entry above it, from [eslint-plugin-react-you
 
 Disallow storing derived state in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#updating-state-based-on-props-or-state)
 
+**Default: on.**
+
 #### `@ashstack/effects/no-chain-state-updates`
 
 Disallow chaining state changes in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#chains-of-computations)
+
+**Default: on.**
 
 #### `@ashstack/effects/no-event-handler`
 
 Disallow using state and an effect as an event handler. [Why](https://react.dev/learn/you-might-not-need-an-effect#sharing-logic-between-event-handlers)
 
+**Default: on.**
+
 #### `@ashstack/effects/no-adjust-state-on-prop-change`
 
 Disallow adjusting state in an effect when a prop changes. [Why](https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes)
+
+**Default: on.**
 
 #### `@ashstack/effects/no-reset-all-state-on-prop-change`
 
 Disallow resetting all state in an effect when a prop changes. [Why](https://react.dev/learn/you-might-not-need-an-effect#resetting-all-state-when-a-prop-changes)
 
+**Default: on.**
+
 #### `@ashstack/effects/no-pass-live-state-to-parent`
 
 Disallow passing live state to parents in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#notifying-parent-components-about-state-changes)
+
+**Default: on.**
 
 #### `@ashstack/effects/no-pass-data-to-parent`
 
 Disallow passing data to parents in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#passing-data-to-the-parent)
 
+**Default: on.**
+
 #### `@ashstack/effects/no-external-store-subscription`
 
 Disallow subscribing to an external store in an effect. [Why](https://react.dev/learn/you-might-not-need-an-effect#subscribing-to-an-external-store)
 
+**Default: on.**
+
 #### `@ashstack/effects/no-initialize-state`
 
 Disallow initializing state in an effect. [Why](https://tkdodo.eu/blog/avoiding-hydration-mismatches-with-use-sync-external-store)
+
+**Default: on.**
 
 ## `react-native()`
 
@@ -1265,6 +1327,8 @@ _always on via `reactNative()`._
 
 Disallow the `keyboardWill*` event names. They are iOS-only, so on Android the listener registers and never fires.
 
+**Default: on.**
+
 **Fails**
 
 ```tsx
@@ -1292,6 +1356,8 @@ export function subscribeGood() {
 #### `@ashstack/react-native/no-scroll-position-state`
 
 Disallow a React state setter inside a scroll handler prop. Scroll fires every frame, and so would the re-render.
+
+**Default: on.**
 
 **Fails**
 
@@ -1322,6 +1388,8 @@ export function GoodScroll() {
 #### `@ashstack/react-native/no-conditional-style-array`
 
 Disallow conditional and logical entries inside a JSX `style` array. A falsy entry leaves a hole that breaks the Unistyles C++ proxy.
+
+**Default: on.**
 
 **Fails**
 
@@ -1355,6 +1423,8 @@ const styles = StyleSheet.create({
 
 Disallow a `&&` guard in JSX on a value this rule can see is a number or a string — a `.length`, a `.size`, arithmetic, a literal. The falsy left operand leaks into the output, and a bare `0` crashes React Native with "Text strings must be rendered within a <Text> component".
 
+**Default: on.**
+
 **Fails**
 
 ```tsx
@@ -1378,6 +1448,8 @@ export function GoodLeakedRender({ items }: { items: string[] }) {
 #### `@ashstack/react-native/no-rn-image-network-source`
 
 Disallow a react-native `<Image>` with a network `{ uri }` source. It has no disk cache and no decode sizing, so the image re-downloads at full size on every cold start.
+
+**Default: on.**
 
 **Fails**
 
@@ -1409,6 +1481,8 @@ export function GoodNetworkImage({ uri }: { uri: string }) {
 #### `@ashstack/react-native/no-redundant-view-nesting`
 
 Disallow a View or Animated.View that wraps an identical view when neither carries anything but a style. Every extra host view is a real node in the native tree.
+
+**Default: on.**
 
 **Fails**
 
@@ -1448,6 +1522,8 @@ const styles = StyleSheet.create({ merged: {} });
 
 Disallow a namespace import of react-native and a re-export of its `Platform`. Both defeat Metro's platform shaking, so dead `Platform.OS` branches ship in both bundles.
 
+**Default: on.**
+
 **Fails**
 
 ```tsx
@@ -1467,6 +1543,8 @@ export const GoodNamespace = () => <View />;
 #### `@ashstack/react-native/no-unlabeled-icon-pressable`
 
 Require an accessible name on an icon-only touchable or an icon-only Expo UI `<Button>`. Without a label, hint or visible text, a screen reader cannot reach the control.
+
+**Default: on.**
 
 **Fails**
 
@@ -1502,6 +1580,8 @@ export function GoodIconButton({ onPress }: { onPress: () => void }) {
 
 Require module scope for a non-component function that reads nothing from the component around it. Out there it is created once, keeps a stable identity, and can be tested without rendering.
 
+**Default: on.**
+
 **Fails**
 
 ```tsx
@@ -1530,6 +1610,8 @@ export function GoodHoist({ count }: { count: number }) {
 
 Require a `// why:` line above every kept `useMemo`, `useCallback` and `memo`. The React Compiler memoises on a best-effort basis, so a memo is allowed where the cost is real: a list row, or a computation measured as heavy. Turns off with `reactCompiler: false`.
 
+**Default: on.**
+
 **Fails**
 
 ```tsx
@@ -1554,6 +1636,8 @@ export function useGoodTotal(items: number[]) {
 #### `@ashstack/react-native/no-dynamic-import`
 
 Disallow dynamic `import()` outside a `React.lazy` or `dynamic` wrapper. Metro inlines it into the same bundle, so nothing is deferred and the module is hidden from the typechecker.
+
+**Default: on.**
 
 **Fails**
 
@@ -1591,6 +1675,8 @@ _auto-enabled when `react-native-unistyles` is a dependency._
 
 A Reanimated worklet hook cannot see `useUnistyles()` theme changes on the UI thread. Read the shared value from `useAnimatedTheme()` there instead.
 
+**Default: on**, when `react-native-unistyles` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -1622,6 +1708,8 @@ export function Fade() {
 #### `@ashstack/unistyles/content-container`
 
 A raw component never subscribes its `contentContainerStyle` to theme or `rt` updates. Wrap the component with `withUnistyles` when the style depends on either.
+
+**Default: on**, when `react-native-unistyles` is a dependency.
 
 **Fails**
 
@@ -1658,6 +1746,8 @@ const styles = StyleSheet.create((theme, rt) => ({
 #### `@ashstack/unistyles/in-sheet`
 
 Inside `StyleSheet.create`, require `rt` and theme values rather than Dimensions, PixelRatio, Appearance, I18nManager, StatusBar or `UnistylesRuntime`. It also covers logical spacing, `boxShadow`, `borderCurve` and a redundant `as const`.
+
+**Default: on**, when `react-native-unistyles` is a dependency.
 
 **Fails**
 
@@ -1701,6 +1791,8 @@ export const styles = StyleSheet.create((theme, rt) => ({
 
 Disallow passing `useSafeAreaInsets()` values into a dynamic style function or an inline JSX style object. Read `rt.insets` inside `StyleSheet.create` instead.
 
+**Default: on**, when `react-native-unistyles` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -1738,6 +1830,8 @@ const styles = StyleSheet.create((theme, rt) => ({
 
 Disallow hex and CSS-function colors inside `StyleSheet.create`. A raw color skips dark mode and never changes with the theme.
 
+**Default: on**, when `react-native-unistyles` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -1763,6 +1857,8 @@ export const styles = StyleSheet.create(theme => ({
 #### `@ashstack/unistyles/no-hardcoded-spacing`
 
 Require `theme.spacing` or `theme.sizing.scale` for spacing, radius and type values inside `StyleSheet.create`, instead of raw numbers.
+
+**Default: on**, when `react-native-unistyles` is a dependency.
 
 **Fails**
 
@@ -1804,6 +1900,8 @@ export const styles = StyleSheet.create(theme => ({
 
 Disallow non-negative `margin` inside `StyleSheet.create`; `gap` on the parent or `padding` on the element spaces children without leaving a hole when one is removed.
 
+**Default: on**, when `react-native-unistyles` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -1831,6 +1929,8 @@ export const styles = StyleSheet.create(theme => ({
 #### `@ashstack/unistyles/no-paramless-dynamic-function`
 
 Disallow a style written as a function that takes no arguments. It returns the same object on every render, and `theme` and `rt` reach a static style anyway, so the function only adds a call at each use site. The suggestion turns `() => ({ ... })` back into the object.
+
+**Default: on**, when `react-native-unistyles` is a dependency.
 
 **Fails**
 
@@ -1865,6 +1965,8 @@ export const styles = StyleSheet.create((theme, rt) => ({
 #### `@ashstack/unistyles/no-style-spread`
 
 Disallow spreading a stylesheet style into another object. The spread reads through the Unistyles C++ proxy once, so the result stops reacting to the theme.
+
+**Default: on**, when `react-native-unistyles` is a dependency.
 
 **Fails**
 
@@ -1901,6 +2003,8 @@ const styles = StyleSheet.create(theme => ({
 
 Disallow stylesheet keys that nothing in the file reads. A computed key, a computed read, or a sheet that leaves the module skips the whole file.
 
+**Default: on**, when `react-native-unistyles` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -1936,6 +2040,8 @@ const styles = StyleSheet.create(theme => ({
 
 Disallow passing `I18nManager.isRTL` from JSX into a dynamic style function. Unistyles tracks the dependency itself once the style reads `rt.rtl`.
 
+**Default: on**, when `react-native-unistyles` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -1969,6 +2075,8 @@ const styles = StyleSheet.create((theme, rt) => ({
 #### `@ashstack/unistyles/theme-screen-component`
 
 `theme.screen.*` is a snapshot taken at module initialization, so a component that reads it never sees the current size. `useUnistyles().rt.screen` and `useWindowDimensions` do.
+
+**Default: on**, when `react-native-unistyles` is a dependency.
 
 **Fails**
 
@@ -2005,6 +2113,8 @@ export function Panel() {
 #### `@ashstack/unistyles/theme-style-attr`
 
 Theme-dependent values belong in `StyleSheet.create`, not in a JSX `style` prop that reads a `useUnistyles()` theme.
+
+**Default: on**, when `react-native-unistyles` is a dependency.
 
 **Fails**
 
@@ -2054,6 +2164,8 @@ _auto-enabled when `@legendapp/list` is a dependency._
 
 Require `keyExtractor` and an explicit `recycleItems` on a Legend List. Without a key extractor the list keys its rows by index.
 
+**Default: on**, when `@legendapp/list` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -2090,6 +2202,8 @@ export const NoRecycle = () => (
 #### `@ashstack/legend-list/no-index-key-extractor`
 
 Disallow a `keyExtractor` that uses its index parameter. Cached sizes and recycled row state hang off the key, so a prepend points every measurement at the wrong item.
+
+**Default: on**, when `@legendapp/list` is a dependency.
 
 **Fails**
 
@@ -2128,6 +2242,8 @@ export const Good = () => (
 
 Disallow `key` on a Legend List, which remounts on any key change and loses its measurements and scroll position. Pass `dataKey` instead.
 
+**Default: on**, when `@legendapp/list` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -2163,6 +2279,8 @@ export const Good = () => (
 #### `@ashstack/legend-list/no-inline-render-item-props`
 
 Disallow inline object and array literals on props nested inside `renderItem`. A row whose props take a new identity every render can never be skipped.
+
+**Default: on**, when `@legendapp/list` is a dependency.
 
 **Fails**
 
@@ -2205,6 +2323,8 @@ export const Good = () => (
 #### `@ashstack/legend-list/no-mixed-children`
 
 Disallow passing both `data` and real children to a Legend List. The combination is unsupported and one of the two is dropped without a warning.
+
+**Default: on**, when `@legendapp/list` is a dependency.
 
 **Fails**
 
@@ -2251,6 +2371,8 @@ export const ChildrenMode = () => (
 #### `@ashstack/legend-list/no-flex-in-content-container`
 
 Disallow `flex` in a Legend List's `contentContainerStyle`, where it sizes the scrolled content to the viewport and the list ends up measuring zero height.
+
+**Default: on**, when `@legendapp/list` is a dependency.
 
 **Fails**
 
@@ -2311,6 +2433,8 @@ const styles = StyleSheet.create({
 
 Require `getItemType` when a row branches on `item.type`. Without it every layout shares one recycling pool and one size average.
 
+**Default: on**, when `@legendapp/list` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -2355,6 +2479,8 @@ export const Good = () => (
 
 A `ScrollView` mounts every child up front, so a mapped collection does not belong in its children.
 
+**Default: on**, when `@legendapp/list` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -2392,6 +2518,8 @@ export const Good = () => (
 #### `@ashstack/legend-list/no-unsupported-props`
 
 Disallow FlashList and FlatList props that Legend List v3 does not have. It ignores them rather than rejecting them, so the feature looks broken.
+
+**Default: on**, when `@legendapp/list` is a dependency.
 
 **Fails**
 
@@ -2442,6 +2570,8 @@ _auto-enabled when `@legendapp/state` is a dependency._
 
 Write an observable with `.set(...)` or `.assign({...})`. Assigning or incrementing it with an operator is a silent no-op.
 
+**Default: on**, when `@legendapp/state` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -2478,6 +2608,8 @@ export const bump = () => {
 
 A variable initialized from `observable()` or `useObservable()` needs a trailing `$`. The other rules in this module key off that suffix.
 
+**Default: on**, when `@legendapp/state` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -2497,6 +2629,8 @@ export const counter$ = observable(0);
 #### `@ashstack/legend-state/no-nested-observable`
 
 Never pass an observable to `observable()` or `useObservable()`. The wrapper is a second node, and reads and writes on it never reach the original.
+
+**Default: on**, when `@legendapp/state` is a dependency.
 
 **Fails**
 
@@ -2521,6 +2655,8 @@ export const doubled$ = observable(() => count$.get() * 2);
 #### `@ashstack/legend-state/no-react-mirror`
 
 Seeding `useState` from an observable's `get()` or `peek()` gives the value two owners. Read it with `useValue(...)` where it renders.
+
+**Default: on**, when `@legendapp/state` is a dependency.
 
 **Fails**
 
@@ -2550,6 +2686,8 @@ export const useCounter = () => useValue(count$);
 #### `@ashstack/legend-state/no-untracked-get-in-jsx`
 
 A `get()` placed directly in a JSX expression container is a plain read. The value renders once and never updates.
+
+**Default: on**, when `@legendapp/state` is a dependency.
 
 **Fails**
 
@@ -2582,6 +2720,8 @@ export const Counter = () => (
 
 `peek()` never subscribes, so a selector or tracking callback that uses it never re-runs. Call `get()` there and keep `peek()` for handlers.
 
+**Default: on**, when `@legendapp/state` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -2609,6 +2749,8 @@ export const readThemeOnce = () => settings$.theme.peek();
 #### `@ashstack/legend-state/no-object-selector`
 
 A `useValue` selector that builds a new object or array returns a fresh identity every run. The component then re-renders on every store change.
+
+**Default: on**, when `@legendapp/state` is a dependency.
 
 **Fails**
 
@@ -2638,6 +2780,8 @@ export const useLocale = () => useValue(() => settings$.locale.get());
 #### `@ashstack/legend-state/no-observable-in-component`
 
 Calling `observable()` inside a component or hook makes a new observable on every render. Use `useObservable()` or a module-level store instead.
+
+**Default: on**, when `@legendapp/state` is a dependency.
 
 **Fails**
 
@@ -2676,6 +2820,8 @@ _auto-enabled when `react-native-reanimated` is a dependency._
 #### `@ashstack/reanimated/animated-reaction-safety`
 
 A `useAnimatedReaction` result callback loops forever if it writes a shared value the prepare callback reads. Guard `scheduleOnRN` there on the current result differing from the previous one.
+
+**Default: on**, when `react-native-reanimated` is a dependency.
 
 **Fails**
 
@@ -2730,6 +2876,8 @@ export function GoodReaction() {
 
 An animated style only takes effect on an `Animated.*` component. A plain element applies it once at mount and then never updates.
 
+**Default: on**, when `react-native-reanimated` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -2758,6 +2906,8 @@ export function GoodAnimatedStyleHost() {
 #### `@ashstack/reanimated/animated-updater-purity`
 
 An updater passed to `useAnimatedStyle` or `useAnimatedProps` must stay pure, so it may not write a shared value or call `scheduleOnRN`.
+
+**Default: on**, when `react-native-reanimated` is a dependency.
 
 **Fails**
 
@@ -2793,6 +2943,8 @@ export function useGoodUpdater() {
 
 Animate `transform` and `opacity` in `useAnimatedStyle` and `useAnimatedProps`. Layout properties such as `width` or `margin` recalculate layout every frame.
 
+**Default: on**, when `react-native-reanimated` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -2824,6 +2976,8 @@ export function GoodGpu() {
 
 A layout animation belongs at module scope, or inside a memo when it depends on component values. The `entering`/`exiting`/`layout` props otherwise rebuild it on every render.
 
+**Default: on**, when `react-native-reanimated` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -2849,6 +3003,8 @@ export function GoodLayoutBuilder() {
 #### `@ashstack/reanimated/interpolate-needs-clamp`
 
 Give `interpolate()` a fourth argument that clamps. Without one, or with `EXTEND` or `IDENTITY`, the output keeps going past the ends of the input range.
+
+**Default: on**, when `react-native-reanimated` is a dependency.
 
 **Fails**
 
@@ -2880,6 +3036,8 @@ export function GoodInterpolate() {
 
 Shared values are read with `.get()` and written with `.set(...)`, never through `.value`. React Compiler cannot track a `.value` access.
 
+**Default: on**, when `react-native-reanimated` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -2907,6 +3065,8 @@ export function useGoodDotValue() {
 #### `@ashstack/reanimated/no-react-state-from-continuous-worklet`
 
 A worklet that runs every frame must not send a React state setter through `scheduleOnRN`. That puts a Fabric commit on an animation frame.
+
+**Default: on**, when `react-native-reanimated` is a dependency.
 
 **Fails**
 
@@ -2946,6 +3106,8 @@ export function GoodWorkletState() {
 
 Pass a computed `useSharedValue` initial value as a function. An eager call runs on every render while only the first result is kept.
 
+**Default: on**, when `react-native-reanimated` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -2973,6 +3135,8 @@ export function useGoodInitializer() {
 #### `@ashstack/reanimated/schedule-on-rn-scope`
 
 `scheduleOnRN` takes a function declared in RN Runtime scope. An inline callback can end up created on the wrong runtime.
+
+**Default: on**, when `react-native-reanimated` is a dependency.
 
 **Fails**
 
@@ -3007,6 +3171,8 @@ export function useGoodSchedule() {
 #### `@ashstack/reanimated/shared-value-usage`
 
 Destructuring a shared value or mutating what its `get()` returned detaches it from Reanimated reactivity. Reading or writing one while JSX evaluates also makes render impure.
+
+**Default: on**, when `react-native-reanimated` is a dependency.
 
 **Fails**
 
@@ -3045,6 +3211,8 @@ _auto-enabled when `react-native-turbo-image` is a dependency._
 
 Require `resize` on a TurboImage so the native decoder downsamples before the bitmap reaches memory. A full-resolution decode wastes tens of megabytes and stalls the first frame.
 
+**Default: on**, when `react-native-turbo-image` is a dependency.
+
 **Fails**
 
 ```tsx
@@ -3068,6 +3236,8 @@ export function GoodTurboResize({ uri }: { uri: string }) {
 #### `@ashstack/turbo-image/require-cache-policy`
 
 Require `cachePolicy` on a TurboImage. Without one the image is re-fetched over the network on every cold start, so an already-scrolled feed costs its bandwidth again.
+
+**Default: on**, when `react-native-turbo-image` is a dependency.
 
 **Fails**
 
@@ -3100,6 +3270,8 @@ _auto-enabled when `@shopify/react-native-skia` is a dependency._
 #### `@ashstack/skia/canvas-opaque`
 
 Require an explicit `opaque` prop on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.
+
+**Default: on**, when `@shopify/react-native-skia` is a dependency.
 
 **Fails**
 
