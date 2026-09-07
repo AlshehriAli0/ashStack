@@ -82,6 +82,31 @@ describe("optionsDoc", () => {
   it("leaves out the example block when a property declares none", () => {
     expect(optionsDoc(OBJECT_OPTION, "@ashstack/core/rule", []).join("\n")).not.toContain("```jsonc");
   });
+
+  it("reads a nested option as `object`, so one cell cannot swallow the table", () => {
+    const rule = ruleWith([
+      {
+        type: "object",
+        properties: {
+          use: {
+            type: "object",
+            additionalProperties: { type: "string" },
+            default: {},
+            description: "Wrappers.",
+          },
+        },
+      },
+    ]);
+    expect(optionsDoc(rule, "@ashstack/core/rule", [])).toContain("| `use` | `object` | `{}` | Wrappers. |");
+  });
+
+  it("refuses a schema shape the renderer has no layout for", () => {
+    const two = ruleWith([
+      { type: "integer", default: 1, description: "First." },
+      { type: "string", default: "a", description: "Second." },
+    ]);
+    expect(() => optionsDoc(two, "@ashstack/core/rule", [])).toThrow("one positional value");
+  });
 });
 
 describe("cell", () => {

@@ -676,7 +676,7 @@ Disallow importing a raw primitive your design system already wraps. Wrappers co
 | --- | --- | --- | --- |
 | `dir` | `string` | `"src/components/ui"` | Directory scanned for wrapper components. Every `.tsx` file in it becomes a wrapper. |
 | `alias` | `string` | `"@/components/ui"` | Import prefix the diagnostic points at, and a second folder counted as the design system. |
-| `use` | `Record<string, string \| Array<string> \| { replaces: string \| Array<string>; from?: string; path?: string; reason?: string }>` | `{}` | Wrappers the scan cannot find, keyed by component name. |
+| `use` | `object` | `{}` | Wrappers the scan cannot find, keyed by component name. |
 | `exempt` | `Array<string>` | `[]` | Extra path fragments to skip, added to the design system's own folders. |
 
 Each `use` value takes one of these shapes:
