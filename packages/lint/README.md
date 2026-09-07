@@ -1,6 +1,6 @@
 # @ashstack/lint
 
-Strict shared [oxlint](https://oxc.rs) config: <!-- rule-counts -->118 rules on plain TypeScript, 201 with React, 258 on React Native, 77 of them custom-built<!-- /rule-counts -->. Three entries, each containing the one before it: `core()`, `react()`, `react-native()`.
+Strict shared [oxlint](https://oxc.rs) config: <!-- rule-counts -->117 rules on plain TypeScript, 201 with React, 258 on React Native, 77 of them custom-built<!-- /rule-counts -->. Three entries, each containing the one before it: `core()`, `react()`, `react-native()`.
 
 Library-specific rules ship only when you depend on that library, so nothing fires about code you don't have.
 
@@ -89,7 +89,7 @@ Import bans follow detection only; disable one by rule name.
 
 ## Opt-in rules
 
-<!-- opt-in -->Off by default, since they need a team decision first: `@ashstack/core/use-design-system` and `@ashstack/core/components-tsx-only`.<!-- /opt-in -->
+<!-- opt-in -->Off by default, since they need a team decision first: `@ashstack/react/prefer-design-system` and `@ashstack/react/components-tsx-only`.<!-- /opt-in -->
 
 ## Rule reference
 

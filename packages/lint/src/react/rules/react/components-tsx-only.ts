@@ -22,10 +22,22 @@ export const componentsTsxOnly: Rule = {
   meta: {
     type: "problem",
     docs: {
-      description:
-        "Require every file under the components directory to render JSX or be a re-export barrel. `dir` says which directory, defaulting to `src/components`.",
+      description: "Require every file under the components directory to render JSX or be a re-export barrel.",
     },
-    schema: [{ type: "object", properties: { dir: { type: "string", minLength: 1 } }, additionalProperties: false }],
+    schema: [
+      {
+        type: "object",
+        properties: {
+          dir: {
+            type: "string",
+            minLength: 1,
+            default: DEFAULT_DIR,
+            description: "Directory whose files must render JSX.",
+          },
+        },
+        additionalProperties: false,
+      },
+    ],
     defaultOff: true,
   },
   createOnce(context: RuleContext) {

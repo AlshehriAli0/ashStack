@@ -16,8 +16,9 @@ export default defineConfig({
     // on by default; this example is documentation, so its comments stay
     "@ashstack/core/no-comments": "off",
     // opt-in rule, configured in place: raw imports get banned with a pointer
-    // to your component; files under src/components/ui stay exempt
-    "@ashstack/core/use-design-system": [
+    // to your component. No `dir` here, so the wrappers stay exempt through
+    // `alias` alone
+    "@ashstack/react/prefer-design-system": [
       "error",
       {
         alias: "@/components/ui",

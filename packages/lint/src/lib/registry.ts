@@ -12,9 +12,6 @@ export const coreRegistry: ModuleMeta[] = [
       "no-comments": {},
       "no-naming-convention": {},
       "no-packed-condition": {},
-      "use-design-system": { defaultOff: true },
-      "components-tsx-only": { defaultOff: true },
-      "hoist-intl": {},
       "max-lines": {},
       "max-complexity": {},
     },
@@ -37,6 +34,9 @@ export const reactRegistry: ModuleMeta[] = [
     rules: {
       "no-unlabeled-icon-button": {},
       "no-svg-without-title": {},
+      "hoist-intl": {},
+      "prefer-design-system": { defaultOff: true },
+      "components-tsx-only": { defaultOff: true },
     },
   },
   {

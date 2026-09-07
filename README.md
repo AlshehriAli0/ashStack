@@ -12,7 +12,7 @@
 
 Two packages: [`@ashstack/lint`](packages/lint) and [`@ashstack/fmt`](packages/fmt). Install once per project instead of copying a lint config around and watching the copies drift.<!-- rule-counts -->
 
-- **118 rules** on plain TypeScript, **201** with React, **258** on React Native, 77 of them custom-built
+- **117 rules** on plain TypeScript, **201** with React, **258** on React Native, 77 of them custom-built
 - library-specific rules ship only when you depend on that library: 13 self-detecting modules<!-- /rule-counts -->
 - every rule is in [RULES.md](packages/lint/RULES.md), with options and examples, generated and CI-checked
 - your `rules` block always wins
@@ -109,7 +109,7 @@ export default defineConfig({
 
 Usual first cuts: `max-lines` (300), `max-lines-per-function` (120), `complexity` (12).
 
-<!-- opt-in -->Off by default, since they need a team decision first: `@ashstack/core/use-design-system` and `@ashstack/core/components-tsx-only`.<!-- /opt-in -->
+<!-- opt-in -->Off by default, since they need a team decision first: `@ashstack/react/prefer-design-system` and `@ashstack/react/components-tsx-only`.<!-- /opt-in -->
 
 ## Contributing
 

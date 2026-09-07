@@ -9,6 +9,9 @@ type RuleSetting<Options extends unknown[] = []> = AllowWarnDeny | [AllowWarnDen
 export type ReactRuleId =
   | "@ashstack/react/no-unlabeled-icon-button"
   | "@ashstack/react/no-svg-without-title"
+  | "@ashstack/react/hoist-intl"
+  | "@ashstack/react/prefer-design-system"
+  | "@ashstack/react/components-tsx-only"
   | "@ashstack/query/no-inline-keys"
   | "@ashstack/query/no-deprecated-filters"
   | "@ashstack/query/require-destructured-hooks"
@@ -46,6 +49,40 @@ declare module "oxlint" {
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreactno-svg-without-title
      */
     "@ashstack/react/no-svg-without-title"?: RuleSetting;
+    /**
+     * Disallow `new Intl.*` inside a function that renders JSX, unless the call already sits in `useMemo` or `useCallback`.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreacthoist-intl
+     */
+    "@ashstack/react/hoist-intl"?: RuleSetting;
+    /**
+     * Disallow importing a raw primitive your design system already wraps. Wrappers come from scanning the design-system directory and from the `use` map. Files inside the design system are skipped.
+     *
+     * Off by default — opt in per project.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreactprefer-design-system
+     */
+    "@ashstack/react/prefer-design-system"?: RuleSetting<
+      [
+        {
+          dir?: string;
+          alias?: string;
+          use?: Record<
+            string,
+            string | Array<string> | { replaces: string | Array<string>; from?: string; path?: string; reason?: string }
+          >;
+          exempt?: Array<string>;
+        },
+      ]
+    >;
+    /**
+     * Require every file under the components directory to render JSX or be a re-export barrel.
+     *
+     * Off by default — opt in per project.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreactcomponents-tsx-only
+     */
+    "@ashstack/react/components-tsx-only"?: RuleSetting<[{ dir?: string }]>;
     /**
      * Disallow a query key written as an array literal at the call site instead of coming from a keys factory.
      *

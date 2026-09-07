@@ -10,13 +10,13 @@ Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-marg
 
 Each entry lists the oxlint plugins it turns on, below. You never need to add them: your own `plugins` array is added to the entry's set, not swapped for it. A bare oxlint install runs `eslint`, `typescript`, `unicorn`, `oxc`; `import`, `promise`, `react`, `jsx-a11y`, `react-perf` come from here.
 
-Counting what each entry sets with every module on: **118** rules for plain TypeScript, **201** with React, **258** on React Native, 77 of them written for this package. oxlint's own `correctness` category runs alongside these.
+Counting what each entry sets with every module on: **117** rules for plain TypeScript, **201** with React, **258** on React Native, 77 of them written for this package. oxlint's own `correctness` category runs alongside these.
 
 - [`core()`](#core)
-  - [`@ashstack/core`](#ashstackcore) — 8 rules
+  - [`@ashstack/core`](#ashstackcore) — 5 rules
   - [`@ashstack/zod`](#ashstackzod) — 1 rule
 - [`react()`](#react)
-  - [`@ashstack/react`](#ashstackreact) — 2 rules
+  - [`@ashstack/react`](#ashstackreact) — 5 rules
   - [`@ashstack/query`](#ashstackquery) — 5 rules
   - [`@ashstack/zustand`](#ashstackzustand) — 1 rule
   - [`@ashstack/i18n`](#ashstacki18n) — 3 rules
@@ -189,7 +189,7 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`.
 
 ### `@ashstack/core`
 
-_always on via `core()` and every entry above it (opt-in rules noted per rule)._
+_always on via `core()` and every entry above it._
 
 #### `@ashstack/core/no-comments`
 
@@ -336,174 +336,6 @@ export const pick = (a: boolean, b: boolean, count: number) => {
   while (a || b) return 0;
   return -1;
 };
-```
-
-#### `@ashstack/core/use-design-system`
-
-Disallow importing a raw primitive your design system already wraps. Wrapped components come from scanning the design-system directory, plus the explicit `use` map for names, paths and source modules the scan cannot infer. Files under the design-system directory (or `exempt`) are skipped.
-
-> Off by default — opt in per project.
-
-**Options**
-
-```jsonc
-[
-  {
-    "type": "object",
-    "properties": {
-      "dir": {
-        "type": "string",
-        "minLength": 1
-      },
-      "alias": {
-        "type": "string",
-        "minLength": 1
-      },
-      "use": {
-        "type": "object",
-        "additionalProperties": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            },
-            {
-              "type": "object",
-              "properties": {
-                "replaces": {
-                  "anyOf": [
-                    {
-                      "type": "string"
-                    },
-                    {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  ]
-                },
-                "from": {
-                  "type": "string"
-                },
-                "path": {
-                  "type": "string"
-                },
-                "reason": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "replaces"
-              ],
-              "additionalProperties": false
-            }
-          ]
-        }
-      },
-      "exempt": {
-        "type": "array",
-        "items": {
-          "type": "string"
-        }
-      }
-    },
-    "additionalProperties": false
-  }
-]
-```
-
-**Fails**
-
-```tsx
-import { Text, View } from "react-native";
-
-export const Panel = () => (
-  <View>
-    <Text>{"hello"}</Text>
-  </View>
-);
-```
-
-**Passes**
-
-```tsx
-import { View } from "react-native";
-
-import { Text } from "@/components/ui/text";
-
-export const Panel = () => (
-  <View>
-    <Text>{"hello"}</Text>
-  </View>
-);
-```
-
-#### `@ashstack/core/components-tsx-only`
-
-Require every file under the components directory to render JSX or be a re-export barrel. `dir` says which directory, defaulting to `src/components`.
-
-> Off by default — opt in per project.
-
-**Options**
-
-```jsonc
-[
-  {
-    "type": "object",
-    "properties": {
-      "dir": {
-        "type": "string",
-        "minLength": 1
-      }
-    },
-    "additionalProperties": false
-  }
-]
-```
-
-**Fails**
-
-```tsx
-export const formatFullName = (first: string, last: string) => `${first} ${last}`;
-```
-
-**Passes**
-
-```tsx
-import { View } from "react-native";
-
-export const Panel = () => <View />;
-```
-
-#### `@ashstack/core/hoist-intl`
-
-Disallow `new Intl.*` inside a function that renders JSX, unless the call already sits in `useMemo` or `useCallback`.
-
-**Fails**
-
-```tsx
-import { View } from "react-native";
-
-export const Price = () => {
-  const formatter = new Intl.NumberFormat("en-US");
-  return <View accessibilityValue={{ text: formatter.format(10) }} />;
-};
-```
-
-**Passes**
-
-```tsx
-import { View } from "react-native";
-
-const formatter = new Intl.NumberFormat("en-US");
-
-export const Price = () => <View accessibilityValue={{ text: formatter.format(10) }} />;
 ```
 
 #### `@ashstack/core/max-lines`
@@ -769,7 +601,7 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 
 ### `@ashstack/react`
 
-_always on via `react()` and every entry above it._
+_always on via `react()` and every entry above it (opt-in rules noted per rule)._
 
 #### `@ashstack/react/no-unlabeled-icon-button`
 
@@ -832,6 +664,199 @@ export const Mark = () => (
 );
 
 export const Decorative = () => <svg viewBox="0 0 16 16" aria-hidden="true" />;
+```
+
+#### `@ashstack/react/hoist-intl`
+
+Disallow `new Intl.*` inside a function that renders JSX, unless the call already sits in `useMemo` or `useCallback`.
+
+**Fails**
+
+```tsx
+import { View } from "react-native";
+
+export const Price = () => {
+  const formatter = new Intl.NumberFormat("en-US");
+  return <View accessibilityValue={{ text: formatter.format(10) }} />;
+};
+```
+
+**Passes**
+
+```tsx
+import { View } from "react-native";
+
+const formatter = new Intl.NumberFormat("en-US");
+
+export const Price = () => <View accessibilityValue={{ text: formatter.format(10) }} />;
+```
+
+#### `@ashstack/react/prefer-design-system`
+
+Disallow importing a raw primitive your design system already wraps. Wrappers come from scanning the design-system directory and from the `use` map. Files inside the design system are skipped.
+
+> Off by default — opt in per project.
+
+**Options**
+
+```jsonc
+[
+  {
+    "type": "object",
+    "properties": {
+      "dir": {
+        "type": "string",
+        "minLength": 1,
+        "default": "src/components/ui",
+        "description": "Directory scanned for wrapper components. Every `.tsx` file in it becomes a wrapper."
+      },
+      "alias": {
+        "type": "string",
+        "minLength": 1,
+        "default": "@/components/ui",
+        "description": "Import prefix the diagnostic points at, and a second folder counted as the design system."
+      },
+      "use": {
+        "type": "object",
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            {
+              "type": "object",
+              "properties": {
+                "replaces": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  ]
+                },
+                "from": {
+                  "type": "string"
+                },
+                "path": {
+                  "type": "string"
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "replaces"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "default": {},
+        "description": "Wrappers the scan cannot find, keyed by component name.",
+        "examples": [
+          {
+            "Button": "Pressable",
+            "Text": [
+              "Text",
+              "RNText"
+            ],
+            "Sheet": {
+              "replaces": "Modal",
+              "from": "react-native",
+              "path": "@/ui/sheet",
+              "reason": "It owns insets."
+            }
+          }
+        ]
+      },
+      "exempt": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "default": [],
+        "description": "Extra path fragments to skip, added to the design system's own folders."
+      }
+    },
+    "additionalProperties": false
+  }
+]
+```
+
+**Fails**
+
+```tsx
+import { Text, View } from "react-native";
+
+export const Panel = () => (
+  <View>
+    <Text>{"hello"}</Text>
+  </View>
+);
+```
+
+**Passes**
+
+```tsx
+import { View } from "react-native";
+
+import { Text } from "@/components/ui/text";
+
+export const Panel = () => (
+  <View>
+    <Text>{"hello"}</Text>
+  </View>
+);
+```
+
+#### `@ashstack/react/components-tsx-only`
+
+Require every file under the components directory to render JSX or be a re-export barrel.
+
+> Off by default — opt in per project.
+
+**Options**
+
+```jsonc
+[
+  {
+    "type": "object",
+    "properties": {
+      "dir": {
+        "type": "string",
+        "minLength": 1,
+        "default": "src/components",
+        "description": "Directory whose files must render JSX."
+      }
+    },
+    "additionalProperties": false
+  }
+]
+```
+
+**Fails**
+
+```tsx
+export const formatFullName = (first: string, last: string) => `${first} ${last}`;
+```
+
+**Passes**
+
+```tsx
+import { View } from "react-native";
+
+export const Panel = () => <View />;
 ```
 
 ### `@ashstack/query`

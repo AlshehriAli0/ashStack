@@ -11,7 +11,7 @@ const RULES_PROVING_THE_PIPELINE = {
   typeAwareBackend: "require-await",
   moduleDetectedFromDependency: "@ashstack/zod/prefer-enum",
   importBanFromModule: "no-restricted-imports",
-  optInRuleWithOptions: "@ashstack/core/use-design-system",
+  optInRuleWithOptions: "@ashstack/react/prefer-design-system",
 };
 
 const ONE_RULE_PER_DETECTED_MODULE = [
@@ -30,7 +30,7 @@ const IMPORT_BAN_FILE = "import-bans.tsx";
 const IMPORT_BANS_FORCED_ON = 2;
 
 const DESIGN_SYSTEM_DIR = "components/ui/";
-const DESIGN_SYSTEM_RULE = "use-design-system";
+const DESIGN_SYSTEM_RULE = "prefer-design-system";
 
 const lint = Bun.spawnSync([oxlint, "--type-aware", "--format", "json", "."], { cwd: smokeDir });
 

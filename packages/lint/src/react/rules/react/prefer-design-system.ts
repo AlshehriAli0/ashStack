@@ -8,6 +8,9 @@ const DESIGN_SYSTEM_DIR = "src/components/ui";
 const DESIGN_SYSTEM_ALIAS = "@/components/ui";
 const PLATFORM_SUFFIX = /\.(?:ios|android|native|web)$/;
 
+/** A tsconfig path alias: `@/components/ui` and `@app/ui` both name a real folder further down. */
+const ALIAS_PREFIX = /^[@~#][^/]*\//;
+
 const LEGACY_EQUIVALENTS: Record<string, string[]> = {
   Pressable: ["TouchableOpacity", "TouchableHighlight", "TouchableWithoutFeedback", "TouchableNativeFeedback"],
 };
@@ -101,42 +104,92 @@ const applyUse = (banned: Banned, alias: string, use: Record<string, UseEntry>):
   }
 };
 
-const designSystems = new Map<string, Banned>();
+/**
+ * Every folder a wrapper can live in. `dir` is only where the scan looks; a
+ * project that lists its wrappers in `use` may set no `dir` at all, so the
+ * alias and each entry's `path` count too. Without all three, the wrappers
+ * report themselves for importing the primitive they exist to wrap.
+ */
+const wrapperFolders = (dir: string, alias: string, use: Record<string, UseEntry>): string[] => {
+  const folders = [dir, alias.replace(ALIAS_PREFIX, "")];
+  for (const entry of Object.values(use)) {
+    if (typeof entry === "string" || Array.isArray(entry) || entry.path === undefined) continue;
+    folders.push(entry.path.replace(ALIAS_PREFIX, ""));
+  }
+  return folders.filter(folder => folder.length > 0);
+};
 
-const isExemptFile = (filename: string | undefined, exempt: string[]): boolean =>
-  !!filename && exempt.some(fragment => filename.includes(fragment));
+const designSystems = new Map<string, { banned: Banned; wrappers: string[] }>();
+
+/**
+ * A fragment has to start at a path segment, or a directory called `ui` would
+ * be matched by any parent whose name merely ends in it.
+ */
+const isExemptFile = (filename: string | undefined, exempt: string[]): boolean => {
+  if (!filename) return false;
+  const path = filename.replaceAll("\\", "/");
+  return exempt.some(fragment => path.includes(isAbsolute(fragment) ? fragment : `/${fragment}`));
+};
 
 const designSystemFor = (options: Options): { banned: Banned; exempt: string[] } => {
   const dir = options.dir ?? DESIGN_SYSTEM_DIR;
   const alias = options.alias ?? DESIGN_SYSTEM_ALIAS;
-  const exempt = options.exempt ?? [dir];
+  const use = options.use ?? {};
 
   const cacheKey = JSON.stringify([dir, alias, options.use]);
-  let banned = designSystems.get(cacheKey);
-  if (banned === undefined) {
-    banned = new Map();
+  let designSystem = designSystems.get(cacheKey);
+  if (designSystem === undefined) {
+    const banned: Banned = new Map();
     scanDesignSystem(banned, dir, alias);
-    if (options.use) applyUse(banned, alias, options.use);
-    designSystems.set(cacheKey, banned);
+    applyUse(banned, alias, use);
+    designSystem = { banned, wrappers: wrapperFolders(dir, alias, use) };
+    designSystems.set(cacheKey, designSystem);
   }
-  return { banned, exempt };
+  return { banned: designSystem.banned, exempt: [...designSystem.wrappers, ...(options.exempt ?? [])] };
 };
 
-export const useDesignSystem: Rule = {
+export const preferDesignSystem: Rule = {
   meta: {
     type: "problem",
     docs: {
       description:
-        "Disallow importing a raw primitive your design system already wraps. Wrapped components come from scanning the design-system directory, plus the explicit `use` map for names, paths and source modules the scan cannot infer. Files under the design-system directory (or `exempt`) are skipped.",
+        "Disallow importing a raw primitive your design system already wraps. Wrappers come from scanning the design-system directory and from the `use` map. Files inside the design system are skipped.",
     },
     schema: [
       {
         type: "object",
         properties: {
-          dir: { type: "string", minLength: 1 },
-          alias: { type: "string", minLength: 1 },
-          use: { type: "object", additionalProperties: USE_ENTRY_SCHEMA },
-          exempt: { type: "array", items: { type: "string" } },
+          dir: {
+            type: "string",
+            minLength: 1,
+            default: DESIGN_SYSTEM_DIR,
+            description: "Directory scanned for wrapper components. Every `.tsx` file in it becomes a wrapper.",
+          },
+          alias: {
+            type: "string",
+            minLength: 1,
+            default: DESIGN_SYSTEM_ALIAS,
+            description: "Import prefix the diagnostic points at, and a second folder counted as the design system.",
+          },
+          use: {
+            type: "object",
+            additionalProperties: USE_ENTRY_SCHEMA,
+            default: {},
+            description: "Wrappers the scan cannot find, keyed by component name.",
+            examples: [
+              {
+                Button: "Pressable",
+                Text: ["Text", "RNText"],
+                Sheet: { replaces: "Modal", from: "react-native", path: "@/ui/sheet", reason: "It owns insets." },
+              },
+            ],
+          },
+          exempt: {
+            type: "array",
+            items: { type: "string" },
+            default: [],
+            description: "Extra path fragments to skip, added to the design system's own folders.",
+          },
         },
         additionalProperties: false,
       },
@@ -151,9 +204,7 @@ export const useDesignSystem: Rule = {
         const designSystem = designSystemFor(options);
         banned = designSystem.banned;
         if (banned.size === 0) return false;
-        const { filename } = context;
-        if (isExemptFile(filename, designSystem.exempt)) return false;
-        return true;
+        return !isExemptFile(context.filename, designSystem.exempt);
       },
       ImportDeclaration(node) {
         const source = node.source.value;

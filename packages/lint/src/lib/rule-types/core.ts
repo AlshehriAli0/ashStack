@@ -10,9 +10,6 @@ export type CoreRuleId =
   | "@ashstack/core/no-comments"
   | "@ashstack/core/no-naming-convention"
   | "@ashstack/core/no-packed-condition"
-  | "@ashstack/core/use-design-system"
-  | "@ashstack/core/components-tsx-only"
-  | "@ashstack/core/hoist-intl"
   | "@ashstack/core/max-lines"
   | "@ashstack/core/max-complexity"
   | "@ashstack/zod/prefer-enum";
@@ -39,40 +36,6 @@ declare module "oxlint" {
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreno-packed-condition
      */
     "@ashstack/core/no-packed-condition"?: RuleSetting<[number]>;
-    /**
-     * Disallow importing a raw primitive your design system already wraps. Wrapped components come from scanning the design-system directory, plus the explicit `use` map for names, paths and source modules the scan cannot infer. Files under the design-system directory (or `exempt`) are skipped.
-     *
-     * Off by default — opt in per project.
-     *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreuse-design-system
-     */
-    "@ashstack/core/use-design-system"?: RuleSetting<
-      [
-        {
-          dir?: string;
-          alias?: string;
-          use?: Record<
-            string,
-            string | Array<string> | { replaces: string | Array<string>; from?: string; path?: string; reason?: string }
-          >;
-          exempt?: Array<string>;
-        },
-      ]
-    >;
-    /**
-     * Require every file under the components directory to render JSX or be a re-export barrel. `dir` says which directory, defaulting to `src/components`.
-     *
-     * Off by default — opt in per project.
-     *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcorecomponents-tsx-only
-     */
-    "@ashstack/core/components-tsx-only"?: RuleSetting<[{ dir?: string }]>;
-    /**
-     * Disallow `new Intl.*` inside a function that renders JSX, unless the call already sits in `useMemo` or `useCallback`.
-     *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcorehoist-intl
-     */
-    "@ashstack/core/hoist-intl"?: RuleSetting;
     /**
      * Cap the lines of code in one file, counting neither blank lines, comments, nor the style tables `StyleSheet.create` and `stylex.create` build. A stylesheet is data, and keeping it next to the component it styles is the point — it should not spend the budget that logic spends. The option says how many lines: 300 by default, which `core()` keeps, and 250 from `react()` down, where a file past it is several components rather than one long one. Replaces the built-in `max-lines`, which counts every line of all three.
      *
