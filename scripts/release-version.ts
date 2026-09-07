@@ -1,12 +1,9 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { type Dir, npmName, requestedDirs } from "./packages.js";
+
 const repoRoot = join(import.meta.dir, "..");
-
-/** Publishable packages, by the directory they live in under `packages/`. */
-const DIRS = ["lint", "fmt"] as const;
-
-export type Dir = (typeof DIRS)[number];
 
 const BUMPS = ["patch", "minor", "major"] as const;
 
@@ -33,12 +30,6 @@ export const bumped = (version: string, bump: Bump): string => {
   return `${major}.${minor}.${patch + 1}`;
 };
 
-/** The packages a release asks for, where `both` means every one of them. */
-export const requestedDirs = (requested: string): Dir[] => {
-  const asked = requested.split(",");
-  return DIRS.filter(dir => asked.includes("both") || asked.includes(dir));
-};
-
 const bumpPackage = (dir: Dir, bump: Bump): string => {
   const path = join(repoRoot, "packages", dir, "package.json");
   const text = readFileSync(path, "utf8");
@@ -57,7 +48,7 @@ const bumpPackage = (dir: Dir, bump: Bump): string => {
 const main = (bump: string, requested: string): void => {
   if (!isBump(bump)) throw new Error(`Bump must be one of ${BUMPS.join(", ")}, not "${bump}".`);
   for (const dir of requestedDirs(requested)) {
-    console.error(`@ashstack/${dir} -> ${bumpPackage(dir, bump)}`);
+    console.error(`${npmName(dir)} -> ${bumpPackage(dir, bump)}`);
   }
 };
 

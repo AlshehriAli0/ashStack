@@ -64,6 +64,10 @@ jobs:
           git commit -m "chore: release $summary"
           echo "RELEASED=$summary" >> "$GITHUB_ENV"
 
+      # From the package directory with scripts forced on, which is exactly what
+      # check-pack.ts verifies: `prepack` is what builds dist, and a runner with
+      # ignore-scripts set would otherwise publish a package without it.
+      #
       # Tag after the publish, so a tag only ever exists for a version that
       # actually shipped. Push them together with the version commit.
       - name: Publish to npm, then tag what shipped
@@ -71,7 +75,8 @@ jobs:
           NPM_CONFIG_PROVENANCE: "true"
         run: |
           for pair in $RELEASED; do
-            npm publish --workspace "${pair%@*}"
+            name=${pair%@*}
+            (cd "packages/${name#@ashstack/}" && npm publish --ignore-scripts=false)
             git tag "$pair"
           done
 

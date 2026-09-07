@@ -1,15 +1,11 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
+import { type Dir, npmName, requestedDirs } from "./packages.js";
+
 const repoRoot = join(import.meta.dir, "..");
 
-/** Publishable packages, by the directory they live in under `packages/`. */
-const DIRS = ["lint", "fmt"] as const;
-
-export type Dir = (typeof DIRS)[number];
 export type Area = Dir | "shared";
-
-const npmName = (dir: Dir): string => `@ashstack/${dir}`;
 
 /** Conventional-commit types worth a reader's time, in the order they appear. */
 const SECTIONS: [type: string, heading: string][] = [
@@ -155,11 +151,10 @@ const packageJson = (dir: Dir): PackageJson =>
  */
 const main = (requested: string): void => {
   assertFullHistory();
-  const asked = requested.split(",");
   const date = new Date().toISOString().slice(0, 10);
   const released: string[] = [];
 
-  for (const dir of DIRS.filter(name => asked.includes("both") || asked.includes(name))) {
+  for (const dir of requestedDirs(requested)) {
     const { version, repository } = packageJson(dir);
     const commitUrl = commitUrlOf(repository?.url ?? "");
     const notes = renderNotes(commitsSince(lastTag(dir)), { version, date, dir, commitUrl });

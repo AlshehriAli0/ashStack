@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 
-import { bumped, requestedDirs } from "../scripts/release-version.js";
+import { requestedDirs } from "../scripts/packages.js";
+import { bumped } from "../scripts/release-version.js";
 
 describe("bumped", () => {
   it("raises the patch and leaves the rest alone", () => {
