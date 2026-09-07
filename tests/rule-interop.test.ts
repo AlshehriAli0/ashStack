@@ -98,8 +98,19 @@ describe("no-manual-memo and no-comments together", () => {
     expect(shown(lintWithBothRules("three-memos.tsx", THREE_MARKED_MEMOS))).toEqual([]);
   });
 
-  it("says nothing with the comment hatch closed, which would leave no-manual-memo unsatisfiable", () => {
-    expect(shown(lintWithBothRules("marked-memo.tsx", MARKED_MEMO, ["error", { escapeHatch: false }]))).toEqual([]);
+  it("reports the marker with the comment hatch closed, which leaves no-manual-memo unsatisfiable", () => {
+    const fired = lintWithBothRules("marked-memo.tsx", MARKED_MEMO, ["error", { escapeHatch: false }]);
+    expect(fired).toHaveLength(2);
+    expect(fired.every(d => d.code.includes("no-comments"))).toBe(true);
+  });
+
+  it("says nothing about a memo excused by a directive with the hatch closed", () => {
+    const code = `import { memo } from "react";
+
+// oxlint-disable-next-line @ashstack/react-native/no-manual-memo -- rendered per list row
+export const Row = memo(() => null);
+`;
+    expect(shown(lintWithBothRules("excused-memo.tsx", code, ["error", { escapeHatch: false }]))).toEqual([]);
   });
 
   it("says nothing with a comment budget of zero", () => {

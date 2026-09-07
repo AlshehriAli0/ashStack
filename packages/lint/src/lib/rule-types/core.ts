@@ -17,7 +17,7 @@ export type CoreRuleId =
 declare module "oxlint" {
   interface DummyRuleMap {
     /**
-     * Disallow every comment that is not a `// what:` fact, a `// why:` marker, or a tooling directive. The diagnostic names the refactor that removes it. A `// why:` line is what `@ashstack/react-native/no-manual-memo` requires above a kept `memo`, so it survives whatever the options say.
+     * Disallow every comment that is not a `// what:` fact, a `// why:` marker, or a tooling directive. The diagnostic names the refactor that removes it. A `// why:` line is what `@ashstack/react-native/no-manual-memo` requires above a kept `memo`, so no budget counts it; `escapeHatch: false` closes even that.
      *
      * **Default: on.**
      *

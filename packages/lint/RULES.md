@@ -193,7 +193,7 @@ _always on via `core()` and every entry above it._
 
 #### `@ashstack/core/no-comments`
 
-Disallow every comment that is not a `// what:` fact, a `// why:` marker, or a tooling directive. The diagnostic names the refactor that removes it. A `// why:` line is what `@ashstack/react-native/no-manual-memo` requires above a kept `memo`, so it survives whatever the options say.
+Disallow every comment that is not a `// what:` fact, a `// why:` marker, or a tooling directive. The diagnostic names the refactor that removes it. A `// why:` line is what `@ashstack/react-native/no-manual-memo` requires above a kept `memo`, so no budget counts it; `escapeHatch: false` closes even that.
 
 **Default: on.**
 
@@ -206,7 +206,7 @@ Disallow every comment that is not a `// what:` fact, a `// why:` marker, or a t
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `jsdoc` | `"allow" \| "report"` | `"report"` | With `"allow"`, a `/** */` block attached to the declaration below it is kept. A floating one still reports. |
-| `escapeHatch` | `boolean` | `true` | With `false`, the `// what:` hatch goes away and only `// why:` is left. |
+| `escapeHatch` | `boolean` | `true` | With `false`, nothing but a tooling directive survives: the `// what:` hatch, `// why:` markers and JSDoc all report, whatever `jsdoc` says. |
 | `budget` | `number` | `2` | How many `// what:` lines one file may keep. `// why:` lines never count against it. |
 
 **Fails**

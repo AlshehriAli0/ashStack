@@ -46,7 +46,7 @@ const HATCH_OPEN =
   " `// what:` fits only a fact that outlives the code — a platform bug, an upstream contract, a measured number; what the code does is not one, and still owes the refactor.";
 
 const HATCH_CLOSED =
-  " This project runs with the `// what:` hatch turned off. The one line left is `// why:`, which a kept `memo` requires.";
+  " This project runs with the comment hatch closed: nothing but a tooling directive survives here. A `memo` worth keeping goes behind `// oxlint-disable-next-line @ashstack/react-native/no-manual-memo -- <the real cost>`, which is a directive and states the cost in the same line.";
 
 const refactorFirst = (escapeHatch: boolean): string => REFACTOR_MOVES + (escapeHatch ? HATCH_OPEN : HATCH_CLOSED);
 
@@ -131,13 +131,15 @@ interface Marker extends Reviewed {
  * `what:` states a durable fact and spends the file's prose budget. `why:` is
  * the marker `@ashstack/react-native/no-manual-memo` requires above a kept
  * `memo`: not discretionary prose, so it is held to the same one-line shape and
- * left out of the budget, and it survives `escapeHatch: false`.
+ * left out of the budget. `escapeHatch: false` closes both, and every other
+ * comment with them — a file there keeps nothing but tooling directives, so a
+ * kept `memo` names its cost inside an `oxlint-disable-next-line` instead.
  */
 const markerIn = (reviewed: Reviewed, escapeHatch: boolean): Marker[] => {
+  if (!escapeHatch) return [];
   const groups = MARKER.exec(reviewed.body)?.groups;
   if (!groups?.kind || !groups.fact) return [];
   const kind = groups.kind.toLowerCase() === "why" ? "why" : "what";
-  if (kind === "what" && !escapeHatch) return [];
   return [{ ...reviewed, kind, fact: groups.fact }];
 };
 
@@ -164,7 +166,7 @@ export const noComments: Rule = {
     type: "problem",
     docs: {
       description:
-        "Disallow every comment that is not a `// what:` fact, a `// why:` marker, or a tooling directive. The diagnostic names the refactor that removes it. A `// why:` line is what `@ashstack/react-native/no-manual-memo` requires above a kept `memo`, so it survives whatever the options say.",
+        "Disallow every comment that is not a `// what:` fact, a `// why:` marker, or a tooling directive. The diagnostic names the refactor that removes it. A `// why:` line is what `@ashstack/react-native/no-manual-memo` requires above a kept `memo`, so no budget counts it; `escapeHatch: false` closes even that.",
     },
     schema: [
       {
@@ -179,7 +181,8 @@ export const noComments: Rule = {
           escapeHatch: {
             type: "boolean",
             default: true,
-            description: "With `false`, the `// what:` hatch goes away and only `// why:` is left.",
+            description:
+              "With `false`, nothing but a tooling directive survives: the `// what:` hatch, `// why:` markers and JSDoc all report, whatever `jsdoc` says.",
           },
           budget: {
             type: "integer",
@@ -211,7 +214,7 @@ export const noComments: Rule = {
       for (const entry of reviewed) {
         const { comment } = entry;
         if (markerIn(entry, escapeHatch).length > 0) continue;
-        if (options.jsdoc !== "allow" || !isJsdoc(comment)) report(comment, refactorFirst(escapeHatch));
+        if (!escapeHatch || options.jsdoc !== "allow" || !isJsdoc(comment)) report(comment, refactorFirst(escapeHatch));
         else if (!declarationStarts.has(nextTokenStart(text, comment.end))) report(comment, FLOATING_JSDOC);
       }
     };

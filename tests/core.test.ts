@@ -143,10 +143,10 @@ export const B = 2;
 `,
       },
       {
-        name: "a why: marker outlives escapeHatch false",
+        name: "escapeHatch false still keeps tooling directives",
         options: { escapeHatch: false },
-        code: `// why: rendered per list row, so the compiler cannot hoist it
-export const Row = 1;
+        code: `// oxlint-disable-next-line typescript/no-explicit-any
+export const parse = (input: any) => input;
 `,
       },
       {
@@ -531,7 +531,7 @@ export const Row = 1;
         code: `// what: Android 14 rejects a zero-length payload here
 export const payload = [0];
 `,
-        errors: [{ message: "The one line left is `// why:`", line: 1, column: 1 }],
+        errors: [{ message: "nothing but a tooling directive survives", line: 1, column: 1 }],
       },
       {
         name: "escapeHatch false skips the shape check instead of reporting twice",
@@ -539,10 +539,10 @@ export const payload = [0];
         code: `/* what: short */
 export const payload = [0];
 `,
-        errors: [{ message: "hatch turned off", line: 1, column: 1 }],
+        errors: [{ message: "comment hatch closed", line: 1, column: 1 }],
       },
       {
-        name: "escapeHatch false alongside jsdoc allow and a budget",
+        name: "escapeHatch false outranks jsdoc allow and reports the attached block too",
         options: { escapeHatch: false, jsdoc: "allow", budget: 0 },
         code: `/** Formats a price for display. */
 export const formatPrice = (value: number) => String(value);
@@ -550,7 +550,18 @@ export const formatPrice = (value: number) => String(value);
 // what: Android 14 rejects a zero-length payload here
 export const payload = [0];
 `,
-        errors: [{ message: "The one line left is `// why:`", line: 4, column: 1 }],
+        errors: [
+          { message: "comment hatch closed", line: 1, column: 1 },
+          { message: "comment hatch closed", line: 4, column: 1 },
+        ],
+      },
+      {
+        name: "escapeHatch false reports a why: marker with everything else",
+        options: { escapeHatch: false },
+        code: `// why: rendered per list row, so the compiler cannot hoist it
+export const Row = 1;
+`,
+        errors: [{ message: "comment hatch closed", line: 1, column: 1 }],
       },
       {
         name: "directives and a valid hatch are skipped while prose is counted",
