@@ -1,6 +1,0 @@
-{
-  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
-  "changelog": false,
-  "baseBranch": "main",
-  "updateInternalDependencies": "patch"
-}

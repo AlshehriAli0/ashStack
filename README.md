@@ -123,7 +123,7 @@ bun run docs:rules      # regenerate RULES.md
 
 Rule tests live in `tests/`, one file per module, and run through real oxlint. A case names the code, the expected message and the line it lands on. 1800 of them finish in a second: bun runs the files in parallel, and each file lints all its cases at once. A rule change without a case that fails without it is not done.
 
-Add a [changeset](https://github.com/changesets/changesets) with your PR. Releases run from a manual CI dispatch, not from the merge.
+Write conventional commits: the changelog is built from the subjects since the last tag, so the subject is the release note. Releases run from a manual CI dispatch, not from the merge.
 
 ## License
 

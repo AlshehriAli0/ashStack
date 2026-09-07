@@ -44,39 +44,36 @@ jobs:
       - run: bun run format:check
       - run: bun run docs:rules:check
 
-      # The changeset carries the bump and nothing else: `changelog: false` in
-      # .changeset/config.json means its body is never read, because the notes
-      # come from the commits instead.
-      - name: Write the changeset this release is asking for
+      - name: Bump the versions this release is asking for
         env:
           BUMP: ${{ inputs.bump }}
           PACKAGES: ${{ inputs.packages }}
-        run: |
-          {
-            echo '---'
-            [ "$PACKAGES" != fmt ] && echo "\"@ashstack/lint\": $BUMP"
-            [ "$PACKAGES" != lint ] && echo "\"@ashstack/fmt\": $BUMP"
-            echo '---'
-          } > .changeset/release.md
-          cat .changeset/release.md
+        run: bun scripts/release-version.ts "$BUMP" "$PACKAGES"
 
-      - name: Version, write the notes, and commit
+      # release-notes.ts reads the bumped versions back out of the package.json
+      # files and prints `name@version` per package, which is both the release
+      # commit's subject and the tag to cut once the publish lands.
+      - name: Write the notes and commit
         env:
           PACKAGES: ${{ inputs.packages }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          bunx changeset version
           summary=$(bun scripts/release-notes.ts "$PACKAGES")
           git add -A
           git commit -m "chore: release $summary"
+          echo "RELEASED=$summary" >> "$GITHUB_ENV"
 
-      # changeset publish tags what it actually shipped, so the tags only exist
-      # once the publish succeeded. Push them together with the version commit.
-      - name: Publish to npm
-        run: bun run release
+      # Tag after the publish, so a tag only ever exists for a version that
+      # actually shipped. Push them together with the version commit.
+      - name: Publish to npm, then tag what shipped
         env:
           NPM_CONFIG_PROVENANCE: "true"
+        run: |
+          for pair in $RELEASED; do
+            npm publish --workspace "${pair%@*}"
+            git tag "$pair"
+          done
 
       - name: Push the version commit and its tags
         run: git push --follow-tags
