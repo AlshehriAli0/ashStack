@@ -1,5 +1,20 @@
 # @ashstack/lint
 
+## 0.9.0 (2026-09-09)
+
+### Breaking Changes
+
+- leave no comment standing when the no-comments hatch is closed ([`3e49054`](https://github.com/AlshehriAli0/ashStack/commit/3e49054))
+- move the JSX rules into @ashstack/react, and fix design-system exemption ([`ac7701e`](https://github.com/AlshehriAli0/ashStack/commit/ac7701e))
+
+### Features
+
+- add core/max-complexity, which scores cognitive not cyclomatic ([`e0b4531`](https://github.com/AlshehriAli0/ashStack/commit/e0b4531))
+
+### Bug Fixes
+
+- **shared:** publish the tarball check-pack verifies, and share the package roster ([`dc468c1`](https://github.com/AlshehriAli0/ashStack/commit/dc468c1))
+
 ## 0.8.0 (2026-09-06)
 
 ### Features
