@@ -106,7 +106,7 @@ const BASE_RULES: RuleMap = {
   "eslint/prefer-template": "error",
   "typescript/consistent-type-imports": "error",
   "typescript/dot-notation": "error",
-  "typescript/no-confusing-void-expression": "error",
+  "typescript/no-confusing-void-expression": "off",
   "typescript/no-empty-object-type": ["error", { allowInterfaces: "with-single-extends" }],
   "typescript/no-explicit-any": "error",
   "typescript/no-extra-non-null-assertion": "error",

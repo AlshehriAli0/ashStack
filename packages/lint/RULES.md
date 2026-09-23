@@ -10,7 +10,7 @@ Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-marg
 
 Each entry lists the oxlint plugins it turns on, below. You never need to add them: your own `plugins` array is added to the entry's set, not swapped for it. A bare oxlint install runs `eslint`, `typescript`, `unicorn`, `oxc`; `import`, `promise`, `react`, `jsx-a11y`, `react-perf` come from here.
 
-Counting what each entry sets with every module on: **117** rules for plain TypeScript, **201** with React, **258** on React Native, 77 of them written for this package. oxlint's own `correctness` category runs alongside these.
+Counting what each entry sets with every module on: **116** rules for plain TypeScript, **200** with React, **257** on React Native, 77 of them written for this package. oxlint's own `correctness` category runs alongside these.
 
 - [`core()`](#core)
   - [`@ashstack/core`](#ashstackcore) — 5 rules
@@ -134,7 +134,7 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`.
 | [`eslint/prefer-template`](https://oxc.rs/docs/guide/usage/linter/rules/eslint/prefer-template.html) | `"error"` |
 | [`typescript/consistent-type-imports`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/consistent-type-imports.html) | `"error"` |
 | [`typescript/dot-notation`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/dot-notation.html) | `"error"` |
-| [`typescript/no-confusing-void-expression`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-confusing-void-expression.html) | `"error"` |
+| [`typescript/no-confusing-void-expression`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-confusing-void-expression.html) | `"off"` |
 | [`typescript/no-empty-object-type`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-empty-object-type.html) | `["error",{"allowInterfaces":"with-single-extends"}]` |
 | [`typescript/no-explicit-any`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-explicit-any.html) | `"error"` |
 | [`typescript/no-extra-non-null-assertion`](https://oxc.rs/docs/guide/usage/linter/rules/typescript/no-extra-non-null-assertion.html) | `"error"` |
