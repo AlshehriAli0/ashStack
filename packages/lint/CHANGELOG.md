@@ -1,5 +1,22 @@
 # @ashstack/lint
 
+## 0.10.0 (2026-09-24)
+
+### Breaking Changes
+
+- leave no comment standing when the no-comments hatch is closed ([`3e49054`](https://github.com/AlshehriAli0/ashStack/commit/3e49054))
+- move the JSX rules into @ashstack/react, and fix design-system exemption ([`ac7701e`](https://github.com/AlshehriAli0/ashStack/commit/ac7701e))
+
+### Features
+
+- add StyleX lint rules ([`113d4b1`](https://github.com/AlshehriAli0/ashStack/commit/113d4b1))
+- add core/max-complexity, which scores cognitive not cyclomatic ([`e0b4531`](https://github.com/AlshehriAli0/ashStack/commit/e0b4531))
+
+### Bug Fixes
+
+- disable confusing void expression rule ([`038aa39`](https://github.com/AlshehriAli0/ashStack/commit/038aa39))
+- **shared:** publish the tarball check-pack verifies, and share the package roster ([`dc468c1`](https://github.com/AlshehriAli0/ashStack/commit/dc468c1))
+
 ## 0.9.1 (2026-09-09)
 
 ### Breaking Changes
