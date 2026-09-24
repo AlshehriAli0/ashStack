@@ -10,7 +10,7 @@ Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-marg
 
 Each entry lists the oxlint plugins it turns on, below. You never need to add them: your own `plugins` array is added to the entry's set, not swapped for it. A bare oxlint install runs `eslint`, `typescript`, `unicorn`, `oxc`; `import`, `promise`, `react`, `jsx-a11y`, `react-perf` come from here.
 
-Counting what each entry sets with every module on: **116** rules for plain TypeScript, **210** with React, **267** on React Native, 80 of them written for this package. oxlint's own `correctness` category runs alongside these.
+Counting what each entry sets with every module on: **116** rules for plain TypeScript, **210** with React, **267** on React Native, 81 of them written for this package. oxlint's own `correctness` category runs alongside these.
 
 - [`core()`](#core)
   - [`@ashstack/core`](#ashstackcore) — 5 rules
@@ -20,7 +20,7 @@ Counting what each entry sets with every module on: **116** rules for plain Type
   - [`@ashstack/query`](#ashstackquery) — 5 rules
   - [`@ashstack/zustand`](#ashstackzustand) — 1 rule
   - [`@ashstack/i18n`](#ashstacki18n) — 3 rules
-  - [`@ashstack/stylex`](#ashstackstylex) — 3 rules
+  - [`@ashstack/stylex`](#ashstackstylex) — 4 rules
   - [`@ashstack/tailwind`](#ashstacktailwind) — 2 rules
   - [`@ashstack/tanstack-router`](#ashstacktanstack-router) — 2 rules
   - [`@ashstack/effects`](#ashstackeffects) — 9 rules
@@ -1108,7 +1108,7 @@ _auto-enabled by `react()` when `@stylexjs/stylex` is a dependency._
 
 #### `@ashstack/stylex/inline-props`
 
-Spread `stylex.props(...)` directly on JSX elements.
+Use `stylex.props(...)` as JSX props or return/store its result.
 
 **Default: on**, when `@stylexjs/stylex` is a dependency.
 
@@ -1119,10 +1119,7 @@ import * as stylex from "@stylexjs/stylex";
 
 const styles = stylex.create({ box: { padding: 8 } });
 
-export const Box = () => {
-  const boxProps = stylex.props(styles.box);
-  return <div {...boxProps} />;
-};
+export const Box = () => <div style={stylex.props(styles.box)} />;
 ```
 
 **Passes**
@@ -1132,7 +1129,36 @@ import * as stylex from "@stylexjs/stylex";
 
 const styles = stylex.create({ box: { padding: 8 } });
 
-export const Box = () => <div {...stylex.props(styles.box)} />;
+export const Box = () => {
+  const props = stylex.props(styles.box);
+  return <div {...props} className={props.className} />;
+};
+```
+
+#### `@ashstack/stylex/no-conflicting-props`
+
+Report className overrides and inline CSS that overlaps StyleX declarations.
+
+**Default: on**, when `@stylexjs/stylex` is a dependency.
+
+**Fails**
+
+```tsx
+import * as stylex from "@stylexjs/stylex";
+
+const styles = stylex.create({ box: { color: "red" } });
+
+export const Box = () => <div {...stylex.props(styles.box)} style={{ color: "blue" }} />;
+```
+
+**Passes**
+
+```tsx
+import * as stylex from "@stylexjs/stylex";
+
+const styles = stylex.create({ box: { color: "red" } });
+
+export const Box = () => <div {...stylex.props(styles.box)} style={{ left: "10%" }} />;
 ```
 
 #### `@ashstack/stylex/no-duplicate-styles`
@@ -1146,10 +1172,12 @@ Reuse identical static styles within one `stylex.create` call.
 ```tsx
 import * as stylex from "@stylexjs/stylex";
 
-export const styles = stylex.create({
+const styles = stylex.create({
   first: { padding: 4, margin: 8 },
   second: { margin: 8, padding: 4 },
 });
+
+export const Box = () => <div {...stylex.props(styles.first)} />;
 ```
 
 **Passes**
@@ -1159,7 +1187,7 @@ import * as stylex from "@stylexjs/stylex";
 
 export const styles = stylex.create({
   first: { padding: 4 },
-  second: { padding: 8 },
+  second: { padding: 4 },
 });
 ```
 
@@ -1197,7 +1225,7 @@ import * as stylex from "@stylexjs/stylex";
 import { colors, radii } from "./tokens.stylex";
 
 export const styles = stylex.create({
-  card: { color: colors.text, borderRadius: radii.md },
+  card: { color: `color-mix(in oklab, ${colors.text} 10%, transparent)`, borderRadius: radii.md },
 });
 ```
 

@@ -2,9 +2,9 @@ import { problem } from "../../../lib/ast.js";
 import type { Rule } from "../../../lib/types.js";
 import { collectImports, isStylexCall } from "./imports.js";
 
-const MESSAGE = "Spread `stylex.props(...)` directly on this element.";
+const MESSAGE = "Use `stylex.props(...)` as JSX props or return/store its result.";
 
-export const inlineProps: Rule = problem("Spread `stylex.props(...)` directly on JSX elements.", {
+export const inlineProps: Rule = problem(MESSAGE, {
   createOnce(context) {
     const bindings = { namespaces: new Set<string>(), named: new Set<string>() };
 
@@ -19,7 +19,12 @@ export const inlineProps: Rule = problem("Spread `stylex.props(...)` directly on
       },
       CallExpression(node) {
         if (!isStylexCall(context, node, "props", bindings)) return;
-        if (node.parent.type === "JSXSpreadAttribute") return;
+        if (
+          ["JSXSpreadAttribute", "VariableDeclarator", "ReturnStatement", "ArrowFunctionExpression"].includes(
+            node.parent.type
+          )
+        )
+          return;
         context.report({ node, message: MESSAGE });
       },
     };

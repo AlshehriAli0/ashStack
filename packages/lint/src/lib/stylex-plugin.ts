@@ -15,7 +15,6 @@ export const STYLEX_RULES: RuleMap = {
   "@stylexjs/valid-shorthands": "error",
   "@stylexjs/no-unused": "error",
   "@stylexjs/enforce-extension": "error",
-  "@stylexjs/no-conflicting-props": "error",
   "@stylexjs/no-legacy-contextual-styles": "error",
   "@stylexjs/no-nonstandard-styles": "error",
 };

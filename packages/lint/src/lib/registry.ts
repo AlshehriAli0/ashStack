@@ -79,6 +79,7 @@ export const reactRegistry: ModuleMeta[] = [
     packages: ["@stylexjs/stylex"],
     rules: {
       "inline-props": {},
+      "no-conflicting-props": {},
       "no-duplicate-styles": {},
       "require-tokens": {},
     },

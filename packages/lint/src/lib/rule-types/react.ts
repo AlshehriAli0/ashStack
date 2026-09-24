@@ -22,6 +22,7 @@ export type ReactRuleId =
   | "@ashstack/i18n/no-bare-attrs"
   | "@ashstack/i18n/no-bare-toast"
   | "@ashstack/stylex/inline-props"
+  | "@ashstack/stylex/no-conflicting-props"
   | "@ashstack/stylex/no-duplicate-styles"
   | "@ashstack/stylex/require-tokens"
   | "@ashstack/tailwind/prefer-cn"
@@ -165,13 +166,21 @@ declare module "oxlint" {
      */
     "@ashstack/i18n/no-bare-toast"?: RuleSetting;
     /**
-     * Spread `stylex.props(...)` directly on JSX elements.
+     * Use `stylex.props(...)` as JSX props or return/store its result.
      *
      * **Default: on**, when `@stylexjs/stylex` is a dependency.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylexinline-props
      */
     "@ashstack/stylex/inline-props"?: RuleSetting;
+    /**
+     * Report className overrides and inline CSS that overlaps StyleX declarations.
+     *
+     * **Default: on**, when `@stylexjs/stylex` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylexno-conflicting-props
+     */
+    "@ashstack/stylex/no-conflicting-props"?: RuleSetting;
     /**
      * Reuse identical static styles within one `stylex.create` call.
      *

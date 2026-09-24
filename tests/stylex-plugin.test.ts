@@ -19,8 +19,6 @@ it("runs every enabled official rule on a representative violation", async () =>
     "no-unused":
       "const styles = stylex.create({ used: { padding: 4 }, unused: { padding: 8 } }); console.log(styles.used);",
     "enforce-extension": 'export const colors = stylex.defineVars({ text: "red" });',
-    "no-conflicting-props":
-      'const styles = stylex.create({ box: { padding: 4 } }); export const Box = () => <div className="other" {...stylex.props(styles.box)} />;',
     "no-legacy-contextual-styles": 'const styles = stylex.create({ box: { ":hover": { color: "red" } } });',
     "no-nonstandard-styles": 'const styles = stylex.create({ box: { float: "start" } });',
   };
@@ -31,4 +29,17 @@ it("runs every enabled official rule on a representative violation", async () =>
       expect(codes).toContain(`@stylexjs(${rule})`);
     })
   );
+});
+
+it("accepts static token mixes and semantic style aliases by default", async () => {
+  const codes = await codesFrom(
+    react({ stylex: true }),
+    `import * as stylex from "@stylexjs/stylex";
+import { colors } from "./theme.stylex";
+export const styles = stylex.create({
+  active: { color: \`color-mix(in oklab, \${colors.primary} 10%, transparent)\` },
+  selected: { color: \`color-mix(in oklab, \${colors.primary} 10%, transparent)\` },
+});`
+  );
+  expect(codes.filter(code => code.includes("stylex"))).toEqual([]);
 });
