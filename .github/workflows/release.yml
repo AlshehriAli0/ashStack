@@ -77,7 +77,7 @@ jobs:
           for pair in $RELEASED; do
             name=${pair%@*}
             (cd "packages/${name#@ashstack/}" && npm publish --ignore-scripts=false)
-            git tag "$pair"
+            git tag -a "$pair" -m "$pair"
           done
 
       - name: Push the version commit and its tags
