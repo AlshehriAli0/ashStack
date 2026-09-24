@@ -79,6 +79,7 @@ const ALL_ON: Required<ReactNativeOptions> = {
   query: true,
   zustand: true,
   i18n: true,
+  stylex: true,
   tailwind: true,
   tanstackRouter: true,
   unistyles: true,
@@ -367,6 +368,20 @@ describe("module toggles", () => {
     const withoutUnistyles = customIds(reactNative({ ...ALL_ON, unistyles: false })).map(namespaceOf);
     expect(withoutUnistyles).not.toContain("@ashstack/unistyles");
     expect(withoutUnistyles).toContain("@ashstack/reanimated");
+  });
+
+  it("runs StyleX rules only when StyleX is enabled", async () => {
+    const source =
+      'import * as stylex from "@stylexjs/stylex"; const styles = stylex.create({ box: { color: "red", bogusProperty: 1 } });';
+    const defaultCodes = await codesFrom(react(), source);
+    const disabledCodes = await codesFrom(react({ stylex: false }), source);
+    const enabledCodes = await codesFrom(react({ stylex: true }), source);
+    for (const codes of [defaultCodes, disabledCodes]) {
+      expect(codes).not.toContain("@ashstack/stylex(require-tokens)");
+      expect(codes).not.toContain("@stylexjs(valid-styles)");
+    }
+    expect(enabledCodes).toContain("@ashstack/stylex(require-tokens)");
+    expect(enabledCodes).toContain("@stylexjs(valid-styles)");
   });
 
   it("drops a module's import bans along with its rules", () => {

@@ -12,8 +12,8 @@
 
 Two packages: [`@ashstack/lint`](packages/lint) and [`@ashstack/fmt`](packages/fmt). Install once per project instead of copying a lint config around and watching the copies drift.<!-- rule-counts -->
 
-- **116 rules** on plain TypeScript, **200** with React, **257** on React Native, 77 of them custom-built
-- library-specific rules ship only when you depend on that library: 13 self-detecting modules<!-- /rule-counts -->
+- **116 rules** on plain TypeScript, **210** with React, **267** on React Native, 80 of them custom-built
+- library-specific rules ship only when you depend on that library: 14 self-detecting modules<!-- /rule-counts -->
 - every rule is in [RULES.md](packages/lint/RULES.md), with options and examples, generated and CI-checked
 - your `rules` block always wins
 
@@ -79,6 +79,7 @@ One module per library: one rule namespace, one toggle. A module turns on when i
 | `@ashstack/query`           | `@tanstack/react-query`                                                                  |
 | `@ashstack/zustand`         | `zustand`                                                                                |
 | `@ashstack/i18n`            | i18next · react-i18next · lingui · react-intl · use-intl · next-intl · expo-localization |
+| `@ashstack/stylex`          | `@stylexjs/stylex`                                                                       |
 | `@ashstack/tailwind`        | `tailwindcss`                                                                            |
 | `@ashstack/tanstack-router` | `@tanstack/react-router`                                                                 |
 | `@ashstack/unistyles`       | `react-native-unistyles`                                                                 |

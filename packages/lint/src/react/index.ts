@@ -3,6 +3,7 @@ import { EFFECT_RULES, effectPlugin } from "../lib/effect-plugin.js";
 import { mergeConfigs } from "../lib/merge.js";
 import { composeModules } from "../lib/module.js";
 import { coreRegistry, reactRegistry } from "../lib/registry.js";
+import { STYLEX_RULES, stylexPlugin } from "../lib/stylex-plugin.js";
 import type { OxlintConfig, ReactOptions, RuleMap } from "../lib/types.js";
 
 const ALLOW_EMPTY_NOOP_HANDLERS: RuleMap = {
@@ -133,21 +134,23 @@ const REACT_RULES: RuleMap = {
 /**
  * React (web) entry — everything in core plus react, jsx-a11y, React Compiler
  * diagnostics, you-might-not-need-an-effect, and the auto-detected library
- * modules (query, zustand, i18n).
+ * modules (query, zustand, i18n, StyleX).
  *
  * @see [every rule `react()` sets](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#react)
  */
 const react = (options: ReactOptions = {}): OxlintConfig => {
   const composed = composeModules([...coreRegistry, ...reactRegistry], options);
+  const stylex = composed.rules["@ashstack/stylex/inline-props"] === "error";
 
   return mergeConfigs(core(options), {
     plugins: ["react", "jsx-a11y", "react-perf"],
-    jsPlugins: [effectPlugin, ...composed.jsPlugins],
+    jsPlugins: [effectPlugin, ...composed.jsPlugins, ...(stylex ? [stylexPlugin] : [])],
     rules: {
       ...REACT_RULES,
       ...renderIdentityRules(options.reactCompiler ?? true),
       ...EFFECT_RULES,
       ...composed.rules,
+      ...(stylex ? STYLEX_RULES : {}),
       "@ashstack/core/max-lines": ["error", COMPONENT_MAX_LINES],
       "@ashstack/core/max-complexity": ["error", COMPONENT_MAX_COMPLEXITY],
     },

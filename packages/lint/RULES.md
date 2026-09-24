@@ -10,7 +10,7 @@ Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-marg
 
 Each entry lists the oxlint plugins it turns on, below. You never need to add them: your own `plugins` array is added to the entry's set, not swapped for it. A bare oxlint install runs `eslint`, `typescript`, `unicorn`, `oxc`; `import`, `promise`, `react`, `jsx-a11y`, `react-perf` come from here.
 
-Counting what each entry sets with every module on: **116** rules for plain TypeScript, **200** with React, **257** on React Native, 77 of them written for this package. oxlint's own `correctness` category runs alongside these.
+Counting what each entry sets with every module on: **116** rules for plain TypeScript, **210** with React, **267** on React Native, 80 of them written for this package. oxlint's own `correctness` category runs alongside these.
 
 - [`core()`](#core)
   - [`@ashstack/core`](#ashstackcore) — 5 rules
@@ -20,6 +20,7 @@ Counting what each entry sets with every module on: **116** rules for plain Type
   - [`@ashstack/query`](#ashstackquery) — 5 rules
   - [`@ashstack/zustand`](#ashstackzustand) — 1 rule
   - [`@ashstack/i18n`](#ashstacki18n) — 3 rules
+  - [`@ashstack/stylex`](#ashstackstylex) — 3 rules
   - [`@ashstack/tailwind`](#ashstacktailwind) — 2 rules
   - [`@ashstack/tanstack-router`](#ashstacktanstack-router) — 2 rules
   - [`@ashstack/effects`](#ashstackeffects) — 9 rules
@@ -1099,6 +1100,105 @@ export const SaveButton = () => {
   const { t } = useTranslation();
   return <Button onPress={() => toast.success(t("saved"))} />;
 };
+```
+
+### `@ashstack/stylex`
+
+_auto-enabled by `react()` when `@stylexjs/stylex` is a dependency._
+
+#### `@ashstack/stylex/inline-props`
+
+Spread `stylex.props(...)` directly on JSX elements.
+
+**Default: on**, when `@stylexjs/stylex` is a dependency.
+
+**Fails**
+
+```tsx
+import * as stylex from "@stylexjs/stylex";
+
+const styles = stylex.create({ box: { padding: 8 } });
+
+export const Box = () => {
+  const boxProps = stylex.props(styles.box);
+  return <div {...boxProps} />;
+};
+```
+
+**Passes**
+
+```tsx
+import * as stylex from "@stylexjs/stylex";
+
+const styles = stylex.create({ box: { padding: 8 } });
+
+export const Box = () => <div {...stylex.props(styles.box)} />;
+```
+
+#### `@ashstack/stylex/no-duplicate-styles`
+
+Reuse identical static styles within one `stylex.create` call.
+
+**Default: on**, when `@stylexjs/stylex` is a dependency.
+
+**Fails**
+
+```tsx
+import * as stylex from "@stylexjs/stylex";
+
+export const styles = stylex.create({
+  first: { padding: 4, margin: 8 },
+  second: { margin: 8, padding: 4 },
+});
+```
+
+**Passes**
+
+```tsx
+import * as stylex from "@stylexjs/stylex";
+
+export const styles = stylex.create({
+  first: { padding: 4 },
+  second: { padding: 8 },
+});
+```
+
+#### `@ashstack/stylex/require-tokens`
+
+Use configured color and radius groups in `stylex.create`; defaults are `colors` and `radii`.
+
+**Default: on**, when `@stylexjs/stylex` is a dependency.
+
+**Options**
+
+```ts
+[{ colors?: string | false; radii?: string | false }]
+```
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `colors` | `string \| false` | `"colors"` | Color token group, or false to disable this check. |
+| `radii` | `string \| false` | `"radii"` | Radius token group, or false to disable this check. |
+
+**Fails**
+
+```tsx
+import * as stylex from "@stylexjs/stylex";
+
+export const styles = stylex.create({
+  card: { color: "#123456", borderRadius: 8 },
+});
+```
+
+**Passes**
+
+```tsx
+import * as stylex from "@stylexjs/stylex";
+import { colors, radii } from "./tokens.stylex";
+
+export const styles = stylex.create({
+  card: { color: colors.text, borderRadius: radii.md },
+});
 ```
 
 ### `@ashstack/tailwind`

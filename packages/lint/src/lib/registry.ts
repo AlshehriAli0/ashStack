@@ -73,6 +73,17 @@ export const reactRegistry: ModuleMeta[] = [
     },
   },
   {
+    meta: { name: "@ashstack/stylex" },
+    url: at("../react/rules/stylex/index.js"),
+    option: "stylex",
+    packages: ["@stylexjs/stylex"],
+    rules: {
+      "inline-props": {},
+      "no-duplicate-styles": {},
+      "require-tokens": {},
+    },
+  },
+  {
     meta: { name: "@ashstack/tailwind" },
     url: at("../react/rules/tailwind/index.js"),
     option: "tailwind",

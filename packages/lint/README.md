@@ -1,6 +1,6 @@
 # @ashstack/lint
 
-Strict shared [oxlint](https://oxc.rs) config: <!-- rule-counts -->116 rules on plain TypeScript, 200 with React, 257 on React Native, 77 of them custom-built<!-- /rule-counts -->. Three entries, each containing the one before it: `core()`, `react()`, `react-native()`.
+Strict shared [oxlint](https://oxc.rs) config: <!-- rule-counts -->116 rules on plain TypeScript, 210 with React, 267 on React Native, 80 of them custom-built<!-- /rule-counts -->. Three entries, each containing the one before it: `core()`, `react()`, `react-native()`.
 
 Library-specific rules ship only when you depend on that library, so nothing fires about code you don't have.
 
@@ -77,7 +77,7 @@ diagnostic that the rest are gone.
 
 One module per library: one rule namespace, one toggle. A module turns on when its library is in your `package.json`, searched up to the repo root.
 
-`@ashstack/zod` · `@ashstack/query` · `@ashstack/zustand` · `@ashstack/i18n` · `@ashstack/unistyles` · `@ashstack/legend-list` · `@ashstack/legend-state` · `@ashstack/reanimated` · `@ashstack/turbo-image` · `@ashstack/skia` · `@ashstack/keyboard`
+`@ashstack/zod` · `@ashstack/query` · `@ashstack/zustand` · `@ashstack/i18n` · `@ashstack/stylex` · `@ashstack/unistyles` · `@ashstack/legend-list` · `@ashstack/legend-state` · `@ashstack/reanimated` · `@ashstack/turbo-image` · `@ashstack/skia` · `@ashstack/keyboard`
 
 Detection only sets the default. Turn any module on or off yourself, whatever your dependencies say:
 

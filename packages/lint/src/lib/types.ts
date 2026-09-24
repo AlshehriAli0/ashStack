@@ -112,6 +112,8 @@ export type ReactOptions = CoreOptions & {
   zustand?: boolean;
   /** [`@ashstack/i18n/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacki18n) — detected from i18next/lingui/react-intl/use-intl/next-intl/expo-localization */
   i18n?: boolean;
+  /** [`@ashstack/stylex/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylex) — detected from `@stylexjs/stylex` */
+  stylex?: boolean;
   /** [`@ashstack/tailwind/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktailwind) — detected from `tailwindcss` */
   tailwind?: boolean;
   /** [`@ashstack/tanstack-router/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktanstack-router) — detected from `@tanstack/react-router` */

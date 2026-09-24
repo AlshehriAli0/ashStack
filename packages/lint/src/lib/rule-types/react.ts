@@ -21,6 +21,9 @@ export type ReactRuleId =
   | "@ashstack/i18n/no-bare-text"
   | "@ashstack/i18n/no-bare-attrs"
   | "@ashstack/i18n/no-bare-toast"
+  | "@ashstack/stylex/inline-props"
+  | "@ashstack/stylex/no-duplicate-styles"
+  | "@ashstack/stylex/require-tokens"
   | "@ashstack/tailwind/prefer-cn"
   | "@ashstack/tailwind/use-logical-classes"
   | "@ashstack/tanstack-router/require-selector"
@@ -161,6 +164,30 @@ declare module "oxlint" {
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacki18nno-bare-toast
      */
     "@ashstack/i18n/no-bare-toast"?: RuleSetting;
+    /**
+     * Spread `stylex.props(...)` directly on JSX elements.
+     *
+     * **Default: on**, when `@stylexjs/stylex` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylexinline-props
+     */
+    "@ashstack/stylex/inline-props"?: RuleSetting;
+    /**
+     * Reuse identical static styles within one `stylex.create` call.
+     *
+     * **Default: on**, when `@stylexjs/stylex` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylexno-duplicate-styles
+     */
+    "@ashstack/stylex/no-duplicate-styles"?: RuleSetting;
+    /**
+     * Use configured color and radius groups in `stylex.create`; defaults are `colors` and `radii`.
+     *
+     * **Default: on**, when `@stylexjs/stylex` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylexrequire-tokens
+     */
+    "@ashstack/stylex/require-tokens"?: RuleSetting<[{ colors?: string | false; radii?: string | false }]>;
     /**
      * Require a dynamic class value to go through `cn(...)` before it reaches a `class`, `className` or `*ClassName` prop. Reports both where the value reaches the prop and where a variable named after classes is declared.
      *

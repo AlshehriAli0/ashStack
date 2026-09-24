@@ -11,6 +11,7 @@ import unistylesModule from "./react-native/rules/unistyles/index.js";
 import i18nModule from "./react/rules/i18n/index.js";
 import queryModule from "./react/rules/query/index.js";
 import reactWebModule from "./react/rules/react/index.js";
+import stylexModule from "./react/rules/stylex/index.js";
 import tailwindModule from "./react/rules/tailwind/index.js";
 import tanstackRouterModule from "./react/rules/tanstack-router/index.js";
 import zustandModule from "./react/rules/zustand/index.js";
@@ -31,6 +32,7 @@ export const reactModules = [
   queryModule,
   zustandModule,
   i18nModule,
+  stylexModule,
   tailwindModule,
   tanstackRouterModule,
 ];

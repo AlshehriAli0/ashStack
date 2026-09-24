@@ -48,29 +48,40 @@ writeFileSync(
 );
 writeFileSync(
   join(consumer, "oxlint.config.mts"),
-  `import { reactNative } from "@ashstack/lint/react-native";\nimport { defineConfig } from "oxlint";\nexport default defineConfig({ extends: [reactNative()] });\n`
+  `import { reactNative } from "@ashstack/lint/react-native";\nimport { defineConfig } from "oxlint";\nexport default defineConfig({ extends: [reactNative({ stylex: true })] });\n`
 );
 writeFileSync(join(consumer, "oxfmt.config.mts"), `import fmt from "@ashstack/fmt";\nexport default fmt;\n`);
 writeFileSync(
   join(consumer, "src/a.ts"),
   `import { z } from "zod";\nenum K {\n  A,\n}\nexport const s = z.nativeEnum(K);\n`
 );
+writeFileSync(
+  join(consumer, "src/stylex.tsx"),
+  `import * as stylex from "@stylexjs/stylex";\nexport const styles = stylex.create({ box: { bogusProperty: 1 } });\n`
+);
 
 const installed = run(["bun", "install", "--no-save"], consumer);
 if (!installed.ok) die(`installing the tarballs failed: ${installed.err.slice(0, 400)}`);
 
 const oxlint = join(consumer, "node_modules", ".bin", "oxlint");
-const linted = run([oxlint, "--format", "json", "src/a.ts"], consumer);
-const codes: string[] = (() => {
+const lintCodes = (file: string): string[] => {
+  const linted = run([oxlint, "--format", "json", file], consumer);
   try {
     return (JSON.parse(linted.out).diagnostics ?? []).map((d: { code?: string }) => d.code ?? "");
   } catch {
-    failures.push(`the packed config did not produce lint output: ${linted.err.slice(0, 400)}`);
+    failures.push(`${file} did not produce lint output: ${linted.err.slice(0, 400)}`);
     return [];
   }
-})();
+};
+const codes = lintCodes("src/a.ts");
 if (!codes.some(code => code.includes("@ashstack/zod"))) {
   failures.push(`a module rule did not fire from the packed package; saw: ${codes.join(", ") || "nothing"}`);
+}
+const stylexCodes = lintCodes("src/stylex.tsx");
+if (!stylexCodes.includes("@stylexjs(valid-styles)")) {
+  failures.push(
+    `the packed StyleX plugin did not fire; saw: ${stylexCodes.length ? stylexCodes.join(", ") : "nothing"}`
+  );
 }
 
 /** Reads every entry, both import styles and each options type, so a public type the prune dropped fails here. */
