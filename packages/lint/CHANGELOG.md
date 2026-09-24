@@ -1,5 +1,12 @@
 # @ashstack/lint
 
+## 0.10.1 (2026-09-24)
+
+### Bug Fixes
+
+- **shared:** push release tags before creating GitHub releases ([`9d6bc30`](https://github.com/AlshehriAli0/ashStack/commit/9d6bc30))
+- allow static StyleX styles without lint exceptions ([`02a69f3`](https://github.com/AlshehriAli0/ashStack/commit/02a69f3))
+
 ## 0.10.0 (2026-09-24)
 
 ### Breaking Changes
