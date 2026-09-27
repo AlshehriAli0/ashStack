@@ -1193,20 +1193,22 @@ export const styles = stylex.create({
 
 #### `@ashstack/stylex/require-tokens`
 
-Use configured color and radius groups in `stylex.create`; defaults are `colors` and `radii`.
+Use configured color and radius groups in `stylex.create`; optional typography groups enforce font sizes and line heights.
 
 **Default: on**, when `@stylexjs/stylex` is a dependency.
 
 **Options**
 
 ```ts
-[{ colors?: string | false; radii?: string | false }]
+[{ colors?: string | false; radii?: string | false; fontSizes?: string | false; fontLineHeights?: string | false }]
 ```
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `colors` | `string \| false` | `"colors"` | Color token group, or false to disable this check. |
 | `radii` | `string \| false` | `"radii"` | Radius token group, or false to disable this check. |
+| `fontSizes` | `string \| false` | `false` | Font-size token group; false disables this check. |
+| `fontLineHeights` | `string \| false` | `false` | Line-height token group; false disables this check. |
 
 **Fails**
 

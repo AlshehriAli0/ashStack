@@ -190,13 +190,22 @@ declare module "oxlint" {
      */
     "@ashstack/stylex/no-duplicate-styles"?: RuleSetting;
     /**
-     * Use configured color and radius groups in `stylex.create`; defaults are `colors` and `radii`.
+     * Use configured color and radius groups in `stylex.create`; optional typography groups enforce font sizes and line heights.
      *
      * **Default: on**, when `@stylexjs/stylex` is a dependency.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylexrequire-tokens
      */
-    "@ashstack/stylex/require-tokens"?: RuleSetting<[{ colors?: string | false; radii?: string | false }]>;
+    "@ashstack/stylex/require-tokens"?: RuleSetting<
+      [
+        {
+          colors?: string | false;
+          radii?: string | false;
+          fontSizes?: string | false;
+          fontLineHeights?: string | false;
+        },
+      ]
+    >;
     /**
      * Require a dynamic class value to go through `cn(...)` before it reaches a `class`, `className` or `*ClassName` prop. Reports both where the value reaches the prop and where a variable named after classes is declared.
      *

@@ -1,4 +1,4 @@
-import { hasAncestor, isMemberCall, optionsOf, problem, propertyKeyName } from "../../../lib/ast.js";
+import { ancestors, hasAncestor, isMemberCall, optionsOf, problem, propertyKeyName } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 import { collectImports, isStylexCall } from "./imports.js";
 
@@ -8,18 +8,22 @@ const COMPOSITE_COLOR = /^(?:boxShadow|textShadow|filter|backgroundImage|borderI
 const RAW_HEX = /#[\da-f]{3,8}\b/i;
 const RAW_COLOR_FUNCTION = /(?:rgb|rgba|hsl|hsla|oklch|oklab|lab|lch|color)\(/i;
 const COLOR_KEYWORDS = new Set(["currentColor", "inherit", "initial", "unset", "revert", "revert-layer", "none"]);
-const RADIUS_KEYWORDS = new Set(["inherit", "initial", "unset", "revert", "revert-layer"]);
+const RESET_KEYWORDS = new Set(["inherit", "initial", "unset", "revert", "revert-layer"]);
 
 interface Options {
   colors?: string | false;
   radii?: string | false;
+  fontSizes?: string | false;
+  fontLineHeights?: string | false;
 }
 
-type Kind = "color" | "radius" | "composite";
+type Kind = "color" | "radius" | "composite" | "font size" | "line height";
 
 const valueKind = (name: string): Kind | null => {
   if (COLOR.test(name)) return "color";
   if (RADIUS.test(name)) return "radius";
+  if (name === "fontSize") return "font size";
+  if (name === "lineHeight") return "line height";
   if (COMPOSITE_COLOR.test(name)) return "composite";
   return null;
 };
@@ -46,7 +50,27 @@ const allowedLiteral = (node: AstNode, kind: Kind): boolean => {
   if (node.type !== "Literal") return false;
   if (node.value === null) return true;
   if (kind === "color") return typeof node.value === "string" && COLOR_KEYWORDS.has(node.value);
-  return node.value === 0 || node.value === "0" || (typeof node.value === "string" && RADIUS_KEYWORDS.has(node.value));
+  if (kind === "font size" || kind === "line height")
+    return (
+      node.value === 0 ||
+      node.value === "0" ||
+      (typeof node.value === "string" &&
+        (RESET_KEYWORDS.has(node.value) || (kind === "line height" && node.value === "normal")))
+    );
+  return node.value === 0 || node.value === "0" || (typeof node.value === "string" && RESET_KEYWORDS.has(node.value));
+};
+
+const isDynamicParameter = (node: AstNode, isCreateCall: (node: AstNode) => boolean): boolean => {
+  if (node.type !== "Identifier") return false;
+  for (const ancestor of ancestors(node)) {
+    if (isCreateCall(ancestor)) return false;
+    if (
+      ancestor.type === "ArrowFunctionExpression" &&
+      ancestor.params.some(param => param.type === "Identifier" && param.name === node.name)
+    )
+      return true;
+  }
+  return false;
 };
 
 const tokenMix = (node: AstNode, group: string): boolean => {
@@ -71,40 +95,46 @@ const checkComposite = (context: RuleContext, node: AstNode, group: string): voi
     context.report({ node, message: `Use \`${group}.*\` for colors inside CSS values.` });
 };
 
-const checkValue = (context: RuleContext, node: AstNode, kind: Kind, group: string): void => {
+const checkValue = (
+  context: RuleContext,
+  node: AstNode,
+  kind: Kind,
+  check: { group: string; isCreateCall: (node: AstNode) => boolean }
+): void => {
   if (node.type === "ObjectExpression") {
     node.properties.forEach(property => {
-      if (property.type === "Property") checkValue(context, property.value, kind, group);
+      if (property.type === "Property") checkValue(context, property.value, kind, check);
     });
     return;
   }
   if (node.type === "ArrayExpression") {
     node.elements.forEach(item => {
-      if (item) checkValue(context, item, kind, group);
+      if (item) checkValue(context, item, kind, check);
     });
     return;
   }
   if (node.type === "ConditionalExpression") {
-    checkValue(context, node.consequent, kind, group);
-    checkValue(context, node.alternate, kind, group);
+    checkValue(context, node.consequent, kind, check);
+    checkValue(context, node.alternate, kind, check);
     return;
   }
   if (node.type === "CallExpression" && isMemberCall(node, "firstThatWorks")) {
-    node.arguments.forEach(argument => checkValue(context, argument, kind, group));
+    node.arguments.forEach(argument => checkValue(context, argument, kind, check));
     return;
   }
   if (kind === "composite") {
-    checkComposite(context, node, group);
+    checkComposite(context, node, check.group);
     return;
   }
   if (allowedLiteral(node, kind)) return;
-  if (isToken(node, group)) return;
-  if (kind === "color" && tokenMix(node, group)) return;
-  context.report({ node, message: `Use \`${group}.*\` for ${kind}.` });
+  if (isToken(node, check.group)) return;
+  if ((kind === "font size" || kind === "line height") && isDynamicParameter(node, check.isCreateCall)) return;
+  if (kind === "color" && tokenMix(node, check.group)) return;
+  context.report({ node, message: `Use \`${check.group}.*\` for ${kind}.` });
 };
 
 export const requireTokens: Rule = problem(
-  "Use configured color and radius groups in `stylex.create`; defaults are `colors` and `radii`.",
+  "Use configured color and radius groups in `stylex.create`; optional typography groups enforce font sizes and line heights.",
   {
     meta: {
       schema: [
@@ -127,6 +157,22 @@ export const requireTokens: Rule = problem(
               default: "radii",
               description: "Radius token group, or false to disable this check.",
             },
+            fontSizes: {
+              anyOf: [
+                { type: "string", minLength: 1 },
+                { type: "boolean", enum: [false] },
+              ],
+              default: false,
+              description: "Font-size token group; false disables this check.",
+            },
+            fontLineHeights: {
+              anyOf: [
+                { type: "string", minLength: 1 },
+                { type: "boolean", enum: [false] },
+              ],
+              default: false,
+              description: "Line-height token group; false disables this check.",
+            },
           },
           additionalProperties: false,
         },
@@ -136,6 +182,8 @@ export const requireTokens: Rule = problem(
       const bindings = { namespaces: new Set<string>(), named: new Set<string>() };
       let colors: string | false = "colors";
       let radii: string | false = "radii";
+      let fontSizes: string | false = false;
+      let fontLineHeights: string | false = false;
 
       const isCreateCall = (node: AstNode): boolean => isStylexCall(context, node, "create", bindings);
 
@@ -143,7 +191,12 @@ export const requireTokens: Rule = problem(
         before() {
           bindings.namespaces.clear();
           bindings.named.clear();
-          ({ colors = "colors", radii = "radii" } = optionsOf<Options>(context, {}));
+          ({
+            colors = "colors",
+            radii = "radii",
+            fontSizes = false,
+            fontLineHeights = false,
+          } = optionsOf<Options>(context, {}));
           return context.sourceCode.text.includes("stylex");
         },
         Program(node) {
@@ -153,9 +206,12 @@ export const requireTokens: Rule = problem(
           const kind = valueKind(propertyKeyName(node));
           if (kind === null) return;
           if (!hasAncestor(node, isCreateCall)) return;
-          const group = kind === "radius" ? radii : colors;
+          let group: string | false = colors;
+          if (kind === "radius") group = radii;
+          if (kind === "font size") group = fontSizes;
+          if (kind === "line height") group = fontLineHeights;
           if (group === false) return;
-          checkValue(context, node.value, kind, group);
+          checkValue(context, node.value, kind, { group, isCreateCall });
         },
       };
     },

@@ -131,6 +131,30 @@ const styles = stylex.create({ box: { color: theme.palette["ink"], borderTopLeft
         code: `import * as stylex from "@stylexjs/stylex";
 const styles = stylex.create({ box: { color: "red", borderRadius: 7 } });`,
       },
+      {
+        name: "typography tokens across responsive and pseudo states, with CSS resets",
+        options: { fontSizes: "fontSizes", fontLineHeights: "fontLineHeights" },
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({
+  title: {
+    fontSize: { default: fontSizes.sm, "@media (width >= 48rem)": fontSizes["2xl"] },
+    lineHeight: { default: fontLineHeights.sm, ":hover": fontLineHeights["2xl"] },
+  },
+  reset: { fontSize: 0, lineHeight: "normal" },
+  dynamic: (size: number) => ({ fontSize: size, lineHeight: fontLineHeights.sm }),
+});`,
+      },
+      {
+        name: "custom token groups and independent typography opt-out",
+        options: { fontSizes: "theme.typeSizes", fontLineHeights: false },
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { fontSize: theme.typeSizes.caption, lineHeight: 1.625 } });`,
+      },
+      {
+        name: "typography is opt-in for existing consumers",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { fontSize: "0.875rem", lineHeight: "1.25rem" } });`,
+      },
     ],
     invalid: [
       {
@@ -212,6 +236,34 @@ const styles = stylex.create({ box: { color: colors.primary.value } });`,
         name: "raw colors and arbitrary mix expressions are rejected inside CSS strings",
         code: `import * as stylex from "@stylexjs/stylex";\nconst styles = stylex.create({ box: { boxShadow: { default: "none", ":hover": "0 0 0 2px #fff" }, filter: \`drop-shadow(0 1px 2px rgb(0 0 0))\`, backgroundImage: \`linear-gradient(to top, color-mix(in oklab, \${getColor()} 10%, transparent), transparent)\`, borderImageSource: "color-mix(in oklab, red 10%, transparent)" } });`,
         errors: 4,
+      },
+      {
+        name: "raw typography and wrong token group in nested states",
+        options: { fontSizes: "fontSizes", fontLineHeights: "fontLineHeights" },
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({
+  box: {
+    fontSize: { default: "0.875rem", "@media (width >= 48rem)": fontLineHeights.lg },
+    lineHeight: { default: 1.5, ":hover": fontSizes.sm },
+  },
+});`,
+        errors: 4,
+      },
+      {
+        name: "fixed typography belongs in the token owner, not an unverified local alias",
+        options: { fontSizes: "fontSizes", fontLineHeights: "fontLineHeights" },
+        code: `import * as stylex from "@stylexjs/stylex";
+const localSize = "13px";
+const styles = stylex.create({ box: { fontSize: localSize, lineHeight: "var(--text-sm--line-height)" } });`,
+        errors: 2,
+      },
+      {
+        name: "only parameters of dynamic StyleX styles may bypass a token",
+        options: { fontSizes: "fontSizes", fontLineHeights: "fontLineHeights" },
+        code: `import * as stylex from "@stylexjs/stylex";
+const factory = (size: number) => stylex.create({ box: { fontSize: size } });
+const styles = stylex.create({ dynamic: (size: number) => ({ fontSize: "13px", lineHeight: size }) });`,
+        errors: 2,
       },
     ],
   },
