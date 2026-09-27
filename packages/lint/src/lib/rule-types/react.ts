@@ -25,6 +25,7 @@ export type ReactRuleId =
   | "@ashstack/stylex/no-conflicting-props"
   | "@ashstack/stylex/no-duplicate-styles"
   | "@ashstack/stylex/require-tokens"
+  | "@ashstack/stylex/use-sx-prop"
   | "@ashstack/tailwind/prefer-cn"
   | "@ashstack/tailwind/use-logical-classes"
   | "@ashstack/tanstack-router/require-selector"
@@ -190,13 +191,23 @@ declare module "oxlint" {
      */
     "@ashstack/stylex/no-duplicate-styles"?: RuleSetting;
     /**
-     * Use configured color and radius groups in `stylex.create`; defaults are `colors` and `radii`.
+     * Use token groups for configured properties in `stylex.create`; colors and radii are checked by default.
      *
      * **Default: on**, when `@stylexjs/stylex` is a dependency.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylexrequire-tokens
      */
-    "@ashstack/stylex/require-tokens"?: RuleSetting<[{ colors?: string | false; radii?: string | false }]>;
+    "@ashstack/stylex/require-tokens"?: RuleSetting<
+      [{ colors?: string | false; radii?: string | false; tokens?: Record<string, Array<string>> }]
+    >;
+    /**
+     * Name StyleX override props `sx` or `<slot>Sx`.
+     *
+     * **Default: on**, when `@stylexjs/stylex` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylexuse-sx-prop
+     */
+    "@ashstack/stylex/use-sx-prop"?: RuleSetting;
     /**
      * Require a dynamic class value to go through `cn(...)` before it reaches a `class`, `className` or `*ClassName` prop. Reports both where the value reaches the prop and where a variable named after classes is declared.
      *

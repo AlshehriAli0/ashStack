@@ -10,7 +10,7 @@ Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-marg
 
 Each entry lists the oxlint plugins it turns on, below. You never need to add them: your own `plugins` array is added to the entry's set, not swapped for it. A bare oxlint install runs `eslint`, `typescript`, `unicorn`, `oxc`; `import`, `promise`, `react`, `jsx-a11y`, `react-perf` come from here.
 
-Counting what each entry sets with every module on: **116** rules for plain TypeScript, **210** with React, **267** on React Native, 81 of them written for this package. oxlint's own `correctness` category runs alongside these.
+Counting what each entry sets with every module on: **116** rules for plain TypeScript, **211** with React, **268** on React Native, 82 of them written for this package. oxlint's own `correctness` category runs alongside these.
 
 - [`core()`](#core)
   - [`@ashstack/core`](#ashstackcore) — 5 rules
@@ -20,7 +20,7 @@ Counting what each entry sets with every module on: **116** rules for plain Type
   - [`@ashstack/query`](#ashstackquery) — 5 rules
   - [`@ashstack/zustand`](#ashstackzustand) — 1 rule
   - [`@ashstack/i18n`](#ashstacki18n) — 3 rules
-  - [`@ashstack/stylex`](#ashstackstylex) — 4 rules
+  - [`@ashstack/stylex`](#ashstackstylex) — 5 rules
   - [`@ashstack/tailwind`](#ashstacktailwind) — 2 rules
   - [`@ashstack/tanstack-router`](#ashstacktanstack-router) — 2 rules
   - [`@ashstack/effects`](#ashstackeffects) — 9 rules
@@ -1193,20 +1193,35 @@ export const styles = stylex.create({
 
 #### `@ashstack/stylex/require-tokens`
 
-Use configured color and radius groups in `stylex.create`; defaults are `colors` and `radii`.
+Use token groups for configured properties in `stylex.create`; colors and radii are checked by default.
 
 **Default: on**, when `@stylexjs/stylex` is a dependency.
 
 **Options**
 
 ```ts
-[{ colors?: string | false; radii?: string | false }]
+[{ colors?: string | false; radii?: string | false; tokens?: Record<string, Array<string>> }]
 ```
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `colors` | `string \| false` | `"colors"` | Color token group, or false to disable this check. |
 | `radii` | `string \| false` | `"radii"` | Radius token group, or false to disable this check. |
+| `tokens` | `object` | `{}` | Additional token groups mapped to exact CSS properties or * patterns. Explicit mappings override built-in property checks. |
+
+Each `tokens` value takes one of these shapes:
+
+```jsonc
+{
+  "tokens": {
+    "spacing": [
+      "padding*",
+      "margin*",
+      "gap"
+    ]
+  }
+}
+```
 
 **Fails**
 
@@ -1227,6 +1242,28 @@ import { colors, radii } from "./tokens.stylex";
 export const styles = stylex.create({
   card: { color: `color-mix(in oklab, ${colors.text} 10%, transparent)`, borderRadius: radii.md },
 });
+```
+
+#### `@ashstack/stylex/use-sx-prop`
+
+Name StyleX override props `sx` or `<slot>Sx`.
+
+**Default: on**, when `@stylexjs/stylex` is a dependency.
+
+**Fails**
+
+```tsx
+import type { StyleXStyles } from "@stylexjs/stylex";
+
+export type Props = { style?: StyleXStyles; labelStyle?: StyleXStyles };
+```
+
+**Passes**
+
+```tsx
+import type { StyleXStyles } from "@stylexjs/stylex";
+
+export type Props = { sx?: StyleXStyles; labelSx?: StyleXStyles };
 ```
 
 ### `@ashstack/tailwind`

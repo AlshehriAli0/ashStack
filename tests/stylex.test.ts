@@ -131,16 +131,42 @@ const styles = stylex.create({ box: { color: theme.palette["ink"], borderTopLeft
         code: `import * as stylex from "@stylexjs/stylex";
 const styles = stylex.create({ box: { color: "red", borderRadius: 7 } });`,
       },
+      {
+        name: "custom groups extend defaults and override matching properties",
+        options: { tokens: { spacing: ["padding*", "gap"], palette: ["color"] } },
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { color: palette.ink, backgroundColor: colors.surface, borderRadius: radii.md, paddingTop: spacing.sm, gap: spacing.md, padding: { default: spacing.md, ":hover": spacing.lg }, margin: 12 } });`,
+      },
+      {
+        name: "overlapping custom mappings do not report unrelated objects",
+        options: { tokens: { spacing: ["padding*"], sizes: ["paddingTop"] } },
+        code: `import * as stylex from "@stylexjs/stylex";
+const unrelated = { paddingTop: 8 };`,
+      },
     ],
     invalid: [
+      {
+        name: "custom properties reject raw values, wrong groups and computed tokens",
+        options: { tokens: { spacing: ["padding*", "gap"], palette: ["color"] } },
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { color: colors.ink, padding: 8, paddingTop: colors.ink, gap: spacing[size], borderRadius: 8 } });`,
+        errors: 5,
+      },
+      {
+        name: "overlapping custom groups are rejected",
+        options: { tokens: { spacing: ["padding*"], sizes: ["paddingTop"] } },
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { paddingTop: spacing.sm } });`,
+        errors: [{ message: "Map `paddingTop` to one token group", line: 2 }],
+      },
       {
         name: "literal color and radius in a style",
         code: `import * as stylex from "@stylexjs/stylex";
 const styles = stylex.create({ card: { color: "red", backgroundColor: "transparent", borderRadius: 8 } });`,
         errors: [
-          { message: "Use `colors.*`", line: 2 },
-          { message: "Use `colors.*`", line: 2 },
-          { message: "Use `radii.*`", line: 2 },
+          { message: "Use an existing `colors.*` token for `color`", line: 2 },
+          { message: "Use an existing `colors.*` token for `backgroundColor`", line: 2 },
+          { message: "Use an existing `radii.*` token for `borderRadius`", line: 2 },
         ],
       },
       {
@@ -212,6 +238,41 @@ const styles = stylex.create({ box: { color: colors.primary.value } });`,
         name: "raw colors and arbitrary mix expressions are rejected inside CSS strings",
         code: `import * as stylex from "@stylexjs/stylex";\nconst styles = stylex.create({ box: { boxShadow: { default: "none", ":hover": "0 0 0 2px #fff" }, filter: \`drop-shadow(0 1px 2px rgb(0 0 0))\`, backgroundImage: \`linear-gradient(to top, color-mix(in oklab, \${getColor()} 10%, transparent), transparent)\`, borderImageSource: "color-mix(in oklab, red 10%, transparent)" } });`,
         errors: 4,
+      },
+    ],
+  },
+  "use-sx-prop": {
+    valid: [
+      {
+        name: "root and named slot overrides, including alias and namespace imports",
+        code: `import type { StyleXStyles as Override } from "@stylexjs/stylex";
+import type * as StyleX from "@stylexjs/stylex";
+import type { CSSProperties } from "react";
+type Props = { sx?: Override; trackSx?: Override | undefined; panelSx?: StyleX.StyleXStylesWithout<{ color: string }>; style?: CSSProperties };`,
+      },
+      {
+        name: "local type with the same name is unrelated",
+        code: `type StyleXStyles = string;
+type Props = { style?: StyleXStyles };`,
+      },
+      {
+        name: "local type shadows the imported name",
+        code: `import type { StyleXStyles } from "@stylexjs/stylex";
+function local() { type StyleXStyles = string; type Props = { style?: StyleXStyles }; return null; }`,
+      },
+    ],
+    invalid: [
+      {
+        name: "StyleX override names receive concrete replacements",
+        code: `import type { StyleXStyles, StyleXStylesWithout } from "@stylexjs/stylex";
+import type * as SX from "@stylexjs/stylex";
+type Props = { style?: StyleXStyles; trackStyle?: StyleXStyles | undefined; panelStyle?: SX.StyleXStylesWithout<{ color: string }>; label?: StyleXStylesWithout<{ color: string }> };`,
+        errors: [
+          { message: "Rename `style` to `sx`", line: 3 },
+          { message: "Rename `trackStyle` to `trackSx`", line: 3 },
+          { message: "Rename `panelStyle` to `panelSx`", line: 3 },
+          { message: "Rename `label` to `labelSx`", line: 3 },
+        ],
       },
     ],
   },

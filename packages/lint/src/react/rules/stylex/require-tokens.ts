@@ -13,15 +13,22 @@ const RADIUS_KEYWORDS = new Set(["inherit", "initial", "unset", "revert", "rever
 interface Options {
   colors?: string | false;
   radii?: string | false;
+  tokens?: Record<string, string[]>;
 }
 
-type Kind = "color" | "radius" | "composite";
+type Kind = "color" | "radius" | "composite" | "token";
+type Requirement = { kind: Kind; group: string; name: string };
 
 const valueKind = (name: string): Kind | null => {
   if (COLOR.test(name)) return "color";
   if (RADIUS.test(name)) return "radius";
   if (COMPOSITE_COLOR.test(name)) return "composite";
   return null;
+};
+
+const propertyPattern = (pattern: string): RegExp => {
+  const expression = pattern.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replaceAll("\\*", ".*");
+  return new RegExp(`^${expression}$`);
 };
 
 const memberPath = (node: AstNode): string => {
@@ -60,7 +67,7 @@ const tokenMix = (node: AstNode, group: string): boolean => {
   );
 };
 
-const checkComposite = (context: RuleContext, node: AstNode, group: string): void => {
+const checkComposite = (context: RuleContext, node: AstNode, { group, name }: Requirement): void => {
   let css = "";
   if (node.type === "TemplateLiteral") css = node.quasis.map(part => part.value.cooked ?? part.value.raw).join("");
   if (node.type === "Literal" && typeof node.value === "string") css = node.value;
@@ -68,43 +75,44 @@ const checkComposite = (context: RuleContext, node: AstNode, group: string): voi
     css.includes("color-mix(") &&
     (node.type !== "TemplateLiteral" || !node.expressions.every(expression => isToken(expression, group)));
   if (RAW_HEX.test(css) || RAW_COLOR_FUNCTION.test(css) || invalidMix)
-    context.report({ node, message: `Use \`${group}.*\` for colors inside CSS values.` });
+    context.report({ node, message: `Use an existing \`${group}.*\` token in \`${name}\`.` });
 };
 
-const checkValue = (context: RuleContext, node: AstNode, kind: Kind, group: string): void => {
+const checkValue = (context: RuleContext, node: AstNode, requirement: Requirement): void => {
   if (node.type === "ObjectExpression") {
     node.properties.forEach(property => {
-      if (property.type === "Property") checkValue(context, property.value, kind, group);
+      if (property.type === "Property") checkValue(context, property.value, requirement);
     });
     return;
   }
   if (node.type === "ArrayExpression") {
     node.elements.forEach(item => {
-      if (item) checkValue(context, item, kind, group);
+      if (item) checkValue(context, item, requirement);
     });
     return;
   }
   if (node.type === "ConditionalExpression") {
-    checkValue(context, node.consequent, kind, group);
-    checkValue(context, node.alternate, kind, group);
+    checkValue(context, node.consequent, requirement);
+    checkValue(context, node.alternate, requirement);
     return;
   }
   if (node.type === "CallExpression" && isMemberCall(node, "firstThatWorks")) {
-    node.arguments.forEach(argument => checkValue(context, argument, kind, group));
+    node.arguments.forEach(argument => checkValue(context, argument, requirement));
     return;
   }
+  const { kind, group, name } = requirement;
   if (kind === "composite") {
-    checkComposite(context, node, group);
+    checkComposite(context, node, requirement);
     return;
   }
   if (allowedLiteral(node, kind)) return;
   if (isToken(node, group)) return;
   if (kind === "color" && tokenMix(node, group)) return;
-  context.report({ node, message: `Use \`${group}.*\` for ${kind}.` });
+  context.report({ node, message: `Use an existing \`${group}.*\` token for \`${name}\`.` });
 };
 
 export const requireTokens: Rule = problem(
-  "Use configured color and radius groups in `stylex.create`; defaults are `colors` and `radii`.",
+  "Use token groups for configured properties in `stylex.create`; colors and radii are checked by default.",
   {
     meta: {
       schema: [
@@ -127,6 +135,20 @@ export const requireTokens: Rule = problem(
               default: "radii",
               description: "Radius token group, or false to disable this check.",
             },
+            tokens: {
+              type: "object",
+              default: {},
+              propertyNames: { type: "string", pattern: "^[A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)*$" },
+              additionalProperties: {
+                type: "array",
+                items: { type: "string", minLength: 1 },
+                minItems: 1,
+                uniqueItems: true,
+              },
+              description:
+                "Additional token groups mapped to exact CSS properties or * patterns. Explicit mappings override built-in property checks.",
+              examples: [{ spacing: ["padding*", "margin*", "gap"] }],
+            },
           },
           additionalProperties: false,
         },
@@ -136,26 +158,50 @@ export const requireTokens: Rule = problem(
       const bindings = { namespaces: new Set<string>(), named: new Set<string>() };
       let colors: string | false = "colors";
       let radii: string | false = "radii";
-
+      let mappings: { group: string; pattern: RegExp }[] = [];
       const isCreateCall = (node: AstNode): boolean => isStylexCall(context, node, "create", bindings);
 
       return {
         before() {
           bindings.namespaces.clear();
           bindings.named.clear();
-          ({ colors = "colors", radii = "radii" } = optionsOf<Options>(context, {}));
+          const options = optionsOf<Options>(context, {});
+          colors = options.colors ?? "colors";
+          radii = options.radii ?? "radii";
+          mappings = Object.entries(options.tokens ?? {}).flatMap(([group, properties]) =>
+            properties.map(property => ({ group, pattern: propertyPattern(property) }))
+          );
           return context.sourceCode.text.includes("stylex");
         },
         Program(node) {
           collectImports(node.body, "create", bindings);
         },
         Property(node) {
-          const kind = valueKind(propertyKeyName(node));
-          if (kind === null) return;
+          const name = propertyKeyName(node);
+          const kind = valueKind(name);
+          if (kind === null && mappings.length === 0) return;
+          let customGroup: string | undefined;
+          let conflictingGroup: string | undefined;
+          for (const mapping of mappings) {
+            if (!mapping.pattern.test(name)) continue;
+            if (customGroup && customGroup !== mapping.group) {
+              conflictingGroup = mapping.group;
+              break;
+            }
+            customGroup = mapping.group;
+          }
+          if (customGroup === undefined && kind === null) return;
           if (!hasAncestor(node, isCreateCall)) return;
-          const group = kind === "radius" ? radii : colors;
+          if (conflictingGroup) {
+            context.report({
+              node,
+              message: `Map \`${name}\` to one token group; matched ${customGroup}, ${conflictingGroup}.`,
+            });
+            return;
+          }
+          const group = customGroup ?? (kind === "radius" ? radii : colors);
           if (group === false) return;
-          checkValue(context, node.value, kind, group);
+          checkValue(context, node.value, { kind: kind ?? "token", group, name });
         },
       };
     },

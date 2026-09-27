@@ -21,6 +21,17 @@ export const collectImports = (statements: AstNode[], method: string, bindings: 
   }
 };
 
+export const isImportedBinding = (context: RuleContext, node: AstNode): boolean => {
+  if (node.type !== "Identifier") return false;
+  let scope: ReturnType<typeof context.sourceCode.getScope> | null = context.sourceCode.getScope(node);
+  while (scope) {
+    const binding = scope.set.get(node.name);
+    if (binding) return binding.defs.some(definition => definition.type === "ImportBinding");
+    scope = scope.upper;
+  }
+  return false;
+};
+
 export const isStylexCall = (context: RuleContext, node: AstNode, method: string, bindings: Bindings): boolean => {
   if (node.type !== "CallExpression") return false;
   const { callee } = node;
@@ -35,12 +46,5 @@ export const isStylexCall = (context: RuleContext, node: AstNode, method: string
       bindings.namespaces.has(identifier.name) &&
       callee.property.type === "Identifier" &&
       callee.property.name === method);
-  if (!matches) return false;
-  let scope: ReturnType<typeof context.sourceCode.getScope> | null = context.sourceCode.getScope(identifier);
-  while (scope) {
-    const binding = scope.set.get(identifier.name);
-    if (binding) return binding.defs.some(definition => definition.type === "ImportBinding");
-    scope = scope.upper;
-  }
-  return false;
+  return matches && isImportedBinding(context, identifier);
 };
