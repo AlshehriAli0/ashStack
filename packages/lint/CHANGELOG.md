@@ -1,5 +1,11 @@
 # @ashstack/lint
 
+## 0.10.2 (2026-09-27)
+
+### Features
+
+- extend StyleX token checks and enforce sx prop names ([`359fd67`](https://github.com/AlshehriAli0/ashStack/commit/359fd67))
+
 ## 0.10.1 (2026-09-24)
 
 ### Bug Fixes
