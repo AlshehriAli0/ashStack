@@ -322,6 +322,78 @@ const styles = stylex.create({ box: { padding: 8 } });
 export const Wrong = () => <><Widget sx={styles.box} /><Widget iconSx={[styles.box]} /></>;`,
         errors: 2,
       },
+      {
+        name: "suggest a complete spread for sx",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Wrong = () => <Widget sx={styles.box} />;`,
+        errors: 1,
+        output: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Wrong = () => <Widget {...stylex.props(styles.box)} />;`,
+      },
+      {
+        name: "suggest a complete spread for a conditional sx array",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 }, active: { opacity: 1 } });
+export const Wrong = ({ active }) => <Widget sx={[styles.box, active && styles.active]} />;`,
+        errors: 1,
+        output: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 }, active: { opacity: 1 } });
+export const Wrong = ({ active }) => <Widget {...stylex.props([styles.box, active && styles.active])} />;`,
+      },
+      {
+        name: "suggest a named props import for another prop",
+        code: `import { create as define, props as getProps } from "@stylexjs/stylex";
+const styles = define({ box: { padding: 8 } });
+export const Wrong = () => <Widget appearance={styles.box} />;`,
+        errors: 1,
+        output: `import { create as define, props as getProps } from "@stylexjs/stylex";
+const styles = define({ box: { padding: 8 } });
+export const Wrong = () => <Widget {...getProps(styles.box)} />;`,
+      },
+      {
+        name: "suggest spreading an existing props call instead of its class",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Wrong = () => <Widget className={stylex.props(styles.box).className} />;`,
+        errors: 1,
+        output: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Wrong = () => <Widget {...stylex.props(styles.box)} />;`,
+      },
+      {
+        name: "do not suggest a spread that could overwrite sibling props",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Wrong = () => <Widget className="base" sx={styles.box} />;`,
+        errors: 1,
+        output: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Wrong = () => <Widget className="base" sx={styles.box} />;`,
+      },
+      {
+        name: "do not suggest a spread when props is not imported",
+        code: `import { create } from "@stylexjs/stylex";
+const styles = create({ box: { padding: 8 } });
+export const Wrong = () => <Widget sx={styles.box} />;`,
+        errors: 1,
+        output: `import { create } from "@stylexjs/stylex";
+const styles = create({ box: { padding: 8 } });
+export const Wrong = () => <Widget sx={styles.box} />;`,
+      },
+      {
+        name: "do not use a type-only namespace for the suggested spread",
+        code: `import type * as stylex from "@stylexjs/stylex";
+import { create } from "@stylexjs/stylex";
+const styles = create({ box: { padding: 8 } });
+export const Wrong = () => <Widget sx={styles.box} />;`,
+        errors: 1,
+        output: `import type * as stylex from "@stylexjs/stylex";
+import { create } from "@stylexjs/stylex";
+const styles = create({ box: { padding: 8 } });
+export const Wrong = () => <Widget sx={styles.box} />;`,
+      },
     ],
   },
   "no-duplicate-styles": {

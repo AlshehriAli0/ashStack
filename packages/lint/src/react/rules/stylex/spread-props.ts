@@ -17,6 +17,7 @@ const initializerOf = (context: RuleContext, node: AstNode): AstNode | null => {
 };
 
 export const spreadProps: Rule = problem("Spread complete `stylex.props(...)` results to style custom components.", {
+  meta: { hasSuggestions: true },
   createOnce(context) {
     const bindings = { namespaces: new Set<string>(), named: new Set<string>() };
     const propsBindings = { namespaces: new Set<string>(), named: new Set<string>() };
@@ -87,6 +88,65 @@ export const spreadProps: Rule = problem("Spread complete `stylex.props(...)` re
       return false;
     };
 
+    const isDirectStyle = (node: AstNode): boolean => {
+      if (node.type === "ArrayExpression") return node.elements.every(item => item === null || isDirectStyle(item));
+      if (node.type === "LogicalExpression" && node.operator === "&&") return isDirectStyle(node.right);
+      if (node.type === "ConditionalExpression") return isDirectStyle(node.consequent) && isDirectStyle(node.alternate);
+      if (node.type === "Literal") return node.value === null || node.value === false;
+      if (node.type === "CallExpression") return isDirectStyle(node.callee);
+      if (node.type !== "MemberExpression") return false;
+      const init = initializerOf(context, node.object);
+      return init !== null && isStylexCall(context, init, "create", createBindings);
+    };
+
+    const isVisibleImport = (node: AstNode, name: string): boolean => {
+      let scope: ReturnType<typeof context.sourceCode.getScope> | null = context.sourceCode.getScope(node);
+      while (scope) {
+        const variable = scope.set.get(name);
+        if (variable)
+          return variable.defs.some(definition => {
+            if (definition.type !== "ImportBinding") return false;
+            const specifier = definition.node;
+            return (
+              specifier.parent?.type === "ImportDeclaration" &&
+              specifier.parent.importKind !== "type" &&
+              (specifier.type !== "ImportSpecifier" || specifier.importKind !== "type")
+            );
+          });
+        scope = scope.upper;
+      }
+      return false;
+    };
+
+    const propsCallee = (node: AstNode): string | null => {
+      for (const name of propsBindings.namespaces) if (isVisibleImport(node, name)) return `${name}.props`;
+      for (const name of propsBindings.named) if (isVisibleImport(node, name)) return name;
+      return null;
+    };
+
+    const replacementFor = (element: AstNode, attribute: AstNode, expression: AstNode, name: string): string | null => {
+      if (/^[a-z][a-zA-Z0-9]*Sx$/.test(name) || element.type !== "JSXOpeningElement") return null;
+      if (
+        element.attributes.some(
+          other =>
+            other !== attribute &&
+            (other.type === "JSXSpreadAttribute" || ["className", "style"].includes(attributeName(other)))
+        )
+      )
+        return null;
+      if (expression.type === "MemberExpression" && !expression.computed && expression.property.type === "Identifier") {
+        const { object, property } = expression;
+        if (
+          object.type === "CallExpression" &&
+          ["className", "style"].includes(property.name) &&
+          isStylexCall(context, object, "props", propsBindings)
+        )
+          return context.sourceCode.getText(object);
+      }
+      const callee = propsCallee(attribute);
+      return callee && isDirectStyle(expression) ? `${callee}(${context.sourceCode.getText(expression)})` : null;
+    };
+
     return {
       before() {
         bindings.namespaces.clear();
@@ -126,11 +186,22 @@ export const spreadProps: Rule = problem("Spread complete `stylex.props(...)` re
           seen.clear();
           const name = attributeName(attribute);
           if (attribute.value?.type !== "JSXExpressionContainer") continue;
-          if (fromStylex(attribute.value.expression, name === "className"))
-            context.report({
-              node: attribute,
-              message: `Spread \`stylex.props(...)\` on this component instead of passing a StyleX style as \`${name}\`.`,
-            });
+          const expression = attribute.value.expression;
+          if (!fromStylex(expression, name === "className")) continue;
+          const replacement = replacementFor(node, attribute, expression, name);
+          context.report({
+            node: attribute,
+            message: `Spread \`stylex.props(...)\` on this component instead of passing a StyleX style as \`${name}\`.`,
+            suggest:
+              replacement === null
+                ? undefined
+                : [
+                    {
+                      desc: "Spread complete StyleX props",
+                      fix: fixer => fixer.replaceText(attribute, `{...${replacement}}`),
+                    },
+                  ],
+          });
         }
       },
     };
