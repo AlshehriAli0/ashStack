@@ -1,5 +1,12 @@
 # @ashstack/lint
 
+## 0.10.3 (2026-09-28)
+
+### Bug Fixes
+
+- enforce sx props for passed StyleX styles ([`29e214a`](https://github.com/AlshehriAli0/ashStack/commit/29e214a))
+- flag className-only StyleX props ([`211ebfe`](https://github.com/AlshehriAli0/ashStack/commit/211ebfe))
+
 ## 0.10.2 (2026-09-27)
 
 ### Features
