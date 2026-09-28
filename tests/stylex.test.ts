@@ -11,14 +11,10 @@ const styles = stylex.create({ box: { padding: 8 } });
 export const Box = () => <div {...stylex.props(styles.box)} />;`,
       },
       {
-        name: "store props to merge a class and return a reusable result",
+        name: "return a reusable result",
         code: `import * as stylex from "@stylexjs/stylex";
 const styles = stylex.create({ popup: { padding: 8 } });
-export const popupProps = () => stylex.props(styles.popup);
-export const Popup = () => {
-  const props = stylex.props(styles.popup);
-  return <div {...props} className={props.className} />;
-};`,
+export const popupProps = () => stylex.props(styles.popup);`,
       },
       {
         name: "unrelated props function",
@@ -42,7 +38,14 @@ function render() {
         code: `import * as stylex from "@stylexjs/stylex";
 const styles = stylex.create({ certificate: { padding: 8 } });
 export const Certificate = () => <article style={stylex.props(styles.certificate)} />;`,
-        errors: [{ message: "Use `stylex.props(...)`", line: 3 }],
+        errors: [{ message: "Spread `stylex.props(...)`", line: 3 }],
+      },
+      {
+        name: "stored props are rejected even when forwarded in full",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Box = () => { const props = stylex.props(styles.box); return <div {...props} />; };`,
+        errors: [{ message: "do not store it", line: 3 }],
       },
       {
         name: "namespace alias and named import",
@@ -244,6 +247,30 @@ const styles = stylex.create({ box: { color: colors.primary.value } });`,
   "use-sx-prop": {
     valid: [
       {
+        name: "component sx slots and direct DOM spread",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 }, icon: { width: 16 } });
+export const Good = () => <><Widget sx={styles.box} iconSx={[styles.icon]} /><div {...stylex.props(styles.box)} /></>;`,
+      },
+      {
+        name: "unrelated class names and shadowed styles",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Good = () => { const styles = { box: "plain" }; return <Widget className={styles.box} />; };`,
+      },
+      {
+        name: "a function consuming a style does not pass the style to a component",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Good = () => <Widget onClick={makeHandler(styles.box)} label={getLabel(styles.box)} />;`,
+      },
+      {
+        name: "StyleX values stay valid in named slots and DOM elements",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: (size: number) => ({ width: size }) });
+export const Good = () => <><Widget iconSx={styles.box(16)} /><div {...stylex.props(styles.box(16))} /></>;`,
+      },
+      {
         name: "root and named slot overrides, including alias and namespace imports",
         code: `import type { StyleXStyles as Override } from "@stylexjs/stylex";
 import type * as StyleX from "@stylexjs/stylex";
@@ -262,6 +289,23 @@ function local() { type StyleXStyles = string; type Props = { style?: StyleXStyl
       },
     ],
     invalid: [
+      {
+        name: "StyleX values passed through arbitrary component props",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 } });
+const alias = styles.box;
+const props = stylex.props(styles.box);
+export const Wrong = () => <><Widget className={styles.box} /><Widget appearance={alias} /><Widget value={props.className} /><Widget {...stylex.props(styles.box)} /></>;`,
+        errors: 4,
+      },
+      {
+        name: "dynamic styles and derived classes still require sx",
+        code: `import { create as define, props as spread } from "@stylexjs/stylex";
+const styles = define({ box: (size: number) => ({ width: size }) });
+const alias = styles.box(16);
+export const Wrong = () => <><Widget value={styles.box(12)} /><Widget className={cx(spread(styles.box(10)).className)} /><UI.Widget appearance={false ? styles.box(10) : alias} /></>;`,
+        errors: 3,
+      },
       {
         name: "StyleX override names receive concrete replacements",
         code: `import type { StyleXStyles, StyleXStylesWithout } from "@stylexjs/stylex";

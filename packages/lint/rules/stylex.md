@@ -14,7 +14,7 @@ _auto-enabled by `react()` when `@stylexjs/stylex` is a dependency._
 
 ## `@ashstack/stylex/inline-props`
 
-Use complete StyleX props in JSX; a className-only bridge can drop inline styles.
+Spread `stylex.props(...)` in JSX or return its full result; do not store it.
 
 **Default: on**, when `@stylexjs/stylex` is a dependency.
 
@@ -27,8 +27,10 @@ const styles = stylex.create({ box: { padding: 8 } });
 
 export const Box = () => <div style={stylex.props(styles.box)} />;
 
-const boxProps = stylex.props(styles.box);
-export const ClassOnly = () => <div className={boxProps.className} />;
+export const Stored = () => {
+  const boxProps = stylex.props(styles.box);
+  return <div {...boxProps} />;
+};
 ```
 
 **Passes**
@@ -38,10 +40,8 @@ import * as stylex from "@stylexjs/stylex";
 
 const styles = stylex.create({ box: { padding: 8 } });
 
-export const Box = () => {
-  const props = stylex.props(styles.box);
-  return <div {...props} className={props.className} />;
-};
+export const Box = () => <div {...stylex.props(styles.box)} />;
+export const boxProps = () => stylex.props(styles.box);
 ```
 
 ## `@ashstack/stylex/no-conflicting-props`
@@ -155,7 +155,7 @@ export const styles = stylex.create({
 
 ## `@ashstack/stylex/use-sx-prop`
 
-Name StyleX override props `sx` or `<slot>Sx`.
+Name StyleX override props `sx` or `<slot>Sx` and pass styles through them.
 
 **Default: on**, when `@stylexjs/stylex` is a dependency.
 
@@ -163,14 +163,22 @@ Name StyleX override props `sx` or `<slot>Sx`.
 
 ```tsx
 import type { StyleXStyles } from "@stylexjs/stylex";
+import * as stylex from "@stylexjs/stylex";
 
 export type Props = { style?: StyleXStyles; labelStyle?: StyleXStyles };
+
+const styles = stylex.create({ box: { padding: 8 } });
+export const Wrong = () => <Widget appearance={styles.box} />;
 ```
 
 **Passes**
 
 ```tsx
 import type { StyleXStyles } from "@stylexjs/stylex";
+import * as stylex from "@stylexjs/stylex";
 
 export type Props = { sx?: StyleXStyles; labelSx?: StyleXStyles };
+
+const styles = stylex.create({ box: { padding: 8 } });
+export const Good = () => <><Widget sx={styles.box} /><div {...stylex.props(styles.box)} /></>;
 ```

@@ -167,7 +167,7 @@ declare module "oxlint" {
      */
     "@ashstack/i18n/no-bare-toast"?: RuleSetting;
     /**
-     * Use complete StyleX props in JSX; a className-only bridge can drop inline styles.
+     * Spread `stylex.props(...)` in JSX or return its full result; do not store it.
      *
      * **Default: on**, when `@stylexjs/stylex` is a dependency.
      *
@@ -201,7 +201,7 @@ declare module "oxlint" {
       [{ colors?: string | false; radii?: string | false; tokens?: Record<string, Array<string>> }]
     >;
     /**
-     * Name StyleX override props `sx` or `<slot>Sx`.
+     * Name StyleX override props `sx` or `<slot>Sx` and pass styles through them.
      *
      * **Default: on**, when `@stylexjs/stylex` is a dependency.
      *
