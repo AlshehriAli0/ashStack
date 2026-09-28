@@ -82,7 +82,7 @@ const lint = react();
 
 export default defineConfig({
   extends: [lint],
-  jsPlugins: [...lint.jsPlugins, "./lint-rules.js"],
+  jsPlugins: [...(lint.jsPlugins ?? []), "./lint-rules.js"],
 });
 ```
 
