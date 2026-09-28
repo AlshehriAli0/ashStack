@@ -159,12 +159,22 @@ export const requireTokens: Rule = problem(
       let colors: string | false = "colors";
       let radii: string | false = "radii";
       let mappings: { group: string; pattern: RegExp }[] = [];
-      const isCreateCall = (node: AstNode): boolean => isStylexCall(context, node, "create", bindings);
+      let createCalls = new WeakMap<AstNode, boolean>();
+      const isCreateCall = (node: AstNode): boolean => {
+        if (node.type !== "CallExpression") return false;
+        let result = createCalls.get(node);
+        if (result === undefined) {
+          result = isStylexCall(context, node, "create", bindings);
+          createCalls.set(node, result);
+        }
+        return result;
+      };
 
       return {
         before() {
           bindings.namespaces.clear();
           bindings.named.clear();
+          createCalls = new WeakMap();
           const options = optionsOf<Options>(context, {});
           colors = options.colors ?? "colors";
           radii = options.radii ?? "radii";
