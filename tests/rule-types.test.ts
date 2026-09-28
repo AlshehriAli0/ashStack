@@ -115,11 +115,11 @@ describe("ruleMember", () => {
   const doc = (one: Rule, module = moduleWith("core", {})): string =>
     ruleMember({ id: "@ashstack/core/probe", rule: one, module }).join("\n");
 
-  it("documents the rule and links its RULES.md section", () => {
+  it("documents the rule and links its module page section", () => {
     const text = doc(rule("Requires a thing."));
     expect(text).toContain("* Requires a thing.");
     expect(text).toContain(
-      "@see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreprobe"
+      "@see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/core.md#ashstackcoreprobe"
     );
     expect(text).toContain('"@ashstack/core/probe"?: RuleSetting;');
   });

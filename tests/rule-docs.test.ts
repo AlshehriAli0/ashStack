@@ -1,7 +1,48 @@
 import { describe, expect, it } from "bun:test";
+import { readFileSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 
 import type { OxlintConfig, Rule } from "../packages/lint/dist/lib/types.js";
+import { coreModules, reactModules, reactNativeModules } from "../packages/lint/dist/modules.js";
 import { cell, type EntryConfig, optionsDoc, setBy } from "../scripts/rule-options-doc.js";
+import { anchor, effectsModule } from "../scripts/shared.js";
+
+it("routes to every module and rule through valid local Markdown links", async () => {
+  const lintDir = join(import.meta.dir, "..", "packages", "lint");
+  const router = readFileSync(join(lintDir, "RULES.md"), "utf8");
+  expect(router.split("\n").length).toBeLessThan(100);
+  const modules = [...coreModules, ...reactModules, ...reactNativeModules, await effectsModule()];
+  for (const module of modules) {
+    const page = `rules/${module.meta.name.slice("@ashstack/".length)}.md`;
+    expect(router).toContain(`](${page})`);
+    const text = readFileSync(join(lintDir, page), "utf8");
+    for (const name of Object.keys(module.rules)) {
+      const id = `${module.meta.name}/${name}`;
+      expect(text).toContain(`](#${anchor(id)})`);
+      expect(text).toContain(`## \`${id}\``);
+    }
+  }
+
+  const visited = new Set<string>();
+  const visit = (path: string): void => {
+    if (visited.has(path)) return;
+    visited.add(path);
+    const text = readFileSync(path, "utf8");
+    for (const [, link = ""] of text.matchAll(/\]\(([^)\s]+)\)/g)) {
+      if (!link.startsWith("#") && !/^[./\w-]+\.md(?:#.*)?$/.test(link)) continue;
+      const [file = "", fragment] = link.split("#");
+      const target = file === "" ? path : resolve(dirname(path), file);
+      const content = readFileSync(target, "utf8");
+      if (fragment !== undefined) {
+        const headings = content.split("\n").filter(line => /^#+ /.test(line));
+        expect(headings.map(line => anchor(line.replace(/^#+\s*/, "")))).toContain(fragment);
+      }
+      visit(target);
+    }
+  };
+  visit(join(lintDir, "RULES.md"));
+  expect(visited.size).toBe(modules.length + 4);
+});
 
 const ruleWith = (schema: Rule["meta"]["schema"]): Rule => ({
   meta: { type: "problem", docs: { description: "A rule." }, schema },

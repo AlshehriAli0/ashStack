@@ -70,7 +70,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-keyboard-will-events
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react-native.md#ashstackreact-nativeno-keyboard-will-events
      */
     "@ashstack/react-native/no-keyboard-will-events"?: RuleSetting;
     /**
@@ -78,7 +78,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-scroll-position-state
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react-native.md#ashstackreact-nativeno-scroll-position-state
      */
     "@ashstack/react-native/no-scroll-position-state"?: RuleSetting;
     /**
@@ -86,7 +86,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-conditional-style-array
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react-native.md#ashstackreact-nativeno-conditional-style-array
      */
     "@ashstack/react-native/no-conditional-style-array"?: RuleSetting;
     /**
@@ -94,7 +94,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-leaked-render
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react-native.md#ashstackreact-nativeno-leaked-render
      */
     "@ashstack/react-native/no-leaked-render"?: RuleSetting;
     /**
@@ -102,7 +102,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-rn-image-network-source
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react-native.md#ashstackreact-nativeno-rn-image-network-source
      */
     "@ashstack/react-native/no-rn-image-network-source"?: RuleSetting;
     /**
@@ -110,7 +110,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-redundant-view-nesting
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react-native.md#ashstackreact-nativeno-redundant-view-nesting
      */
     "@ashstack/react-native/no-redundant-view-nesting"?: RuleSetting;
     /**
@@ -118,7 +118,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-rn-namespace-import
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react-native.md#ashstackreact-nativeno-rn-namespace-import
      */
     "@ashstack/react-native/no-rn-namespace-import"?: RuleSetting;
     /**
@@ -126,7 +126,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-unlabeled-icon-pressable
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react-native.md#ashstackreact-nativeno-unlabeled-icon-pressable
      */
     "@ashstack/react-native/no-unlabeled-icon-pressable"?: RuleSetting;
     /**
@@ -134,7 +134,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativehoist-stateless-function
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react-native.md#ashstackreact-nativehoist-stateless-function
      */
     "@ashstack/react-native/hoist-stateless-function"?: RuleSetting;
     /**
@@ -142,7 +142,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-manual-memo
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react-native.md#ashstackreact-nativeno-manual-memo
      */
     "@ashstack/react-native/no-manual-memo"?: RuleSetting;
     /**
@@ -150,7 +150,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreact-nativeno-dynamic-import
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react-native.md#ashstackreact-nativeno-dynamic-import
      */
     "@ashstack/react-native/no-dynamic-import"?: RuleSetting;
     /**
@@ -158,7 +158,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-unistyles` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesanimated-theme
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylesanimated-theme
      */
     "@ashstack/unistyles/animated-theme"?: RuleSetting;
     /**
@@ -166,7 +166,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-unistyles` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylescontent-container
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylescontent-container
      */
     "@ashstack/unistyles/content-container"?: RuleSetting;
     /**
@@ -174,7 +174,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-unistyles` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesin-sheet
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylesin-sheet
      */
     "@ashstack/unistyles/in-sheet"?: RuleSetting;
     /**
@@ -182,7 +182,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-unistyles` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesinsets
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylesinsets
      */
     "@ashstack/unistyles/insets"?: RuleSetting;
     /**
@@ -190,7 +190,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-unistyles` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesno-hardcoded-color
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylesno-hardcoded-color
      */
     "@ashstack/unistyles/no-hardcoded-color"?: RuleSetting;
     /**
@@ -198,7 +198,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-unistyles` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesno-hardcoded-spacing
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylesno-hardcoded-spacing
      */
     "@ashstack/unistyles/no-hardcoded-spacing"?: RuleSetting;
     /**
@@ -206,7 +206,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-unistyles` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesno-margin
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylesno-margin
      */
     "@ashstack/unistyles/no-margin"?: RuleSetting;
     /**
@@ -214,7 +214,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-unistyles` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesno-paramless-dynamic-function
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylesno-paramless-dynamic-function
      */
     "@ashstack/unistyles/no-paramless-dynamic-function"?: RuleSetting;
     /**
@@ -222,7 +222,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-unistyles` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesno-style-spread
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylesno-style-spread
      */
     "@ashstack/unistyles/no-style-spread"?: RuleSetting;
     /**
@@ -230,7 +230,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-unistyles` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesno-unused-styles
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylesno-unused-styles
      */
     "@ashstack/unistyles/no-unused-styles"?: RuleSetting;
     /**
@@ -238,7 +238,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-unistyles` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylesrtl-style-call
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylesrtl-style-call
      */
     "@ashstack/unistyles/rtl-style-call"?: RuleSetting;
     /**
@@ -246,7 +246,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-unistyles` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylestheme-screen-component
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylestheme-screen-component
      */
     "@ashstack/unistyles/theme-screen-component"?: RuleSetting;
     /**
@@ -254,7 +254,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-unistyles` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackunistylestheme-style-attr
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylestheme-style-attr
      */
     "@ashstack/unistyles/theme-style-attr"?: RuleSetting;
     /**
@@ -262,7 +262,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/list` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listrequired-props
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-list.md#ashstacklegend-listrequired-props
      */
     "@ashstack/legend-list/required-props"?: RuleSetting;
     /**
@@ -270,7 +270,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/list` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-index-key-extractor
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-list.md#ashstacklegend-listno-index-key-extractor
      */
     "@ashstack/legend-list/no-index-key-extractor"?: RuleSetting;
     /**
@@ -278,7 +278,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/list` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-remount-key
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-list.md#ashstacklegend-listno-remount-key
      */
     "@ashstack/legend-list/no-remount-key"?: RuleSetting;
     /**
@@ -286,7 +286,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/list` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-inline-render-item-props
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-list.md#ashstacklegend-listno-inline-render-item-props
      */
     "@ashstack/legend-list/no-inline-render-item-props"?: RuleSetting;
     /**
@@ -294,7 +294,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/list` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-mixed-children
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-list.md#ashstacklegend-listno-mixed-children
      */
     "@ashstack/legend-list/no-mixed-children"?: RuleSetting;
     /**
@@ -302,7 +302,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/list` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-flex-in-content-container
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-list.md#ashstacklegend-listno-flex-in-content-container
      */
     "@ashstack/legend-list/no-flex-in-content-container"?: RuleSetting;
     /**
@@ -310,7 +310,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/list` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listtyped-items-need-item-type
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-list.md#ashstacklegend-listtyped-items-need-item-type
      */
     "@ashstack/legend-list/typed-items-need-item-type"?: RuleSetting;
     /**
@@ -318,7 +318,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/list` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-scrollview-map
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-list.md#ashstacklegend-listno-scrollview-map
      */
     "@ashstack/legend-list/no-scrollview-map"?: RuleSetting;
     /**
@@ -326,7 +326,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/list` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-listno-unsupported-props
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-list.md#ashstacklegend-listno-unsupported-props
      */
     "@ashstack/legend-list/no-unsupported-props"?: RuleSetting;
     /**
@@ -334,7 +334,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/state` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-assignment
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-state.md#ashstacklegend-stateno-assignment
      */
     "@ashstack/legend-state/no-assignment"?: RuleSetting;
     /**
@@ -342,7 +342,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/state` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-statenaming
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-state.md#ashstacklegend-statenaming
      */
     "@ashstack/legend-state/naming"?: RuleSetting;
     /**
@@ -350,7 +350,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/state` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-nested-observable
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-state.md#ashstacklegend-stateno-nested-observable
      */
     "@ashstack/legend-state/no-nested-observable"?: RuleSetting;
     /**
@@ -358,7 +358,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/state` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-react-mirror
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-state.md#ashstacklegend-stateno-react-mirror
      */
     "@ashstack/legend-state/no-react-mirror"?: RuleSetting;
     /**
@@ -366,7 +366,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/state` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-untracked-get-in-jsx
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-state.md#ashstacklegend-stateno-untracked-get-in-jsx
      */
     "@ashstack/legend-state/no-untracked-get-in-jsx"?: RuleSetting;
     /**
@@ -374,7 +374,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/state` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-peek-in-selector
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-state.md#ashstacklegend-stateno-peek-in-selector
      */
     "@ashstack/legend-state/no-peek-in-selector"?: RuleSetting;
     /**
@@ -382,7 +382,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/state` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-object-selector
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-state.md#ashstacklegend-stateno-object-selector
      */
     "@ashstack/legend-state/no-object-selector"?: RuleSetting;
     /**
@@ -390,7 +390,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@legendapp/state` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacklegend-stateno-observable-in-component
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-state.md#ashstacklegend-stateno-observable-in-component
      */
     "@ashstack/legend-state/no-observable-in-component"?: RuleSetting;
     /**
@@ -398,7 +398,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-reanimated` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedanimated-reaction-safety
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedanimated-reaction-safety
      */
     "@ashstack/reanimated/animated-reaction-safety"?: RuleSetting;
     /**
@@ -406,7 +406,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-reanimated` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedanimated-style-needs-animated-component
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedanimated-style-needs-animated-component
      */
     "@ashstack/reanimated/animated-style-needs-animated-component"?: RuleSetting;
     /**
@@ -414,7 +414,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-reanimated` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedanimated-updater-purity
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedanimated-updater-purity
      */
     "@ashstack/reanimated/animated-updater-purity"?: RuleSetting;
     /**
@@ -422,7 +422,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-reanimated` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedgpu-properties-only
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedgpu-properties-only
      */
     "@ashstack/reanimated/gpu-properties-only"?: RuleSetting;
     /**
@@ -430,7 +430,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-reanimated` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedhoist-layout-animation-builder
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedhoist-layout-animation-builder
      */
     "@ashstack/reanimated/hoist-layout-animation-builder"?: RuleSetting;
     /**
@@ -438,7 +438,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-reanimated` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedinterpolate-needs-clamp
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedinterpolate-needs-clamp
      */
     "@ashstack/reanimated/interpolate-needs-clamp"?: RuleSetting;
     /**
@@ -446,7 +446,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-reanimated` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedno-shared-value-dot-value
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedno-shared-value-dot-value
      */
     "@ashstack/reanimated/no-shared-value-dot-value"?: RuleSetting;
     /**
@@ -454,7 +454,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-reanimated` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedno-react-state-from-continuous-worklet
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedno-react-state-from-continuous-worklet
      */
     "@ashstack/reanimated/no-react-state-from-continuous-worklet"?: RuleSetting;
     /**
@@ -462,7 +462,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-reanimated` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedprefer-lazy-shared-value-initializer
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedprefer-lazy-shared-value-initializer
      */
     "@ashstack/reanimated/prefer-lazy-shared-value-initializer"?: RuleSetting;
     /**
@@ -470,7 +470,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-reanimated` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedschedule-on-rn-scope
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedschedule-on-rn-scope
      */
     "@ashstack/reanimated/schedule-on-rn-scope"?: RuleSetting;
     /**
@@ -478,7 +478,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-reanimated` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreanimatedshared-value-usage
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedshared-value-usage
      */
     "@ashstack/reanimated/shared-value-usage"?: RuleSetting;
     /**
@@ -486,7 +486,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-turbo-image` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackturbo-imagerequire-resize
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/turbo-image.md#ashstackturbo-imagerequire-resize
      */
     "@ashstack/turbo-image/require-resize"?: RuleSetting;
     /**
@@ -494,7 +494,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `react-native-turbo-image` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackturbo-imagerequire-cache-policy
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/turbo-image.md#ashstackturbo-imagerequire-cache-policy
      */
     "@ashstack/turbo-image/require-cache-policy"?: RuleSetting;
     /**
@@ -502,7 +502,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@shopify/react-native-skia` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackskiacanvas-opaque
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/skia.md#ashstackskiacanvas-opaque
      */
     "@ashstack/skia/canvas-opaque"?: RuleSetting;
   }

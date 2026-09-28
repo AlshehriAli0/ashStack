@@ -47,7 +47,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreactno-unlabeled-icon-button
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react.md#ashstackreactno-unlabeled-icon-button
      */
     "@ashstack/react/no-unlabeled-icon-button"?: RuleSetting;
     /**
@@ -55,7 +55,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreactno-svg-without-title
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react.md#ashstackreactno-svg-without-title
      */
     "@ashstack/react/no-svg-without-title"?: RuleSetting;
     /**
@@ -63,7 +63,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreacthoist-intl
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react.md#ashstackreacthoist-intl
      */
     "@ashstack/react/hoist-intl"?: RuleSetting;
     /**
@@ -71,7 +71,7 @@ declare module "oxlint" {
      *
      * **Default: off.** Turn it on by id in your `rules` block.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreactprefer-design-system
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react.md#ashstackreactprefer-design-system
      */
     "@ashstack/react/prefer-design-system"?: RuleSetting<
       [
@@ -91,7 +91,7 @@ declare module "oxlint" {
      *
      * **Default: off.** Turn it on by id in your `rules` block.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackreactcomponents-tsx-only
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react.md#ashstackreactcomponents-tsx-only
      */
     "@ashstack/react/components-tsx-only"?: RuleSetting<[{ dir?: string }]>;
     /**
@@ -99,7 +99,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@tanstack/react-query` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackqueryno-inline-keys
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/query.md#ashstackqueryno-inline-keys
      */
     "@ashstack/query/no-inline-keys"?: RuleSetting;
     /**
@@ -107,7 +107,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@tanstack/react-query` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackqueryno-deprecated-filters
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/query.md#ashstackqueryno-deprecated-filters
      */
     "@ashstack/query/no-deprecated-filters"?: RuleSetting;
     /**
@@ -115,7 +115,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@tanstack/react-query` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackqueryrequire-destructured-hooks
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/query.md#ashstackqueryrequire-destructured-hooks
      */
     "@ashstack/query/require-destructured-hooks"?: RuleSetting;
     /**
@@ -123,7 +123,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@tanstack/react-query` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackqueryno-fetch-in-query-fn
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/query.md#ashstackqueryno-fetch-in-query-fn
      */
     "@ashstack/query/no-fetch-in-query-fn"?: RuleSetting;
     /**
@@ -131,7 +131,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@tanstack/react-query` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackquerynext-page-param-undefined
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/query.md#ashstackquerynext-page-param-undefined
      */
     "@ashstack/query/next-page-param-undefined"?: RuleSetting;
     /**
@@ -139,7 +139,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `zustand` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackzustandrequire-selector
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/zustand.md#ashstackzustandrequire-selector
      */
     "@ashstack/zustand/require-selector"?: RuleSetting;
     /**
@@ -147,7 +147,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `i18next`, `react-i18next`, `@lingui/core`, `react-intl`, `use-intl`, `next-intl` or `expo-localization` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacki18nno-bare-text
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/i18n.md#ashstacki18nno-bare-text
      */
     "@ashstack/i18n/no-bare-text"?: RuleSetting;
     /**
@@ -155,7 +155,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `i18next`, `react-i18next`, `@lingui/core`, `react-intl`, `use-intl`, `next-intl` or `expo-localization` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacki18nno-bare-attrs
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/i18n.md#ashstacki18nno-bare-attrs
      */
     "@ashstack/i18n/no-bare-attrs"?: RuleSetting<[{ attributes?: Array<string> }]>;
     /**
@@ -163,7 +163,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `i18next`, `react-i18next`, `@lingui/core`, `react-intl`, `use-intl`, `next-intl` or `expo-localization` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacki18nno-bare-toast
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/i18n.md#ashstacki18nno-bare-toast
      */
     "@ashstack/i18n/no-bare-toast"?: RuleSetting;
     /**
@@ -171,7 +171,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@stylexjs/stylex` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylexinline-props
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/stylex.md#ashstackstylexinline-props
      */
     "@ashstack/stylex/inline-props"?: RuleSetting;
     /**
@@ -179,7 +179,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@stylexjs/stylex` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylexno-conflicting-props
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/stylex.md#ashstackstylexno-conflicting-props
      */
     "@ashstack/stylex/no-conflicting-props"?: RuleSetting;
     /**
@@ -187,7 +187,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@stylexjs/stylex` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylexno-duplicate-styles
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/stylex.md#ashstackstylexno-duplicate-styles
      */
     "@ashstack/stylex/no-duplicate-styles"?: RuleSetting;
     /**
@@ -195,7 +195,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@stylexjs/stylex` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylexrequire-tokens
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/stylex.md#ashstackstylexrequire-tokens
      */
     "@ashstack/stylex/require-tokens"?: RuleSetting<
       [{ colors?: string | false; radii?: string | false; tokens?: Record<string, Array<string>> }]
@@ -205,7 +205,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@stylexjs/stylex` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackstylexuse-sx-prop
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/stylex.md#ashstackstylexuse-sx-prop
      */
     "@ashstack/stylex/use-sx-prop"?: RuleSetting;
     /**
@@ -213,7 +213,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `tailwindcss` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktailwindprefer-cn
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/tailwind.md#ashstacktailwindprefer-cn
      */
     "@ashstack/tailwind/prefer-cn"?: RuleSetting;
     /**
@@ -221,7 +221,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `tailwindcss` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktailwinduse-logical-classes
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/tailwind.md#ashstacktailwinduse-logical-classes
      */
     "@ashstack/tailwind/use-logical-classes"?: RuleSetting;
     /**
@@ -229,7 +229,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@tanstack/react-router` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktanstack-routerrequire-selector
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/tanstack-router.md#ashstacktanstack-routerrequire-selector
      */
     "@ashstack/tanstack-router/require-selector"?: RuleSetting;
     /**
@@ -237,7 +237,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `@tanstack/react-router` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstacktanstack-routerno-search-casts
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/tanstack-router.md#ashstacktanstack-routerno-search-casts
      */
     "@ashstack/tanstack-router/no-search-casts"?: RuleSetting;
     /**
@@ -245,7 +245,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-derived-state
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/effects.md#ashstackeffectsno-derived-state
      */
     "@ashstack/effects/no-derived-state"?: RuleSetting;
     /**
@@ -253,7 +253,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-chain-state-updates
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/effects.md#ashstackeffectsno-chain-state-updates
      */
     "@ashstack/effects/no-chain-state-updates"?: RuleSetting;
     /**
@@ -261,7 +261,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-event-handler
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/effects.md#ashstackeffectsno-event-handler
      */
     "@ashstack/effects/no-event-handler"?: RuleSetting;
     /**
@@ -269,7 +269,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-adjust-state-on-prop-change
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/effects.md#ashstackeffectsno-adjust-state-on-prop-change
      */
     "@ashstack/effects/no-adjust-state-on-prop-change"?: RuleSetting;
     /**
@@ -277,7 +277,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-reset-all-state-on-prop-change
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/effects.md#ashstackeffectsno-reset-all-state-on-prop-change
      */
     "@ashstack/effects/no-reset-all-state-on-prop-change"?: RuleSetting;
     /**
@@ -285,7 +285,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-pass-live-state-to-parent
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/effects.md#ashstackeffectsno-pass-live-state-to-parent
      */
     "@ashstack/effects/no-pass-live-state-to-parent"?: RuleSetting;
     /**
@@ -293,7 +293,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-pass-data-to-parent
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/effects.md#ashstackeffectsno-pass-data-to-parent
      */
     "@ashstack/effects/no-pass-data-to-parent"?: RuleSetting;
     /**
@@ -301,7 +301,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-external-store-subscription
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/effects.md#ashstackeffectsno-external-store-subscription
      */
     "@ashstack/effects/no-external-store-subscription"?: RuleSetting;
     /**
@@ -309,7 +309,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackeffectsno-initialize-state
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/effects.md#ashstackeffectsno-initialize-state
      */
     "@ashstack/effects/no-initialize-state"?: RuleSetting;
   }

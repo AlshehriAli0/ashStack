@@ -21,7 +21,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreno-comments
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/core.md#ashstackcoreno-comments
      */
     "@ashstack/core/no-comments"?: RuleSetting<
       [{ jsdoc?: "allow" | "report"; escapeHatch?: boolean; budget?: number }]
@@ -31,7 +31,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreno-naming-convention
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/core.md#ashstackcoreno-naming-convention
      */
     "@ashstack/core/no-naming-convention"?: RuleSetting;
     /**
@@ -39,7 +39,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoreno-packed-condition
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/core.md#ashstackcoreno-packed-condition
      */
     "@ashstack/core/no-packed-condition"?: RuleSetting<[number]>;
     /**
@@ -47,7 +47,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoremax-lines
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/core.md#ashstackcoremax-lines
      */
     "@ashstack/core/max-lines"?: RuleSetting<[number]>;
     /**
@@ -55,7 +55,7 @@ declare module "oxlint" {
      *
      * **Default: on.**
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackcoremax-complexity
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/core.md#ashstackcoremax-complexity
      */
     "@ashstack/core/max-complexity"?: RuleSetting<[number]>;
     /**
@@ -63,7 +63,7 @@ declare module "oxlint" {
      *
      * **Default: on**, when `zod` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#ashstackzodprefer-enum
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/zod.md#ashstackzodprefer-enum
      */
     "@ashstack/zod/prefer-enum"?: RuleSetting;
   }

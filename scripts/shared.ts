@@ -6,8 +6,8 @@ import type { ModuleManifest, Rule } from "../packages/lint/dist/lib/types.js";
 
 const repoRoot = join(import.meta.dir, "..");
 
-/** RULES.md is not packed, so a link an editor shows has to point at the copy on GitHub. */
-export const RULES_URL = "https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md";
+/** Rule docs are not packed, so editor links point at the copy on GitHub. */
+export const RULES_URL = "https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/";
 
 const REACT_EFFECT_DOCS = "https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect";
 
@@ -18,8 +18,11 @@ export const anchor = (heading: string): string =>
     .replace(/[^a-z0-9 -]/g, "")
     .replace(/ /g, "-");
 
-/** The RULES.md section for a heading's text, e.g. `core()` or `@ashstack/core/no-comments`. */
-export const sectionLink = (heading: string): string => `${RULES_URL}#${anchor(heading)}`;
+/** The page and section for an entry, module or rule. */
+export const sectionLink = (heading: string): string => {
+  const page = heading.startsWith("@ashstack/") ? heading.split("/")[1] : `entries/${anchor(heading)}`;
+  return `${RULES_URL}rules/${page}.md#${anchor(heading)}`;
+};
 
 /** `a`, `b` and `c`, for a conjunction the caller picks. */
 export const list = (names: string[], conjunction: "and" | "or"): string => {

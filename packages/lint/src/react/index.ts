@@ -136,7 +136,7 @@ const REACT_RULES: RuleMap = {
  * diagnostics, you-might-not-need-an-effect, and the auto-detected library
  * modules (query, zustand, i18n, StyleX).
  *
- * @see [every rule `react()` sets](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#react)
+ * @see [every rule `react()` sets](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/entries/react.md#react)
  */
 const react = (options: ReactOptions = {}): OxlintConfig => {
   const composed = composeModules([...coreRegistry, ...reactRegistry], options);

@@ -179,7 +179,7 @@ export const TEST_FILES = [
  * `no-unsafe-type-assertion`, …): they only report when oxlint runs with
  * `--type-aware` and the `oxlint-tsgolint` peer installed.
  *
- * @see [every rule `core()` sets](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#core)
+ * @see [every rule `core()` sets](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/entries/core.md#core)
  */
 const core = (options: CoreOptions = {}): OxlintConfig => {
   const composed = composeModules(coreRegistry, options);

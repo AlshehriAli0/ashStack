@@ -88,7 +88,7 @@ const compilerOnlyRules = (reactCompiler: boolean): RuleMap =>
  * turboImage, skia, keyboard) auto-detected from your dependencies. Your
  * `rules` block always overrides.
  *
- * @see [every rule `react-native()` sets](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/RULES.md#react-native)
+ * @see [every rule `react-native()` sets](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/entries/react-native.md#react-native)
  */
 const reactNative = (options: ReactNativeOptions = {}): OxlintConfig => {
   const composed = composeModules([...coreRegistry, ...reactRegistry, ...reactNativeRegistry], options, banGroups);
