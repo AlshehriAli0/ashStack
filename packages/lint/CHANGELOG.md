@@ -1,5 +1,12 @@
 # @ashstack/lint
 
+## 0.10.4 (2026-09-28)
+
+### Bug Fixes
+
+- suggest safe StyleX prop spreads ([`e985036`](https://github.com/AlshehriAli0/ashStack/commit/e985036))
+- spread StyleX props on custom components ([`dfe5fed`](https://github.com/AlshehriAli0/ashStack/commit/dfe5fed))
+
 ## 0.10.3 (2026-09-28)
 
 ### Bug Fixes
