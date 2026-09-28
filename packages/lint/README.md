@@ -69,6 +69,23 @@ export default defineConfig({
 Drop the `extends` and the workspace keeps only the rules it names, with no
 diagnostic that the rest are gone.
 
+## Local JavaScript plugins
+
+If you add `jsPlugins`, include the entry's list: Oxlint replaces that list
+instead of merging it through `extends`. Its built-in `plugins` list does merge.
+
+```ts
+import { react } from "@ashstack/lint/react";
+import { defineConfig } from "oxlint";
+
+const lint = react();
+
+export default defineConfig({
+  extends: [lint],
+  jsPlugins: [...lint.jsPlugins, "./lint-rules.js"],
+});
+```
+
 ## What each entry adds
 
 `core()` is a strict eslint / typescript / unicorn / promise / import base plus the `@ashstack/core/` convention rules. `react()` adds react, jsx-a11y, React Compiler and you-might-not-need-an-effect. `react-native()` adds the generic `@ashstack/react-native/` rules: leaked renders, view nesting, iOS-only keyboard events, remote images.
