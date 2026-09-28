@@ -10,7 +10,7 @@ _auto-enabled by `react()` when `@stylexjs/stylex` is a dependency._
 - [`no-conflicting-props`](#ashstackstylexno-conflicting-props)
 - [`no-duplicate-styles`](#ashstackstylexno-duplicate-styles)
 - [`require-tokens`](#ashstackstylexrequire-tokens)
-- [`use-sx-prop`](#ashstackstylexuse-sx-prop)
+- [`spread-props`](#ashstackstylexspread-props)
 
 ## `@ashstack/stylex/inline-props`
 
@@ -153,9 +153,9 @@ export const styles = stylex.create({
 });
 ```
 
-## `@ashstack/stylex/use-sx-prop`
+## `@ashstack/stylex/spread-props`
 
-Name StyleX override props `sx` or `<slot>Sx` and pass styles through them.
+Spread complete `stylex.props(...)` results to style custom components.
 
 **Default: on**, when `@stylexjs/stylex` is a dependency.
 
@@ -165,20 +165,18 @@ Name StyleX override props `sx` or `<slot>Sx` and pass styles through them.
 import type { StyleXStyles } from "@stylexjs/stylex";
 import * as stylex from "@stylexjs/stylex";
 
-export type Props = { style?: StyleXStyles; labelStyle?: StyleXStyles };
+export type Props = { sx?: StyleXStyles; labelStyle?: StyleXStyles };
 
 const styles = stylex.create({ box: { padding: 8 } });
-export const Wrong = () => <Widget appearance={styles.box} />;
+export const Wrong = () => <><Widget sx={styles.box} /><Widget appearance={styles.box} /></>;
 ```
 
 **Passes**
 
 ```tsx
-import type { StyleXStyles } from "@stylexjs/stylex";
 import * as stylex from "@stylexjs/stylex";
-
-export type Props = { sx?: StyleXStyles; labelSx?: StyleXStyles };
+import { Widget } from "ui-kit";
 
 const styles = stylex.create({ box: { padding: 8 } });
-export const Good = () => <><Widget sx={styles.box} /><div {...stylex.props(styles.box)} /></>;
+export const Good = () => <><Widget {...stylex.props(styles.box)} /><div {...stylex.props(styles.box)} /></>;
 ```

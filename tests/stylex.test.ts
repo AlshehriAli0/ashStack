@@ -244,13 +244,14 @@ const styles = stylex.create({ box: { color: colors.primary.value } });`,
       },
     ],
   },
-  "use-sx-prop": {
+  "spread-props": {
     valid: [
       {
-        name: "component sx slots and direct DOM spread",
+        name: "complete StyleX props spread on components and DOM elements",
         code: `import * as stylex from "@stylexjs/stylex";
-const styles = stylex.create({ box: { padding: 8 }, icon: { width: 16 } });
-export const Good = () => <><Widget sx={styles.box} iconSx={[styles.icon]} /><div {...stylex.props(styles.box)} /></>;`,
+import { Widget } from "ui-kit";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Good = () => <><Widget {...stylex.props(styles.box)} /><div {...stylex.props(styles.box)} sx={styles.box} /></>;`,
       },
       {
         name: "unrelated class names and shadowed styles",
@@ -265,17 +266,18 @@ const styles = stylex.create({ box: { padding: 8 } });
 export const Good = () => <Widget onClick={makeHandler(styles.box)} label={getLabel(styles.box)} />;`,
       },
       {
-        name: "StyleX values stay valid in named slots and DOM elements",
+        name: "dynamic StyleX values work through a complete spread",
         code: `import * as stylex from "@stylexjs/stylex";
 const styles = stylex.create({ box: (size: number) => ({ width: size }) });
-export const Good = () => <><Widget iconSx={styles.box(16)} /><div {...stylex.props(styles.box(16))} /></>;`,
+export const Good = () => <><Widget {...stylex.props(styles.box(16))} /><div {...stylex.props(styles.box(16))} /></>;`,
       },
       {
-        name: "root and named slot overrides, including alias and namespace imports",
-        code: `import type { StyleXStyles as Override } from "@stylexjs/stylex";
-import type * as StyleX from "@stylexjs/stylex";
+        name: "ordinary React style props remain valid",
+        code: `import * as stylex from "@stylexjs/stylex";
 import type { CSSProperties } from "react";
-type Props = { sx?: Override; trackSx?: Override | undefined; panelSx?: StyleX.StyleXStylesWithout<{ color: string }>; style?: CSSProperties };`,
+type Props = { style?: CSSProperties };
+const styles = stylex.create({ box: { padding: 8 } });
+export const Good = () => <Widget style={{ opacity: 0.5 }} />;`,
       },
       {
         name: "local type with the same name is unrelated",
@@ -295,11 +297,11 @@ function local() { type StyleXStyles = string; type Props = { style?: StyleXStyl
 const styles = stylex.create({ box: { padding: 8 } });
 const alias = styles.box;
 const props = stylex.props(styles.box);
-export const Wrong = () => <><Widget className={styles.box} /><Widget appearance={alias} /><Widget value={props.className} /><Widget {...stylex.props(styles.box)} /></>;`,
-        errors: 4,
+export const Wrong = () => <><Widget className={styles.box} /><Widget appearance={alias} /><Widget value={props.className} /></>;`,
+        errors: 3,
       },
       {
-        name: "dynamic styles and derived classes still require sx",
+        name: "dynamic styles and derived classes require a spread",
         code: `import { create as define, props as spread } from "@stylexjs/stylex";
 const styles = define({ box: (size: number) => ({ width: size }) });
 const alias = styles.box(16);
@@ -307,16 +309,18 @@ export const Wrong = () => <><Widget value={styles.box(12)} /><Widget className=
         errors: 3,
       },
       {
-        name: "StyleX override names receive concrete replacements",
+        name: "StyleX style prop declarations require a spread at the call site",
         code: `import type { StyleXStyles, StyleXStylesWithout } from "@stylexjs/stylex";
 import type * as SX from "@stylexjs/stylex";
 type Props = { style?: StyleXStyles; trackStyle?: StyleXStyles | undefined; panelStyle?: SX.StyleXStylesWithout<{ color: string }>; label?: StyleXStylesWithout<{ color: string }> };`,
-        errors: [
-          { message: "Rename `style` to `sx`", line: 3 },
-          { message: "Rename `trackStyle` to `trackSx`", line: 3 },
-          { message: "Rename `panelStyle` to `panelSx`", line: 3 },
-          { message: "Rename `label` to `labelSx`", line: 3 },
-        ],
+        errors: 4,
+      },
+      {
+        name: "sx and named slots on custom components also require a spread",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Wrong = () => <><Widget sx={styles.box} /><Widget iconSx={[styles.box]} /></>;`,
+        errors: 2,
       },
     ],
   },

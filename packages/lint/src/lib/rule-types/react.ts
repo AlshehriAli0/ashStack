@@ -25,7 +25,7 @@ export type ReactRuleId =
   | "@ashstack/stylex/no-conflicting-props"
   | "@ashstack/stylex/no-duplicate-styles"
   | "@ashstack/stylex/require-tokens"
-  | "@ashstack/stylex/use-sx-prop"
+  | "@ashstack/stylex/spread-props"
   | "@ashstack/tailwind/prefer-cn"
   | "@ashstack/tailwind/use-logical-classes"
   | "@ashstack/tanstack-router/require-selector"
@@ -201,13 +201,13 @@ declare module "oxlint" {
       [{ colors?: string | false; radii?: string | false; tokens?: Record<string, Array<string>> }]
     >;
     /**
-     * Name StyleX override props `sx` or `<slot>Sx` and pass styles through them.
+     * Spread complete `stylex.props(...)` results to style custom components.
      *
      * **Default: on**, when `@stylexjs/stylex` is a dependency.
      *
-     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/stylex.md#ashstackstylexuse-sx-prop
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/stylex.md#ashstackstylexspread-props
      */
-    "@ashstack/stylex/use-sx-prop"?: RuleSetting;
+    "@ashstack/stylex/spread-props"?: RuleSetting;
     /**
      * Require a dynamic class value to go through `cn(...)` before it reaches a `class`, `className` or `*ClassName` prop. Reports both where the value reaches the prop and where a variable named after classes is declared.
      *

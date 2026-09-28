@@ -2,8 +2,6 @@ import { attributeName, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 import { collectImports, isImportedBinding, isStylexCall } from "./imports.js";
 
-const SLOT_SX = /^[a-z][a-zA-Z0-9]*Sx$/;
-
 const initializerOf = (context: RuleContext, node: AstNode): AstNode | null => {
   if (node.type !== "Identifier") return null;
   let scope: ReturnType<typeof context.sourceCode.getScope> | null = context.sourceCode.getScope(node);
@@ -18,7 +16,7 @@ const initializerOf = (context: RuleContext, node: AstNode): AstNode | null => {
   return null;
 };
 
-export const useSxProp: Rule = problem("Name StyleX override props `sx` or `<slot>Sx` and pass styles through them.", {
+export const spreadProps: Rule = problem("Spread complete `stylex.props(...)` results to style custom components.", {
   createOnce(context) {
     const bindings = { namespaces: new Set<string>(), named: new Set<string>() };
     const propsBindings = { namespaces: new Set<string>(), named: new Set<string>() };
@@ -109,14 +107,9 @@ export const useSxProp: Rule = problem("Name StyleX override props `sx` or `<slo
       TSPropertySignature(node) {
         if (bindings.named.size === 0 && bindings.namespaces.size === 0) return;
         if (node.computed || !node.typeAnnotation || !hasStyleXStyles(node.typeAnnotation.typeAnnotation)) return;
-        let name: string | null = null;
-        if (node.key.type === "Identifier") name = node.key.name;
-        if (node.key.type === "Literal" && typeof node.key.value === "string") name = node.key.value;
-        if (name === null || name === "sx" || SLOT_SX.test(name)) return;
-        const suggested = name.startsWith("style") ? "sx" : `${name.replace(/Style$/, "")}Sx`;
         context.report({
           node: node.key,
-          message: `Rename \`${name}\` to \`${suggested}\` for a StyleX override prop.`,
+          message: "Spread `stylex.props(...)` at the call site instead of defining a StyleX style prop.",
         });
       },
       JSXOpeningElement(node) {
@@ -129,18 +122,14 @@ export const useSxProp: Rule = problem("Name StyleX override props `sx` or `<slo
         )
           return;
         for (const attribute of node.attributes) {
+          if (attribute.type === "JSXSpreadAttribute") continue;
           seen.clear();
-          if (attribute.type === "JSXSpreadAttribute") {
-            if (fromStylex(attribute.argument))
-              context.report({ node: attribute, message: "Pass StyleX styles as `sx` to this component." });
-            continue;
-          }
           const name = attributeName(attribute);
-          if (name === "sx" || SLOT_SX.test(name) || attribute.value?.type !== "JSXExpressionContainer") continue;
+          if (attribute.value?.type !== "JSXExpressionContainer") continue;
           if (fromStylex(attribute.value.expression, name === "className"))
             context.report({
               node: attribute,
-              message: `Pass this StyleX style as \`sx\` or a named \`<slot>Sx\` prop, not \`${name}\`.`,
+              message: `Spread \`stylex.props(...)\` on this component instead of passing a StyleX style as \`${name}\`.`,
             });
         }
       },

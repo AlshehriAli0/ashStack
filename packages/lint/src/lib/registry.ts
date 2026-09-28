@@ -82,7 +82,7 @@ export const reactRegistry: ModuleMeta[] = [
       "no-conflicting-props": {},
       "no-duplicate-styles": {},
       "require-tokens": {},
-      "use-sx-prop": {},
+      "spread-props": {},
     },
   },
   {

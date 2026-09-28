@@ -3,7 +3,7 @@ import { inlineProps } from "./inline-props.js";
 import { noConflictingProps } from "./no-conflicting-props.js";
 import { noDuplicateStyles } from "./no-duplicate-styles.js";
 import { requireTokens } from "./require-tokens.js";
-import { useSxProp } from "./use-sx-prop.js";
+import { spreadProps } from "./spread-props.js";
 
 export default defineModule({
   meta: { name: "@ashstack/stylex" },
@@ -16,6 +16,6 @@ export default defineModule({
     "no-conflicting-props": noConflictingProps,
     "no-duplicate-styles": noDuplicateStyles,
     "require-tokens": requireTokens,
-    "use-sx-prop": useSxProp,
+    "spread-props": spreadProps,
   },
 });
