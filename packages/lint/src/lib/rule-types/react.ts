@@ -167,7 +167,7 @@ declare module "oxlint" {
      */
     "@ashstack/i18n/no-bare-toast"?: RuleSetting;
     /**
-     * Use `stylex.props(...)` as JSX props or return/store its result.
+     * Use complete StyleX props in JSX; a className-only bridge can drop inline styles.
      *
      * **Default: on**, when `@stylexjs/stylex` is a dependency.
      *
