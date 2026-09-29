@@ -1,20 +1,7 @@
 import { attributeName, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
+import type { AstNode, Rule } from "../../../lib/types.js";
 import { collectImports, isImportedBinding, isStylexCall } from "./imports.js";
-
-const initializerOf = (context: RuleContext, node: AstNode): AstNode | null => {
-  if (node.type !== "Identifier") return null;
-  let scope: ReturnType<typeof context.sourceCode.getScope> | null = context.sourceCode.getScope(node);
-  while (scope) {
-    const variable = scope.set.get(node.name);
-    if (variable) {
-      const declaration = variable.defs.find(definition => definition.node.type === "VariableDeclarator")?.node;
-      return declaration?.type === "VariableDeclarator" ? (declaration.init ?? null) : null;
-    }
-    scope = scope.upper;
-  }
-  return null;
-};
+import { initializerOf, isPeerFile, mergesStoredProps } from "./peer.js";
 
 export const spreadProps: Rule = problem("Spread complete `stylex.props(...)` results to style custom components.", {
   meta: { hasSuggestions: true },
@@ -147,6 +134,30 @@ export const spreadProps: Rule = problem("Spread complete `stylex.props(...)` re
       return callee && isDirectStyle(expression) ? `${callee}(${context.sourceCode.getText(expression)})` : null;
     };
 
+    const checkAttribute = (element: AstNode, attribute: AstNode): void => {
+      if (attribute.type !== "JSXAttribute") return;
+      seen.clear();
+      const name = attributeName(attribute);
+      if (attribute.value?.type !== "JSXExpressionContainer") return;
+      const expression = attribute.value.expression;
+      if (!fromStylex(expression, name === "className")) return;
+      if (isPeerFile(context) && mergesStoredProps(context, expression, propsBindings)) return;
+      const replacement = replacementFor(element, attribute, expression, name);
+      context.report({
+        node: attribute,
+        message: `Spread \`stylex.props(...)\` on this component instead of passing a StyleX style as \`${name}\`.`,
+        suggest:
+          replacement === null
+            ? undefined
+            : [
+                {
+                  desc: "Spread complete StyleX props",
+                  fix: fixer => fixer.replaceText(attribute, `{...${replacement}}`),
+                },
+              ],
+      });
+    };
+
     return {
       before() {
         bindings.namespaces.clear();
@@ -167,6 +178,7 @@ export const spreadProps: Rule = problem("Spread complete `stylex.props(...)` re
       TSPropertySignature(node) {
         if (bindings.named.size === 0 && bindings.namespaces.size === 0) return;
         if (node.computed || !node.typeAnnotation || !hasStyleXStyles(node.typeAnnotation.typeAnnotation)) return;
+        if (isPeerFile(context)) return;
         context.report({
           node: node.key,
           message: "Spread `stylex.props(...)` at the call site instead of defining a StyleX style prop.",
@@ -182,26 +194,7 @@ export const spreadProps: Rule = problem("Spread complete `stylex.props(...)` re
         )
           return;
         for (const attribute of node.attributes) {
-          if (attribute.type === "JSXSpreadAttribute") continue;
-          seen.clear();
-          const name = attributeName(attribute);
-          if (attribute.value?.type !== "JSXExpressionContainer") continue;
-          const expression = attribute.value.expression;
-          if (!fromStylex(expression, name === "className")) continue;
-          const replacement = replacementFor(node, attribute, expression, name);
-          context.report({
-            node: attribute,
-            message: `Spread \`stylex.props(...)\` on this component instead of passing a StyleX style as \`${name}\`.`,
-            suggest:
-              replacement === null
-                ? undefined
-                : [
-                    {
-                      desc: "Spread complete StyleX props",
-                      fix: fixer => fixer.replaceText(attribute, `{...${replacement}}`),
-                    },
-                  ],
-          });
+          checkAttribute(node, attribute);
         }
       },
     };

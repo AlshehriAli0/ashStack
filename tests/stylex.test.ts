@@ -31,6 +31,16 @@ function render() {
   return <div {...result} />;
 }`,
       },
+      {
+        name: "peer stores props to merge caller overrides",
+        filename: "src/components/ui/card.tsx",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ card: { padding: 16 } });
+export const Card = ({ className }: { className?: string }) => {
+  const cardStyles = stylex.props(styles.card);
+  return <div className={mergeClassName(cardStyles.className, className)} />;
+};`,
+      },
     ],
     invalid: [
       {
@@ -45,6 +55,14 @@ export const Certificate = () => <article style={stylex.props(styles.certificate
         code: `import * as stylex from "@stylexjs/stylex";
 const styles = stylex.create({ box: { padding: 8 } });
 export const Box = () => { const props = stylex.props(styles.box); return <div {...props} />; };`,
+        errors: [{ message: "do not store it", line: 3 }],
+      },
+      {
+        name: "direct props call as a style value still flags in peer files",
+        filename: "src/components/ui/card.tsx",
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ card: { padding: 16 } });
+export const Card = () => <div style={stylex.props(styles.card)} />;`,
         errors: [{ message: "do not store it", line: 3 }],
       },
       {
@@ -289,6 +307,18 @@ type Props = { style?: StyleXStyles };`,
         code: `import type { StyleXStyles } from "@stylexjs/stylex";
 function local() { type StyleXStyles = string; type Props = { style?: StyleXStyles }; return null; }`,
       },
+      {
+        name: "peer merge owns caller overrides through stored props",
+        filename: "src/components/ui/card.tsx",
+        code: `import * as stylex from "@stylexjs/stylex";
+import type { StyleXStyles } from "@stylexjs/stylex";
+const styles = stylex.create({ card: { padding: 16 } });
+type Props = { sx?: StyleXStyles };
+export const Card = ({ sx, className }: Props & { className?: string }) => {
+  const cardStyles = stylex.props(styles.card, sx);
+  return <Widget className={mergeClassName(cardStyles.className, className)} style={mergeStyle(cardStyles.style, undefined)} />;
+};`,
+      },
     ],
     invalid: [
       {
@@ -320,6 +350,19 @@ type Props = { style?: StyleXStyles; trackStyle?: StyleXStyles | undefined; pane
         code: `import * as stylex from "@stylexjs/stylex";
 const styles = stylex.create({ box: { padding: 8 } });
 export const Wrong = () => <><Widget sx={styles.box} /><Widget iconSx={[styles.box]} /></>;`,
+        errors: 2,
+      },
+      {
+        name: "stored-props merge outside peer files still requires a spread",
+        filename: "src/components/feature/panel.tsx",
+        code: `import * as stylex from "@stylexjs/stylex";
+import type { StyleXStyles } from "@stylexjs/stylex";
+const styles = stylex.create({ card: { padding: 16 } });
+type Props = { sx?: StyleXStyles };
+export const Panel = ({ sx, className }: Props & { className?: string }) => {
+  const cardStyles = stylex.props(styles.card, sx);
+  return <Widget className={mergeClassName(cardStyles.className, className)} />;
+};`,
         errors: 2,
       },
       {
