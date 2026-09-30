@@ -319,6 +319,21 @@ export const Card = ({ sx, className }: Props & { className?: string }) => {
   return <Widget className={mergeClassName(cardStyles.className, className)} style={mergeStyle(cardStyles.style, undefined)} />;
 };`,
       },
+      {
+        name: "sx reaches a peer component from a feature file",
+        filename: "src/components/feature/panel.tsx",
+        code: `import * as stylex from "@stylexjs/stylex";
+import { Button } from "@/components/ui/button";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Panel = () => <Button sx={styles.box} />;`,
+      },
+      {
+        name: "sx reaches a peer component through a namespace import",
+        code: `import * as stylex from "@stylexjs/stylex";
+import * as UI from "@/components/ui/dialog";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Panel = () => <UI.DialogContent sx={styles.box} />;`,
+      },
     ],
     invalid: [
       {
@@ -364,6 +379,31 @@ export const Panel = ({ sx, className }: Props & { className?: string }) => {
   return <Widget className={mergeClassName(cardStyles.className, className)} />;
 };`,
         errors: 2,
+      },
+      {
+        name: "other StyleX prop names in a peer file still require a spread",
+        filename: "src/components/ui/card.tsx",
+        code: `import type { StyleXStyles } from "@stylexjs/stylex";
+type Props = { styles?: StyleXStyles; override?: StyleXStyles };`,
+        errors: 2,
+      },
+      {
+        name: "sx on a non-peer component still requires a spread",
+        filename: "src/components/feature/panel.tsx",
+        code: `import * as stylex from "@stylexjs/stylex";
+import { Widget } from "ui-kit";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Panel = () => <Widget sx={styles.box} />;`,
+        errors: 1,
+      },
+      {
+        name: "non-sx props on a peer component still require a spread",
+        filename: "src/components/feature/panel.tsx",
+        code: `import * as stylex from "@stylexjs/stylex";
+import { Button } from "@/components/ui/button";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Panel = () => <Button className={styles.box} />;`,
+        errors: 1,
       },
       {
         name: "suggest a complete spread for sx",

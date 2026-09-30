@@ -15,8 +15,13 @@ export const initializerOf = (context: RuleContext, node: AstNode): AstNode | nu
   return null;
 };
 
-export const isPeerFile = (context: RuleContext): boolean =>
-  context.filename.replaceAll("\\", "/").includes("components/ui/");
+const PEER_DIR = "components/ui/";
+
+/** Whether a module path or import specifier points into the peer component folder.
+ *  ponytail: substring match, so a folder-relative ./button inside components/ui/ is not resolved. */
+export const isPeerSource = (source: string): boolean => source.replaceAll("\\", "/").includes(PEER_DIR);
+
+export const isPeerFile = (context: RuleContext): boolean => isPeerSource(context.filename);
 
 const rootIdentifier = (node: AstNode): AstNode | null => {
   let current = node;
