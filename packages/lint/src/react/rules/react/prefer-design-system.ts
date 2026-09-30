@@ -2,14 +2,15 @@ import { readdirSync } from "node:fs";
 import { isAbsolute, join } from "node:path";
 
 import { optionsOf } from "../../../lib/ast.js";
+import {
+  DESIGN_SYSTEM_ALIAS,
+  DESIGN_SYSTEM_DIR,
+  designSystemFolders,
+  isInsideDesignSystem,
+} from "../../../lib/design-system.js";
 import type { Rule, RuleContext } from "../../../lib/types.js";
 
-const DESIGN_SYSTEM_DIR = "src/components/ui";
-const DESIGN_SYSTEM_ALIAS = "@/components/ui";
 const PLATFORM_SUFFIX = /\.(?:ios|android|native|web)$/;
-
-/** A tsconfig path alias: `@/components/ui` and `@app/ui` both name a real folder further down. */
-const ALIAS_PREFIX = /^[@~#][^/]*\//;
 
 const LEGACY_EQUIVALENTS: Record<string, string[]> = {
   Pressable: ["TouchableOpacity", "TouchableHighlight", "TouchableWithoutFeedback", "TouchableNativeFeedback"],
@@ -111,25 +112,15 @@ const applyUse = (banned: Banned, alias: string, use: Record<string, UseEntry>):
  * report themselves for importing the primitive they exist to wrap.
  */
 const wrapperFolders = (dir: string, alias: string, use: Record<string, UseEntry>): string[] => {
-  const folders = [dir, alias.replace(ALIAS_PREFIX, "")];
+  const extra: string[] = [];
   for (const entry of Object.values(use)) {
     if (typeof entry === "string" || Array.isArray(entry) || entry.path === undefined) continue;
-    folders.push(entry.path.replace(ALIAS_PREFIX, ""));
+    extra.push(entry.path);
   }
-  return folders.filter(folder => folder.length > 0);
+  return designSystemFolders({ dir, alias }, extra);
 };
 
 const designSystems = new Map<string, { banned: Banned; wrappers: string[] }>();
-
-/**
- * A fragment has to start at a path segment, or a directory called `ui` would
- * be matched by any parent whose name merely ends in it.
- */
-const isExemptFile = (filename: string | undefined, exempt: string[]): boolean => {
-  if (!filename) return false;
-  const path = filename.replaceAll("\\", "/");
-  return exempt.some(fragment => path.includes(isAbsolute(fragment) ? fragment : `/${fragment}`));
-};
 
 const designSystemFor = (options: Options): { banned: Banned; exempt: string[] } => {
   const dir = options.dir ?? DESIGN_SYSTEM_DIR;
@@ -204,7 +195,7 @@ export const preferDesignSystem: Rule = {
         const designSystem = designSystemFor(options);
         banned = designSystem.banned;
         if (banned.size === 0) return false;
-        return !isExemptFile(context.filename, designSystem.exempt);
+        return !isInsideDesignSystem(context.filename, designSystem.exempt);
       },
       ImportDeclaration(node) {
         const source = node.source.value;

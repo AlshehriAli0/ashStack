@@ -1,15 +1,22 @@
-import { attributeName, problem, tagPath } from "../../../lib/ast.js";
+import { attributeName, optionsOf, problem, tagPath } from "../../../lib/ast.js";
+import {
+  DESIGN_SYSTEM_SCHEMA,
+  designSystemFolders,
+  isInsideDesignSystem,
+  type DesignSystemOptions,
+} from "../../../lib/design-system.js";
 import type { AstNode, Rule } from "../../../lib/types.js";
 import { collectImports, isImportedBinding, isStylexCall } from "./imports.js";
-import { initializerOf, isPeerFile, isPeerSource, mergesStoredProps } from "./peer.js";
+import { initializerOf, mergesStoredProps } from "./peer.js";
 
 export const spreadProps: Rule = problem("Spread complete `stylex.props(...)` results to style custom components.", {
-  meta: { hasSuggestions: true },
+  meta: { hasSuggestions: true, schema: [DESIGN_SYSTEM_SCHEMA] },
   createOnce(context) {
     const bindings = { namespaces: new Set<string>(), named: new Set<string>() };
     const propsBindings = { namespaces: new Set<string>(), named: new Set<string>() };
     const createBindings = { namespaces: new Set<string>(), named: new Set<string>() };
     const seen = new Set<AstNode>();
+    let folders: string[] = [];
 
     const hasStyleXStyles = (node: AstNode): boolean => {
       if (node.type === "TSTypeReference") {
@@ -117,7 +124,7 @@ export const spreadProps: Rule = problem("Spread complete `stylex.props(...)` re
             definition =>
               definition.type === "ImportBinding" &&
               definition.node.parent?.type === "ImportDeclaration" &&
-              isPeerSource(definition.node.parent.source.value)
+              isInsideDesignSystem(definition.node.parent.source.value, folders)
           );
         scope = scope.upper;
       }
@@ -161,7 +168,8 @@ export const spreadProps: Rule = problem("Spread complete `stylex.props(...)` re
       const expression = attribute.value.expression;
       if (!fromStylex(expression, name === "className")) return;
       if (name === "sx" && isPeerTag(element)) return;
-      if (isPeerFile(context) && mergesStoredProps(context, expression, propsBindings)) return;
+      if (isInsideDesignSystem(context.filename, folders) && mergesStoredProps(context, expression, propsBindings))
+        return;
       const replacement = replacementFor(element, attribute, expression, name);
       context.report({
         node: attribute,
@@ -187,6 +195,7 @@ export const spreadProps: Rule = problem("Spread complete `stylex.props(...)` re
         createBindings.namespaces.clear();
         createBindings.named.clear();
         seen.clear();
+        folders = designSystemFolders(optionsOf<DesignSystemOptions>(context, {}));
         return context.sourceCode.text.includes("stylex");
       },
       Program(node) {
@@ -198,7 +207,8 @@ export const spreadProps: Rule = problem("Spread complete `stylex.props(...)` re
       TSPropertySignature(node) {
         if (bindings.named.size === 0 && bindings.namespaces.size === 0) return;
         if (node.computed || !node.typeAnnotation || !hasStyleXStyles(node.typeAnnotation.typeAnnotation)) return;
-        if (isPeerFile(context) && node.key.type === "Identifier" && node.key.name === "sx") return;
+        if (isInsideDesignSystem(context.filename, folders) && node.key.type === "Identifier" && node.key.name === "sx")
+          return;
         context.report({
           node: node.key,
           message: "Spread `stylex.props(...)` at the call site instead of defining a StyleX style prop.",

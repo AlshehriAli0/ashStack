@@ -18,6 +18,17 @@ Spread `stylex.props(...)` in JSX or return its full result; do not store it.
 
 **Default: on**, when `@stylexjs/stylex` is a dependency.
 
+**Options**
+
+```ts
+[{ dir?: string; alias?: string }]
+```
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `dir` | `string` | `"src/components/ui"` | Folder holding the design system, whose files own the peer contract. |
+| `alias` | `string` | `"@/components/ui"` | Import prefix that names the design system. |
+
 **Fails**
 
 ```tsx
@@ -158,6 +169,17 @@ export const styles = stylex.create({
 Spread complete `stylex.props(...)` results to style custom components.
 
 **Default: on**, when `@stylexjs/stylex` is a dependency.
+
+**Options**
+
+```ts
+[{ dir?: string; alias?: string }]
+```
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `dir` | `string` | `"src/components/ui"` | Folder holding the design system, whose files own the peer contract. |
+| `alias` | `string` | `"@/components/ui"` | Import prefix that names the design system. |
 
 **Fails**
 

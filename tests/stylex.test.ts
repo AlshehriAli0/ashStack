@@ -44,6 +44,18 @@ export const Card = ({ className }: { className?: string }) => {
     ],
     invalid: [
       {
+        name: "storing props outside the configured folder still flags",
+        filename: "src/components/ui/card.tsx",
+        options: { dir: "src/design", alias: "@/design" },
+        code: `import * as stylex from "@stylexjs/stylex";
+const styles = stylex.create({ card: { padding: 16 } });
+export const Card = ({ className }: { className?: string }) => {
+  const cardStyles = stylex.props(styles.card);
+  return <div className={mergeClassName(cardStyles.className, className)} />;
+};`,
+        errors: 1,
+      },
+      {
         name: "props result used as a style value",
         code: `import * as stylex from "@stylexjs/stylex";
 const styles = stylex.create({ certificate: { padding: 8 } });
@@ -334,6 +346,14 @@ import * as UI from "@/components/ui/dialog";
 const styles = stylex.create({ box: { padding: 8 } });
 export const Panel = () => <UI.DialogContent sx={styles.box} />;`,
       },
+      {
+        name: "a custom design-system alias is the peer folder",
+        options: { alias: "@/design" },
+        code: `import * as stylex from "@stylexjs/stylex";
+import { Button } from "@/design/button";
+const styles = stylex.create({ box: { padding: 8 } });
+export const Panel = () => <Button sx={styles.box} />;`,
+      },
     ],
     invalid: [
       {
@@ -386,6 +406,14 @@ export const Panel = ({ sx, className }: Props & { className?: string }) => {
         code: `import type { StyleXStyles } from "@stylexjs/stylex";
 type Props = { styles?: StyleXStyles; override?: StyleXStyles };`,
         errors: 2,
+      },
+      {
+        name: "a peer declaration outside the configured folder still requires a spread",
+        filename: "src/components/ui/card.tsx",
+        options: { dir: "src/design", alias: "@/design" },
+        code: `import type { StyleXStyles } from "@stylexjs/stylex";
+type Props = { sx?: StyleXStyles };`,
+        errors: 1,
       },
       {
         name: "sx on a non-peer component still requires a spread",

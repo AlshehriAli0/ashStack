@@ -173,7 +173,7 @@ declare module "oxlint" {
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/stylex.md#ashstackstylexinline-props
      */
-    "@ashstack/stylex/inline-props"?: RuleSetting;
+    "@ashstack/stylex/inline-props"?: RuleSetting<[{ dir?: string; alias?: string }]>;
     /**
      * Report className overrides and inline CSS that overlaps StyleX declarations.
      *
@@ -207,7 +207,7 @@ declare module "oxlint" {
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/stylex.md#ashstackstylexspread-props
      */
-    "@ashstack/stylex/spread-props"?: RuleSetting;
+    "@ashstack/stylex/spread-props"?: RuleSetting<[{ dir?: string; alias?: string }]>;
     /**
      * Require a dynamic class value to go through `cn(...)` before it reaches a `class`, `className` or `*ClassName` prop. Reports both where the value reaches the prop and where a variable named after classes is declared.
      *
