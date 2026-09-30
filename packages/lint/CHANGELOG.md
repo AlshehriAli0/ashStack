@@ -1,5 +1,13 @@
 # @ashstack/lint
 
+## 0.11.0 (2026-09-30)
+
+### Features
+
+- source the StyleX peer folder from the design-system options ([`080598e`](https://github.com/AlshehriAli0/ashStack/commit/080598e))
+- allow sx on peer components in StyleX spread rules ([`c2a9a8c`](https://github.com/AlshehriAli0/ashStack/commit/c2a9a8c))
+- exempt peer-override merge from StyleX spread rules ([`5ceebf4`](https://github.com/AlshehriAli0/ashStack/commit/5ceebf4))
+
 ## 0.10.4 (2026-09-28)
 
 ### Bug Fixes
