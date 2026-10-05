@@ -10,7 +10,7 @@ Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-marg
 
 Each entry lists the oxlint plugins it turns on, below. You never need to add them: your own `plugins` array is added to the entry's set, not swapped for it. A bare oxlint install runs `eslint`, `typescript`, `unicorn`, `oxc`; `import`, `promise`, `react`, `jsx-a11y`, `react-perf` come from here.
 
-Counting what each entry sets with every module on: **116** rules for plain TypeScript, **211** with React, **268** on React Native, 82 of them written for this package. oxlint's own `correctness` category runs alongside these.
+Counting what each entry sets with every module on: **116** rules for plain TypeScript, **211** with React, **269** on React Native, 83 of them written for this package. oxlint's own `correctness` category runs alongside these.
 
 ## Entry settings
 
@@ -37,7 +37,7 @@ Match the diagnostic prefix, or use the activation column when configuring a lib
 | [`@ashstack/tanstack-router`](rules/tanstack-router.md) | `react()` | 2 | auto-enabled by `react()` when `@tanstack/react-router` is a dependency |
 | [`@ashstack/effects`](rules/effects.md) | `react()` | 9 | always on via `react()` and every entry above it, from [eslint-plugin-react-you-might-not-need-an-effect](https://github.com/NickvanDyke/eslint-plugin-react-you-might-not-need-an-effect) (MIT) |
 | [`@ashstack/react-native`](rules/react-native.md) | `react-native()` | 11 | always on via `reactNative()` |
-| [`@ashstack/unistyles`](rules/unistyles.md) | `react-native()` | 13 | auto-enabled when `react-native-unistyles` is a dependency |
+| [`@ashstack/unistyles`](rules/unistyles.md) | `react-native()` | 14 | auto-enabled when `react-native-unistyles` is a dependency |
 | [`@ashstack/legend-list`](rules/legend-list.md) | `react-native()` | 9 | auto-enabled when `@legendapp/list` is a dependency |
 | [`@ashstack/legend-state`](rules/legend-state.md) | `react-native()` | 8 | auto-enabled when `@legendapp/state` is a dependency |
 | [`@ashstack/reanimated`](rules/reanimated.md) | `react-native()` | 11 | auto-enabled when `react-native-reanimated` is a dependency |

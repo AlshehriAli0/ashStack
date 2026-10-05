@@ -189,6 +189,7 @@ export const reactNativeRegistry: ModuleMeta[] = [
       "no-margin": {},
       "no-paramless-dynamic-function": {},
       "no-style-spread": {},
+      "no-theme-runtime-args": {},
       "no-unused-styles": {},
       "rtl-style-call": {},
       "theme-screen-component": {},

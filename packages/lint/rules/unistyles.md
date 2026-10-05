@@ -15,6 +15,7 @@ _auto-enabled when `react-native-unistyles` is a dependency._
 - [`no-margin`](#ashstackunistylesno-margin)
 - [`no-paramless-dynamic-function`](#ashstackunistylesno-paramless-dynamic-function)
 - [`no-style-spread`](#ashstackunistylesno-style-spread)
+- [`no-theme-runtime-args`](#ashstackunistylesno-theme-runtime-args)
 - [`no-unused-styles`](#ashstackunistylesno-unused-styles)
 - [`rtl-style-call`](#ashstackunistylesrtl-style-call)
 - [`theme-screen-component`](#ashstackunistylestheme-screen-component)
@@ -352,6 +353,46 @@ export function Card() {
 const styles = StyleSheet.create(theme => ({
   card: { backgroundColor: theme.colors.surface },
   raised: { boxShadow: theme.shadows.card },
+}));
+```
+
+## `@ashstack/unistyles/no-theme-runtime-args`
+
+Disallow passing theme or Unistyles runtime values into dynamic style functions, including screen dimensions, safe-area insets, RTL, pixel/font scale, color scheme, derived values and aliases. Read `theme` and `rt` inside the `StyleSheet.create` callback instead.
+
+**Default: on**, when `react-native-unistyles` is a dependency.
+
+**Fails**
+
+```tsx
+import { Image } from "react-native";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
+
+export function Avatars() {
+  const { rt } = useUnistyles();
+  return <Image style={styles.avatars(rt.screen.width)} />;
+}
+
+const styles = StyleSheet.create({
+  avatars: (width: number) => ({ width: width * 0.8 }),
+});
+```
+
+**Passes**
+
+```tsx
+import { Image } from "react-native";
+import { StyleSheet } from "react-native-unistyles";
+
+export function Avatars({ selected }: { selected: boolean }) {
+  return <Image style={styles.avatars(selected)} />;
+}
+
+const styles = StyleSheet.create((theme, rt) => ({
+  avatars: (selected: boolean) => ({
+    width: rt.screen.width * 0.8,
+    backgroundColor: selected ? theme.colors.accent : theme.colors.surface,
+  }),
 }));
 ```
 

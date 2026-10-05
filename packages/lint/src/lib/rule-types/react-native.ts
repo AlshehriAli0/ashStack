@@ -27,6 +27,7 @@ export type ReactNativeRuleId =
   | "@ashstack/unistyles/no-margin"
   | "@ashstack/unistyles/no-paramless-dynamic-function"
   | "@ashstack/unistyles/no-style-spread"
+  | "@ashstack/unistyles/no-theme-runtime-args"
   | "@ashstack/unistyles/no-unused-styles"
   | "@ashstack/unistyles/rtl-style-call"
   | "@ashstack/unistyles/theme-screen-component"
@@ -225,6 +226,14 @@ declare module "oxlint" {
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylesno-style-spread
      */
     "@ashstack/unistyles/no-style-spread"?: RuleSetting;
+    /**
+     * Disallow passing theme or Unistyles runtime values into dynamic style functions, including screen dimensions, safe-area insets, RTL, pixel/font scale, color scheme, derived values and aliases. Read `theme` and `rt` inside the `StyleSheet.create` callback instead.
+     *
+     * **Default: on**, when `react-native-unistyles` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/unistyles.md#ashstackunistylesno-theme-runtime-args
+     */
+    "@ashstack/unistyles/no-theme-runtime-args"?: RuleSetting;
     /**
      * Disallow stylesheet keys that nothing in the file reads. A computed key, a computed read, or a sheet that leaves the module skips the whole file.
      *

@@ -1928,6 +1928,139 @@ const sheet = StyleSheet.create({ base: { flex: 1 } });`,
     ],
   },
 
+  "no-theme-runtime-args": {
+    valid: [
+      {
+        name: "theme and runtime read inside the stylesheet",
+        code: `${IMPORTS}
+const styles = StyleSheet.create((theme, rt) => ({
+  card: selected => ({ width: rt.screen.width, color: selected ? theme.colors.accent : theme.colors.text }),
+}));
+export const Card = ({ selected }) => <View style={styles.card(selected)} />;`,
+      },
+      {
+        name: "props with runtime names and measured layout width are legitimate inputs",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ card: value => ({ width: value }) });
+export const Card = ({ rt, theme, width }) => <View style={styles.card({ rt, theme, width })} />;`,
+      },
+      {
+        name: "a shadowed runtime binding is not the hook result",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ card: value => ({ width: value }) });
+const { rt } = useUnistyles();
+function Card(rt) { return <View style={styles.card(rt.screen.width)} />; }`,
+      },
+      {
+        name: "a shadowed sheet and unrelated functions are not style calls",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ card: value => ({ width: value }) });
+const { rt } = useUnistyles();
+function render(styles) { styles.card(rt.screen.width); }
+consume(rt.screen.width);`,
+      },
+      {
+        name: "object keys named rt are not references",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ card: value => ({ width: value.width }) });
+const { rt } = useUnistyles();
+styles.card({ rt: 1 });`,
+      },
+      {
+        name: "imports of similarly named hooks from another package",
+        code: `import { StyleSheet } from "react-native-unistyles";
+import { useUnistyles } from "other-library";
+const styles = StyleSheet.create({ card: value => ({ color: value }) });
+const { theme } = useUnistyles();
+styles.card(theme);`,
+      },
+      {
+        name: "alias cycles terminate",
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ card: value => ({ width: value }) });
+const a = b; const b = a;
+styles.card(a);`,
+      },
+    ],
+    invalid: [
+      ...[
+        ["runtime screen width", "const { rt } = useUnistyles();", "rt.screen.width"],
+        ["whole runtime", "const { rt } = useUnistyles();", "rt"],
+        ["whole theme", "const { theme } = useUnistyles();", "theme"],
+        ["theme color", "const { theme } = useUnistyles();", "theme.colors.accent"],
+        ["renamed destructuring", "const { rt: runtime } = useUnistyles();", "runtime.insets.bottom"],
+        ["nested destructuring", "const { rt: { screen: { width } } } = useUnistyles();", "width"],
+        ["derived local value", "const { rt } = useUnistyles(); const width = rt.screen.width * 0.8;", "width"],
+        ["chained aliases", "const u = useUnistyles(); const r = u.rt; const w = r.screen.width;", "w"],
+        ["nested argument expression", "const { rt } = useUnistyles();", "Math.min(rt.screen.width, 300)"],
+        ["object and spread argument", "const { theme } = useUnistyles();", "{ ...theme.colors }"],
+      ].map(([name, setup, argument]) => ({
+        name,
+        code: `${IMPORTS}
+const styles = StyleSheet.create({ card: value => ({ width: value }) });
+${setup}
+styles.card(${argument});`,
+        errors: [{ message: "Read `theme` and `rt` inside `StyleSheet.create`" }],
+      })),
+      {
+        name: "aliased imports and stylesheet aliases with computed style access",
+        code: `import { StyleSheet as Sheet, useUnistyles as useStyles } from "react-native-unistyles";
+const styles = Sheet.create({ card: value => ({ width: value }) });
+const alias = styles;
+const { rt } = useStyles();
+alias["card"](rt.screen.width);`,
+        errors: 1,
+      },
+      {
+        name: "namespace imports and direct hook calls",
+        code: `import * as U from "react-native-unistyles";
+const styles = U.StyleSheet.create({ card: value => ({ width: value }) });
+styles.card(U.useUnistyles().rt.screen.width);`,
+        errors: 1,
+      },
+      {
+        name: "global runtime import",
+        code: `${IMPORTS}import { UnistylesRuntime as runtime } from "react-native-unistyles";
+const styles = StyleSheet.create({ card: value => ({ width: value }) });
+styles.card(runtime.screen.width);`,
+        errors: 1,
+      },
+      ...[
+        ["useWindowDimensions", "const { width } = useWindowDimensions();", "width"],
+        ["useColorScheme", "const scheme = useColorScheme();", "scheme"],
+        ["Dimensions", "const width = Dimensions.get('window').width;", "width"],
+        ["PixelRatio", "const ratio = PixelRatio.get();", "ratio"],
+        ["PixelRatio", "const scale = PixelRatio.getFontScale();", "scale"],
+        ["Appearance", "const scheme = Appearance.getColorScheme();", "scheme"],
+        ["I18nManager", "const rtl = I18nManager.isRTL;", "rtl"],
+        ["StatusBar", "const height = StatusBar.currentHeight;", "height"],
+      ].map(([api, setup, argument]) => ({
+        name: `native runtime source: ${setup}`,
+        code: `${IMPORTS}import { ${api} } from "react-native";
+const styles = StyleSheet.create({ card: value => ({ width: value }) });
+${setup}
+styles.card(${argument});`,
+        errors: 1,
+      })),
+      {
+        name: "safe-area hook values including content container styles",
+        code: `${IMPORTS}import { useSafeAreaInsets as useInsets } from "react-native-safe-area-context";
+const styles = StyleSheet.create({ card: value => ({ paddingBottom: value }) });
+const { bottom } = useInsets();
+<View contentContainerStyle={styles.card(bottom)} />;`,
+        errors: 1,
+      },
+      {
+        name: "reports each offending argument and supports sheet declarations after calls",
+        code: `${IMPORTS}
+const { theme, rt } = useUnistyles();
+styles.card(theme.colors.accent, rt.screen.width, true);
+const styles = StyleSheet.create({ card: (color, width, selected) => ({ color, width }) });`,
+        errors: 2,
+      },
+    ],
+  },
+
   "no-unused-styles": {
     valid: [
       {

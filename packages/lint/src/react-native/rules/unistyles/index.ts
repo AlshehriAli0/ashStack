@@ -8,6 +8,7 @@ import { noHardcodedSpacing } from "./no-hardcoded-spacing.js";
 import { noMargin } from "./no-margin.js";
 import { noParamlessDynamicFunction } from "./no-paramless-dynamic-function.js";
 import { noStyleSpread } from "./no-style-spread.js";
+import { noThemeRuntimeArgs } from "./no-theme-runtime-args.js";
 import { noUnusedStyles } from "./no-unused-styles.js";
 import { rtlStyleCall } from "./rtl-style-call.js";
 import { themeScreenComponent } from "./theme-screen-component.js";
@@ -25,6 +26,7 @@ export default defineModule({
     "no-margin": noMargin,
     "no-paramless-dynamic-function": noParamlessDynamicFunction,
     "no-style-spread": noStyleSpread,
+    "no-theme-runtime-args": noThemeRuntimeArgs,
     "no-unused-styles": noUnusedStyles,
     "rtl-style-call": rtlStyleCall,
     "theme-screen-component": themeScreenComponent,
