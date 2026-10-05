@@ -1,4 +1,4 @@
-import { problem, subtreeHas } from "../../../lib/ast.js";
+import { gate, problem, subtreeHas } from "../../../lib/ast.js";
 import type { AstNode, RuleContext } from "../../../lib/types.js";
 
 type Origin =
@@ -13,15 +13,13 @@ type Origin =
   | "I18nManager"
   | "StatusBar";
 
+const UNISTYLES_IMPORTS = new Map<string, Origin>([
+  ["useUnistyles", "hook"],
+  ["UnistylesRuntime", "runtime"],
+  ["StyleSheet", "create"],
+]);
 const IMPORT_ORIGINS = new Map<string, Map<string, Origin>>([
-  [
-    "react-native-unistyles",
-    new Map([
-      ["useUnistyles", "hook"],
-      ["UnistylesRuntime", "runtime"],
-      ["StyleSheet", "create"],
-    ]),
-  ],
+  ["react-native-unistyles", UNISTYLES_IMPORTS],
   [
     "react-native",
     new Map([
@@ -43,7 +41,7 @@ const IMPORT_ORIGINS = new Map<string, Map<string, Origin>>([
   ],
 ]);
 const MEMBER_ORIGINS = new Map<Origin, Map<string, Origin>>([
-  ["namespace", IMPORT_ORIGINS.get("react-native-unistyles") ?? new Map()],
+  ["namespace", UNISTYLES_IMPORTS],
   ["Dimensions", new Map([["get", "hook"]])],
   [
     "PixelRatio",
@@ -82,38 +80,9 @@ const importedOrigin = (node: AstNode): Origin | undefined => {
   return IMPORT_ORIGINS.get(source)?.get(node.imported.name);
 };
 
-const bindingOrigin = (context: RuleContext, node: AstNode, seen: Set<Variable>): Origin | undefined => {
-  const binding = bindingOf(context, node);
-  if (!binding || seen.has(binding)) return undefined;
-  const nextSeen = new Set(seen).add(binding);
-  for (const definition of binding.defs) {
-    if (definition.type === "ImportBinding") return importedOrigin(definition.node);
-    if (definition.node.type === "VariableDeclarator") return originOf(context, definition.node.init, nextSeen);
-  }
-  return undefined;
-};
-
 const callOrigin = (origin: Origin | undefined, callee: AstNode): Origin | undefined => {
   if (origin === "hook") return "runtime";
   if (origin === "create" && memberName(callee) === "create") return "sheet";
-  return undefined;
-};
-
-const originOf = (context: RuleContext, node: AstNode | null, seen = new Set<Variable>()): Origin | undefined => {
-  if (!node) return undefined;
-  if (node.type === "Identifier") return bindingOrigin(context, node, seen);
-  if (node.type === "MemberExpression") {
-    const origin = originOf(context, node.object, seen);
-    if (!origin) return undefined;
-    const members = MEMBER_ORIGINS.get(origin);
-    return members ? members.get(memberName(node)) : origin;
-  }
-  if (node.type === "CallExpression") {
-    return callOrigin(originOf(context, node.callee, seen), node.callee);
-  }
-  const isTypeWrapper =
-    node.type === "TSAsExpression" || node.type === "TSNonNullExpression" || node.type === "TSSatisfiesExpression";
-  if (isTypeWrapper || node.type === "ChainExpression") return originOf(context, node.expression, seen);
   return undefined;
 };
 
@@ -123,34 +92,88 @@ const isReference = (node: AstNode): boolean => {
   return !(parent?.type === "Property" && parent.key === node && !parent.computed && !parent.shorthand);
 };
 
-const readsRuntime = (context: RuleContext, node: AstNode, seen = new Set<Variable>()): boolean =>
-  subtreeHas(node, current => {
-    if (current.type === "MemberExpression" || current.type === "CallExpression") {
-      return originOf(context, current) === "runtime";
+const createChecks = (context: RuleContext) => {
+  const origins = new WeakMap<AstNode, Origin | undefined>();
+  const resolving = new Set<Variable>();
+  const scanning = new Set<Variable>();
+
+  const bindingOrigin = (node: AstNode): Origin | undefined => {
+    const binding = bindingOf(context, node);
+    if (!binding || resolving.has(binding)) return undefined;
+    resolving.add(binding);
+    const definition = binding.defs.find(def => def.type === "ImportBinding" || def.node.type === "VariableDeclarator");
+    let origin: Origin | undefined;
+    if (definition?.type === "ImportBinding") origin = importedOrigin(definition.node);
+    else if (definition?.node.type === "VariableDeclarator") origin = originOf(definition.node.init);
+    resolving.delete(binding);
+    return origin;
+  };
+
+  const resolveOrigin = (node: AstNode | null): Origin | undefined => {
+    if (!node) return undefined;
+    if (node.type === "Identifier") return bindingOrigin(node);
+    if (node.type === "MemberExpression") {
+      const origin = originOf(node.object);
+      if (!origin) return undefined;
+      const members = MEMBER_ORIGINS.get(origin);
+      return members ? members.get(memberName(node)) : origin;
     }
-    if (current.type !== "Identifier" || !isReference(current)) return false;
-    if (originOf(context, current) === "runtime") return true;
-    const binding = bindingOf(context, current);
-    if (!binding || seen.has(binding)) return false;
-    const nextSeen = new Set(seen).add(binding);
-    return binding.defs.some(
-      definition =>
-        definition.node.type === "VariableDeclarator" &&
-        definition.node.init !== null &&
-        readsRuntime(context, definition.node.init, nextSeen)
-    );
-  }) || originOf(context, node) === "runtime";
+    if (node.type === "CallExpression") {
+      return callOrigin(originOf(node.callee), node.callee);
+    }
+    const isTypeWrapper =
+      node.type === "TSAsExpression" || node.type === "TSNonNullExpression" || node.type === "TSSatisfiesExpression";
+    if (isTypeWrapper || node.type === "ChainExpression") return originOf(node.expression);
+    return undefined;
+  };
+
+  const originOf = (node: AstNode | null): Origin | undefined => {
+    if (!node) return undefined;
+    if (origins.has(node)) return origins.get(node);
+    const origin = resolveOrigin(node);
+    origins.set(node, origin);
+    return origin;
+  };
+
+  const readsRuntime = (node: AstNode): boolean =>
+    subtreeHas(node, current => {
+      if (current.type === "MemberExpression" || current.type === "CallExpression") {
+        return originOf(current) === "runtime";
+      }
+      if (current.type !== "Identifier" || !isReference(current)) return false;
+      if (originOf(current) === "runtime") return true;
+      const binding = bindingOf(context, current);
+      if (!binding || scanning.has(binding)) return false;
+      scanning.add(binding);
+      const reads = binding.defs.some(
+        definition =>
+          definition.node.type === "VariableDeclarator" &&
+          definition.node.init !== null &&
+          readsRuntime(definition.node.init)
+      );
+      scanning.delete(binding);
+      return reads;
+    });
+
+  return { originOf, readsRuntime };
+};
 
 export const noThemeRuntimeArgs = problem(
   "Disallow passing theme or Unistyles runtime values into dynamic style functions, including screen dimensions, safe-area insets, RTL, pixel/font scale, color scheme, derived values and aliases. Read `theme` and `rt` inside the `StyleSheet.create` callback instead.",
   {
     createOnce(context) {
+      let checks: ReturnType<typeof createChecks>;
       return {
+        before() {
+          if (!gate(context, "react-native-unistyles")) return false;
+          checks = createChecks(context);
+          return true;
+        },
         CallExpression(node) {
-          if (node.callee.type !== "MemberExpression") return;
-          if (originOf(context, node.callee.object) !== "sheet") return;
+          if (node.arguments.length === 0 || node.callee.type !== "MemberExpression") return;
+          if (checks.originOf(node.callee.object) !== "sheet") return;
           for (const argument of node.arguments) {
-            if (!readsRuntime(context, argument)) continue;
+            if (!checks.readsRuntime(argument)) continue;
             context.report({
               node: argument,
               message:
