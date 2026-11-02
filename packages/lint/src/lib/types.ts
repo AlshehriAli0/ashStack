@@ -136,7 +136,7 @@ export type ReactNativeOptions = ReactOptions & {
   reanimated?: boolean;
   /** [`@ashstack/turbo-image/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/turbo-image.md#ashstackturbo-image) — `react-native-turbo-image` */
   turboImage?: boolean;
-  /** [`@ashstack/skia/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/skia.md#ashstackskia) — `@shopify/react-native-skia` */
+  /** [`@ashstack/skia/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/skia.md#ashstackskia) — `react-native-skia` */
   skia?: boolean;
   /** [`@ashstack/keyboard` import bans](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/keyboard.md#ashstackkeyboard) — `react-native-keyboard-controller` */
   keyboard?: boolean;

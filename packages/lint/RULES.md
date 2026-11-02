@@ -42,5 +42,5 @@ Match the diagnostic prefix, or use the activation column when configuring a lib
 | [`@ashstack/legend-state`](rules/legend-state.md) | `react-native()` | 8 | auto-enabled when `@legendapp/state` is a dependency |
 | [`@ashstack/reanimated`](rules/reanimated.md) | `react-native()` | 11 | auto-enabled when `react-native-reanimated` is a dependency |
 | [`@ashstack/turbo-image`](rules/turbo-image.md) | `react-native()` | 2 | auto-enabled when `react-native-turbo-image` is a dependency |
-| [`@ashstack/skia`](rules/skia.md) | `react-native()` | 1 | auto-enabled when `@shopify/react-native-skia` is a dependency |
+| [`@ashstack/skia`](rules/skia.md) | `react-native()` | 1 | auto-enabled when `react-native-skia` is a dependency |
 | [`@ashstack/keyboard`](rules/keyboard.md) | `react-native()` | Import bans only | auto-enabled when `react-native-keyboard-controller` is a dependency |
