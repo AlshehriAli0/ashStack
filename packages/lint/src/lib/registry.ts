@@ -313,11 +313,11 @@ export const reactNativeRegistry: ModuleMeta[] = [
     meta: { name: "@ashstack/skia" },
     url: at("../react-native/rules/skia/index.js"),
     option: "skia",
-    packages: ["@shopify/react-native-skia"],
+    packages: ["react-native-skia"],
     restrictedImports: {
       paths: [
         {
-          name: "@shopify/react-native-skia",
+          name: "react-native-skia",
           importNames: ["usePathValue", "usePathInterpolation"],
           message:
             "Keep one stable `SkPath` buffer and mutate it inside `useDerivedValue`, with consumers reading the driving shared value.",

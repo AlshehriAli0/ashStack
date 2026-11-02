@@ -507,9 +507,9 @@ declare module "oxlint" {
      */
     "@ashstack/turbo-image/require-cache-policy"?: RuleSetting;
     /**
-     * Require an explicit `opaque` prop on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.
+     * Require an explicit `android={{ opaque }}` on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.
      *
-     * **Default: on**, when `@shopify/react-native-skia` is a dependency.
+     * **Default: on**, when `react-native-skia` is a dependency.
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/skia.md#ashstackskiacanvas-opaque
      */

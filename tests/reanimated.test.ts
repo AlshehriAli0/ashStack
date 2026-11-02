@@ -2305,7 +2305,7 @@ export const useStart = () => useSharedValue(new Date());
       {
         name: "a namespaced constructor is still a NewExpression",
         code: `import { useSharedValue } from "react-native-reanimated";
-import { Skia } from "@shopify/react-native-skia";
+import { Skia } from "react-native-skia";
 export const usePath = () => useSharedValue(new Skia.Path());
 `,
         errors: 1,

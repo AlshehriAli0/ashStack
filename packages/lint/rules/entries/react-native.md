@@ -23,7 +23,7 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 - [`@ashstack/legend-state`](../legend-state.md) — auto-enabled when `@legendapp/state` is a dependency.
 - [`@ashstack/reanimated`](../reanimated.md) — auto-enabled when `react-native-reanimated` is a dependency.
 - [`@ashstack/turbo-image`](../turbo-image.md) — auto-enabled when `react-native-turbo-image` is a dependency.
-- [`@ashstack/skia`](../skia.md) — auto-enabled when `@shopify/react-native-skia` is a dependency.
+- [`@ashstack/skia`](../skia.md) — auto-enabled when `react-native-skia` is a dependency.
 - [`@ashstack/keyboard`](../keyboard.md) — auto-enabled when `react-native-keyboard-controller` is a dependency.
 
 ### Import bans without a module

@@ -1,11 +1,11 @@
-import { attributeName, gate, importedSpecifiers, problem, tagPath } from "../../../lib/ast.js";
+import { attributeName, gate, importedSpecifiers, problem, propertyValue, tagPath } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const MESSAGE =
-  "Add an explicit `opaque` prop to this `<Canvas>`: `opaque={Platform.OS === 'android'}` when fullscreen and animated, `opaque={false}` when it needs transparency or transforms.";
+  "Add an explicit `opaque` to this `<Canvas>`'s `android` prop: `android={{ opaque: true }}` when fullscreen and animated, `android={{ opaque: false }}` when it needs transparency or transforms.";
 
 export const canvasOpaque: Rule = problem(
-  "Require an explicit `opaque` prop on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.",
+  "Require an explicit `android={{ opaque }}` on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.",
   {
     createOnce(context: RuleContext) {
       const canvasLocals = new Set<string>();
@@ -27,7 +27,7 @@ export const canvasOpaque: Rule = problem(
           return gate(context, "react-native-skia");
         },
         ImportDeclaration(node) {
-          for (const specifier of importedSpecifiers(node, "@shopify/react-native-skia")) {
+          for (const specifier of importedSpecifiers(node, "react-native-skia")) {
             if (specifier.type === "ImportSpecifier") {
               const { imported, local } = specifier;
               if (imported.type === "Identifier" && imported.name === "Canvas") canvasLocals.add(local.name);
@@ -41,7 +41,11 @@ export const canvasOpaque: Rule = problem(
         JSXOpeningElement(node) {
           if (!namesACanvas(node.name)) return;
           const hasOpaque = node.attributes.some(
-            attribute => attribute.type === "JSXAttribute" && attributeName(attribute) === "opaque"
+            attribute =>
+              attribute.type === "JSXAttribute" &&
+              attributeName(attribute) === "android" &&
+              attribute.value?.type === "JSXExpressionContainer" &&
+              propertyValue(attribute.value.expression, "opaque") !== null
           );
           if (!hasOpaque) elements.push(node);
         },
