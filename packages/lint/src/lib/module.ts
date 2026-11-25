@@ -1,7 +1,16 @@
 import { fileURLToPath } from "node:url";
 
 import { detect } from "./detect.js";
-import type { BanGroup, ModuleManifest, ModuleMeta, RestrictedImports } from "./types.js";
+import type {
+  BanGroup,
+  ConsumerRestrictedImports,
+  ImportAllowance,
+  ModuleManifest,
+  ModuleMeta,
+  OxlintConfig,
+  RestrictedImports,
+  RestrictedPath,
+} from "./types.js";
 
 /**
  * Identity helper: types the manifest and keeps the shape honest. The returned
@@ -38,6 +47,42 @@ const enabledRuleIds = (module: ModuleMeta): string[] => {
 const addRestrictedImports = (into: Required<RestrictedImports>, from: RestrictedImports | undefined): void => {
   into.paths.push(...(from?.paths ?? []));
   into.patterns.push(...(from?.patterns ?? []));
+};
+
+/** A path ban with `allowance` taken out of it: fewer names, or nothing left at all. */
+const liftPath = (path: RestrictedPath, allowance: ImportAllowance): RestrictedPath[] => {
+  const { importNames: lifted } = allowance;
+  if (path.name !== allowance.from) return [path];
+  if (lifted === undefined) return [];
+  if (path.importNames === undefined) return [path];
+  const kept = path.importNames.filter(name => !lifted.includes(name));
+  return kept.length === 0 ? [] : [{ ...path, importNames: kept }];
+};
+
+/**
+ * The `no-restricted-imports` setting and overrides for `bans` plus a
+ * project's own: the added bans join the shipped ones, and each allowance
+ * re-sets the rule for its files with the lifted names taken out. A path ban
+ * on a whole module stays when only some names are allowed.
+ */
+export const restrictedImportsConfig = (
+  bans: Required<RestrictedImports>,
+  consumer: ConsumerRestrictedImports = {}
+): Pick<Required<OxlintConfig>, "rules" | "overrides"> => {
+  const merged: Required<RestrictedImports> = { paths: [...bans.paths], patterns: [...bans.patterns] };
+  addRestrictedImports(merged, consumer);
+  return {
+    rules: { "no-restricted-imports": ["error", merged] },
+    overrides: (consumer.allow ?? []).map(allowance => ({
+      files: allowance.files,
+      rules: {
+        "no-restricted-imports": [
+          "error",
+          { paths: merged.paths.flatMap(path => liftPath(path, allowance)), patterns: merged.patterns },
+        ],
+      },
+    })),
+  };
 };
 
 /**

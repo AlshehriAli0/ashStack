@@ -112,6 +112,8 @@ export default defineConfig({
 
 Usual first cuts: `max-lines` (300), `max-lines-per-function` (120), `complexity` (12).
 
+Import bans are the exception: a `no-restricted-imports` entry in `rules` replaces every ban the entry ships. Add yours with `reactNative({ restrictedImports: { paths, patterns, allow } })`, which merges them in. `allow` lifts bans for some files. See [`packages/lint/README.md`](packages/lint/README.md#adding-your-own-import-bans).
+
 <!-- opt-in -->Off by default, since they need a team decision first: `@ashstack/react/prefer-design-system` and `@ashstack/react/components-tsx-only`.<!-- /opt-in -->
 
 ## Contributing

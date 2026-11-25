@@ -53,6 +53,21 @@ export interface RestrictedImports {
   patterns?: RestrictedPattern[];
 }
 
+/** Files where some of the shipped or added import bans do not apply. */
+export interface ImportAllowance {
+  /** Globs, as in an oxlint `overrides` entry. */
+  files: string[];
+  /** The module whose bans are lifted there. */
+  from: string;
+  /** Only these names; leave it out to lift every ban on `from`. */
+  importNames?: string[];
+}
+
+/** A project's own import bans, merged into the ones the enabled modules ship. */
+export interface ConsumerRestrictedImports extends RestrictedImports {
+  allow?: ImportAllowance[];
+}
+
 /**
  * A module is the unit of rule organization: one rule namespace, one plugin
  * file, one optional toggle. The default export of a module's index file IS
@@ -153,6 +168,12 @@ export type ReactNativeOptions = ReactOptions & {
   gestureHandler?: boolean;
   /** [`@ashstack/worklets/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/worklets.md#ashstackworklets) — `react-native-worklets` */
   worklets?: boolean;
+  /**
+   * Your own import bans, added to the ones the enabled modules ship. A
+   * `no-restricted-imports` entry in your `rules` block replaces the shipped
+   * bans instead, so add bans here. `allow` lifts bans in some files only.
+   */
+  restrictedImports?: ConsumerRestrictedImports;
 };
 
 /** The config object an entry returns: oxlint's own shape, so `defineConfig({ extends: [core()] })` typechecks. */
