@@ -61,6 +61,8 @@ export interface ModuleManifest {
   url: string;
   /** enable when one of these is a dependency; absent = always on */
   packages?: string[];
+  /** and only at this major of that dependency or later, installed or else declared */
+  minMajor?: number;
   /** key in the entry options that forces the module on/off; absent = auto-only */
   option?: string;
   /** activation line for RULES.md, e.g. "auto-enabled when `zod` is a dependency" */
@@ -81,6 +83,8 @@ export interface ModuleMeta {
   url: string;
   /** Enable when one of these is a dependency; absent = always on. */
   packages?: string[];
+  /** And only at this major of that dependency or later, installed or else declared. */
+  minMajor?: number;
   /** Key in the entry options that forces the module on/off; absent = auto-only. */
   option?: string;
   restrictedImports?: RestrictedImports;

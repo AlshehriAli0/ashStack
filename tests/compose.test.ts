@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { mergeConfigs } from "../packages/lint/dist/lib/merge.js";
 import { composeModules, defineModule, shortName } from "../packages/lint/dist/lib/module.js";
 import type { BanGroup, ModuleManifest, ModuleMeta, OxlintConfig, Rule } from "../packages/lint/dist/lib/types.js";
+import { inDir, install, workspace } from "./workspace.js";
 
 const here = import.meta.url;
 const herePath = fileURLToPath(here);
@@ -26,6 +27,7 @@ const manifestWith = (parts: Partial<ModuleManifest> & { name: string }): Module
     rules: parts.rules ?? { "a-rule": rule("Does a thing.") },
     url: parts.url ?? here,
     packages: parts.packages,
+    minMajor: parts.minMajor,
     option: parts.option,
     docsWhen: parts.docsWhen ?? "always on",
     restrictedImports: parts.restrictedImports,
@@ -38,6 +40,7 @@ const moduleWith = (parts: Partial<ModuleManifest> & { name: string }): ModuleMe
     meta: manifest.meta,
     url: manifest.url,
     packages: manifest.packages,
+    minMajor: manifest.minMajor,
     option: manifest.option,
     restrictedImports: manifest.restrictedImports,
     rules: flagsOf(manifest.rules),
@@ -241,6 +244,46 @@ describe("composeModules", () => {
   it("keeps module order in the rule map and plugin list", () => {
     const composed = composeModules([moduleWith({ name: "first" }), moduleWith({ name: "second", url: here })], {});
     expect(Object.keys(composed.rules)).toEqual(["@ashstack/first/a-rule", "@ashstack/second/a-rule"]);
+  });
+});
+
+describe("composeModules with a version gate", () => {
+  const RNGH = "react-native-gesture-handler";
+  const gated = moduleWith({
+    name: "gesture-handler",
+    option: "gestureHandler",
+    packages: [RNGH],
+    minMajor: 3,
+    restrictedImports: { paths: [{ name: RNGH, importNames: ["Gesture"], message: "v2 API." }] },
+  });
+
+  /** A repo that declares `range` and, when `installed` is given, has that version in node_modules. */
+  const composedIn = (range: string, installed?: string, options: Record<string, boolean> = {}) => {
+    const paths = workspace({ repo: { dependencies: { [RNGH]: range } } });
+    if (installed !== undefined) install(paths.repo!, RNGH, installed);
+    return inDir(paths.repo!, () => composeModules([gated], options));
+  };
+
+  it("turns the module and its bans on when the major is installed", () => {
+    const composed = composedIn("^3.0.0", "3.5.0");
+    expect(Object.keys(composed.rules)).toEqual(["@ashstack/gesture-handler/a-rule"]);
+    expect(composed.restricted.paths).toHaveLength(1);
+  });
+
+  it("leaves it off when an earlier major is installed", () => {
+    const composed = composedIn("^2.28.0", "2.28.0");
+    expect(composed.rules).toEqual({});
+    expect(composed.jsPlugins).toEqual([]);
+    expect(composed.restricted.paths).toEqual([]);
+  });
+
+  it("falls back to the declared range before an install", () => {
+    expect(Object.keys(composedIn("^3.1.0").rules)).toEqual(["@ashstack/gesture-handler/a-rule"]);
+    expect(composedIn("^2.28.0").restricted.paths).toEqual([]);
+  });
+
+  it("still lets the option force the module on below the major", () => {
+    expect(Object.keys(composedIn("^2.28.0", "2.28.0", { gestureHandler: true }).rules)).toHaveLength(1);
   });
 });
 

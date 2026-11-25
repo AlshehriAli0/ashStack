@@ -43,7 +43,9 @@ export const ruleStatus = (module: ModuleManifest, rule: Rule): string => {
   const gates = rule.meta.packages ?? module.packages;
   if (gates === undefined) return "**Default: on.**";
   const backticked = gates.map(name => `\`${name}\``);
-  return `**Default: on**, when ${list(backticked, "or")} is a dependency.`;
+  const atMajor =
+    rule.meta.packages === undefined && module.minMajor !== undefined ? ` ${module.minMajor} or later` : "";
+  return `**Default: on**, when ${list(backticked, "or")}${atMajor} is a dependency.`;
 };
 
 interface VendoredRule {
