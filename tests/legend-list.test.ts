@@ -515,12 +515,22 @@ export const Feed = ({ rows }) => (
 `,
       },
       {
-        name: "a nested arrow inside renderItem is not a literal",
+        name: "a handler passed by reference with the item",
+        code: `
+${IMPORT}
+
+export const Feed = ({ rows, select }) => (
+  <LegendList data={rows} renderItem={({ item }) => <Row item={item} onSelect={select} />} />
+);
+`,
+      },
+      {
+        name: "an inline function on the list itself, outside renderItem",
         code: `
 ${IMPORT}
 
 export const Feed = ({ rows }) => (
-  <LegendList data={rows} renderItem={({ item }) => <Row onPress={() => select(item.id)} />} />
+  <LegendList data={rows} keyExtractor={item => item.id} onEndReached={() => load()} renderItem={r} />
 );
 `,
       },
@@ -551,6 +561,46 @@ export const Feed = ({ rows }) => (
       },
     ],
     invalid: [
+      {
+        name: "an inline arrow on a row",
+        code: `
+${IMPORT}
+
+export const Feed = ({ rows }) => (
+  <LegendList data={rows} renderItem={({ item }) => <Row onPress={() => select(item.id)} />} />
+);
+`,
+        errors: [
+          {
+            message:
+              "Pass the handler itself with `item` or its id (`onSelect={select}`) and build this callback inside the row — a fresh function each render blocks row skipping.",
+            line: 5,
+            column: 66,
+          },
+        ],
+      },
+      {
+        name: "a function expression and a render prop nested deeper in the row",
+        code: `
+${IMPORT}
+import { View } from 'react-native';
+
+export const Feed = ({ rows }) => (
+  <LegendList
+    data={rows}
+    renderItem={({ item }) => (
+      <View>
+        <Row onLongPress={function () { pin(item.id); }} renderRight={() => <Badge count={item.count} />} />
+      </View>
+    )}
+  />
+);
+`,
+        errors: [
+          { message: "build this callback inside the row", line: 10 },
+          { message: "build this callback inside the row", line: 10 },
+        ],
+      },
       {
         name: "an inline style object on a row, reported on the expression container",
         code: `

@@ -140,7 +140,7 @@ export const Good = () => (
 
 ## `@ashstack/legend-list/no-inline-render-item-props`
 
-Disallow inline object and array literals on props nested inside `renderItem`. A row whose props take a new identity every render can never be skipped.
+Disallow inline object literals, array literals and functions on props nested inside `renderItem`. A row whose props take a new identity every render can never be skipped.
 
 **Default: on**, when `@legendapp/list` is a dependency.
 
@@ -150,13 +150,14 @@ Disallow inline object and array literals on props nested inside `renderItem`. A
 import { LegendList } from "@legendapp/list/react-native";
 
 declare const items: { id: string }[];
-declare const Row: (props: { item: { id: string }; style?: unknown }) => JSX.Element;
+declare const Row: (props: { item: { id: string }; style?: unknown; onPress?: () => void }) => JSX.Element;
+declare const select: (id: string) => void;
 const keyOf = (item: { id: string }) => item.id;
 
 export const Bad = () => (
   <LegendList
     data={items}
-    renderItem={({ item }) => <Row item={item} style={{ paddingVertical: 8 }} />}
+    renderItem={({ item }) => <Row item={item} style={{ paddingVertical: 8 }} onPress={() => select(item.id)} />}
     keyExtractor={keyOf}
     recycleItems
   />
@@ -169,13 +170,14 @@ export const Bad = () => (
 import { LegendList } from "@legendapp/list/react-native";
 
 declare const items: { id: string }[];
-declare const Row: (props: { item: { id: string }; gap?: number }) => JSX.Element;
+declare const Row: (props: { item: { id: string }; gap?: number; onSelect?: (id: string) => void }) => JSX.Element;
+declare const select: (id: string) => void;
 const keyOf = (item: { id: string }) => item.id;
 
 export const Good = () => (
   <LegendList
     data={items}
-    renderItem={({ item }) => <Row item={item} gap={8} />}
+    renderItem={({ item }) => <Row item={item} gap={8} onSelect={select} />}
     keyExtractor={keyOf}
     recycleItems
   />
