@@ -68,6 +68,7 @@ export type ReactNativeRuleId =
   | "@ashstack/turbo-image/require-resize"
   | "@ashstack/turbo-image/require-cache-policy"
   | "@ashstack/skia/canvas-opaque"
+  | "@ashstack/gesture-handler/modal-needs-root-view"
   | "@ashstack/worklets/no-runtime-in-render"
   | "@ashstack/worklets/no-inline-worklet-schedule"
   | "@ashstack/worklets/no-sync-runtime-call"
@@ -563,6 +564,14 @@ declare module "oxlint" {
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/skia.md#ashstackskiacanvas-opaque
      */
     "@ashstack/skia/canvas-opaque"?: RuleSetting;
+    /**
+     * Require a `GestureHandlerRootView` around every Gesture Handler component inside a React Native `Modal`. A `Modal` renders outside the app's root view, so those gestures never fire without one.
+     *
+     * **Default: on**, when `react-native-gesture-handler` 3 or later is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/gesture-handler.md#ashstackgesture-handlermodal-needs-root-view
+     */
+    "@ashstack/gesture-handler/modal-needs-root-view"?: RuleSetting;
     /**
      * Disallow `createWorkletRuntime` inside a component or hook. Each call starts a new JavaScript runtime and, with the default queue, a new thread; create it once at module scope and reuse it.
      *

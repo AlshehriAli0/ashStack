@@ -1,4 +1,5 @@
 import { defineModule } from "../../../lib/module.js";
+import { modalNeedsRootView } from "./modal-needs-root-view.js";
 
 const RNGH = "react-native-gesture-handler";
 
@@ -63,7 +64,7 @@ export default defineModule({
   minMajor: 3,
   option: "gestureHandler",
   docsWhen: "auto-enabled when `react-native-gesture-handler` 3 or later is a dependency",
-  rules: {},
+  rules: { "modal-needs-root-view": modalNeedsRootView },
   restrictedImports: {
     paths: [
       {
