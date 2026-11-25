@@ -20,7 +20,7 @@ import type {
 } from "../packages/lint/dist/lib/types.js";
 import { validateRuleDocLinks } from "./rule-doc-links.js";
 import { cell, type EntryConfig, optionsDoc } from "./rule-options-doc.js";
-import { anchor, effectsModule, emit, type Generated, list, ruleStatus } from "./shared.js";
+import { anchor, effectsModule, emit, type Generated, list, majorSuffix, ruleStatus } from "./shared.js";
 
 const lintDir = join(import.meta.dir, "..", "packages", "lint");
 const outPath = join(lintDir, "RULES.md");
@@ -107,7 +107,7 @@ const banGroupSection = (groups: BanGroup[]): string[] => [
   "_Auto-detected from your dependencies; these carry no rules of their own._",
   "",
   ...groups.flatMap(group => [
-    `**\`${group.packages.join("` / `")}\` installed**`,
+    `**\`${group.packages.join("` / `")}\`${majorSuffix(group.minMajor)} installed**`,
     "",
     ...banList(group.restrictedImports),
     "",

@@ -23,7 +23,7 @@ const pluginPath = (module: ModuleManifest): string =>
   relative(join(lintDir, "dist", "lib"), fileURLToPath(module.url)).replaceAll("\\", "/");
 
 /** Module fields a config reads only when the module has them. */
-const OPTIONAL = ["option", "packages", "restrictedImports"] as const;
+const OPTIONAL = ["option", "packages", "minMajor", "restrictedImports"] as const;
 
 /** The two flags that decide whether a rule is on, and nothing else from its meta. */
 const ruleFlags = (rule: Rule): string => {

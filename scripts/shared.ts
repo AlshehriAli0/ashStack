@@ -30,6 +30,10 @@ export const list = (names: string[], conjunction: "and" | "or"): string => {
   return names.length < 2 ? last : `${names.slice(0, -1).join(", ")} ${conjunction} ${last}`;
 };
 
+/** How docs name a version gate: ` 3 or later`, or nothing when there is none. */
+export const majorSuffix = (minMajor: number | undefined): string =>
+  minMajor === undefined ? "" : ` ${minMajor} or later`;
+
 /**
  * Whether a rule is on if you do nothing, as one line every rule carries.
  * Stated even when the answer is a plain yes: a reader who sees a note on some
@@ -43,7 +47,8 @@ export const ruleStatus = (module: ModuleManifest, rule: Rule): string => {
   const gates = rule.meta.packages ?? module.packages;
   if (gates === undefined) return "**Default: on.**";
   const backticked = gates.map(name => `\`${name}\``);
-  return `**Default: on**, when ${list(backticked, "or")} is a dependency.`;
+  const atMajor = rule.meta.packages === undefined ? majorSuffix(module.minMajor) : "";
+  return `**Default: on**, when ${list(backticked, "or")}${atMajor} is a dependency.`;
 };
 
 interface VendoredRule {

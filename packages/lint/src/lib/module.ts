@@ -23,7 +23,7 @@ export interface Composed {
 }
 
 const isModuleEnabled = (module: ModuleMeta, options: Record<string, boolean | undefined>): boolean =>
-  detect(module.option === undefined ? undefined : options[module.option], module.packages);
+  detect(module.option === undefined ? undefined : options[module.option], module.packages, module.minMajor);
 
 const enabledRuleIds = (module: ModuleMeta): string[] => {
   const ids: string[] = [];
@@ -62,7 +62,7 @@ export const composeModules = (
   }
 
   for (const group of banGroups) {
-    if (!detect(undefined, group.packages)) continue;
+    if (!detect(undefined, group.packages, group.minMajor)) continue;
     addRestrictedImports(composed.restricted, group.restrictedImports);
   }
 

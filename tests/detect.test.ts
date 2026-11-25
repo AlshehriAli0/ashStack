@@ -1,48 +1,11 @@
-import { afterAll, describe, expect, it } from "bun:test";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { describe, expect, it } from "bun:test";
+import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 import { detect } from "../packages/lint/dist/lib/detect.js";
+import { inDir, install, workspace } from "./workspace.js";
 
-const roots: string[] = [];
-
-interface Layout {
-  /** Directory path relative to the workspace root, mapped to its package.json dependency block. */
-  [dir: string]: Record<string, Record<string, string>>;
-}
-
-/**
- * Build a throwaway workspace and return the absolute path of each directory
- * in it. `.git` marks the repo boundary, exactly as `detect` looks for it.
- */
-const workspace = (layout: Layout, gitAt = "repo"): Record<string, string> => {
-  const root = mkdtempSync(join(tmpdir(), "ashstack-detect-"));
-  roots.push(root);
-  mkdirSync(join(root, gitAt, ".git"), { recursive: true });
-  const paths: Record<string, string> = { root };
-  for (const [dir, pkg] of Object.entries(layout)) {
-    const absolute = join(root, dir);
-    mkdirSync(absolute, { recursive: true });
-    writeFileSync(join(absolute, "package.json"), JSON.stringify({ name: dir.replaceAll("/", "-"), ...pkg }));
-    paths[dir] = absolute;
-  }
-  return paths;
-};
-
-const inDir = <T>(dir: string, body: () => T): T => {
-  const before = process.cwd();
-  process.chdir(dir);
-  try {
-    return body();
-  } finally {
-    process.chdir(before);
-  }
-};
-
-afterAll(() => {
-  for (const root of roots) rmSync(root, { recursive: true, force: true });
-});
+const RNGH = "react-native-gesture-handler";
 
 describe("detect", () => {
   it("is on when the package is a dependency of the current directory", () => {
@@ -138,5 +101,80 @@ describe("detect", () => {
     expect(inDir(paths.repo!, () => detect(undefined, ["zod"]))).toBe(false);
     writeFileSync(join(paths.repo!, "package.json"), JSON.stringify({ dependencies: { zod: "^4.0.0" } }));
     expect(inDir(paths.repo!, () => detect(undefined, ["zod"]))).toBe(false);
+  });
+});
+
+describe("detect with a minimum major", () => {
+  it("is on when the installed version is at that major", () => {
+    const paths = workspace({ repo: { dependencies: { [RNGH]: "^3.0.0" } } });
+    install(paths.repo!, RNGH, "3.5.0");
+    expect(inDir(paths.repo!, () => detect(undefined, [RNGH], 3))).toBe(true);
+  });
+
+  it("is on when the installed version is past that major", () => {
+    const paths = workspace({ repo: { dependencies: { [RNGH]: "^4.0.0" } } });
+    install(paths.repo!, RNGH, "4.0.1");
+    expect(inDir(paths.repo!, () => detect(undefined, [RNGH], 3))).toBe(true);
+  });
+
+  it("is off when the installed version is an earlier major", () => {
+    const paths = workspace({ repo: { dependencies: { [RNGH]: "~2.28.0" } } });
+    install(paths.repo!, RNGH, "2.28.0");
+    expect(inDir(paths.repo!, () => detect(undefined, [RNGH], 3))).toBe(false);
+  });
+
+  it("trusts the installed version over a declared range that says otherwise", () => {
+    const paths = workspace({ repo: { dependencies: { [RNGH]: "^3.0.0" } } });
+    install(paths.repo!, RNGH, "2.28.0");
+    expect(inDir(paths.repo!, () => detect(undefined, [RNGH], 3))).toBe(false);
+  });
+
+  it("finds a version hoisted to the workspace root from a nested package", () => {
+    const paths = workspace({ repo: {}, "repo/apps/mobile": { dependencies: { [RNGH]: "^3.0.0" } } });
+    install(paths.repo!, RNGH, "3.5.0");
+    expect(inDir(paths["repo/apps/mobile"]!, () => detect(undefined, [RNGH], 3))).toBe(true);
+  });
+
+  it("reads the nearest install first, so a nested copy shadows the hoisted one", () => {
+    const paths = workspace({ repo: {}, "repo/apps/mobile": { dependencies: { [RNGH]: "*" } } });
+    install(paths.repo!, RNGH, "3.5.0");
+    install(paths["repo/apps/mobile"]!, RNGH, "2.28.0");
+    expect(inDir(paths["repo/apps/mobile"]!, () => detect(undefined, [RNGH], 3))).toBe(false);
+  });
+
+  it("falls back to the declared range's minimum when nothing is installed", () => {
+    const paths = workspace({ repo: { dependencies: { [RNGH]: "^3.0.0-beta.2" } } });
+    expect(inDir(paths.repo!, () => detect(undefined, [RNGH], 3))).toBe(true);
+  });
+
+  it("is off when the declared range starts below that major", () => {
+    const paths = workspace({ repo: { dependencies: { [RNGH]: ">=2.20.0 <4" } } });
+    expect(inDir(paths.repo!, () => detect(undefined, [RNGH], 3))).toBe(false);
+  });
+
+  it("reads an npm alias range by the version after the last @", () => {
+    const paths = workspace({ repo: { dependencies: { [RNGH]: "npm:@fork/gesture-handler@^3.1.0" } } });
+    expect(inDir(paths.repo!, () => detect(undefined, [RNGH], 3))).toBe(true);
+  });
+
+  it("is off when neither the install nor the range names a version", () => {
+    const paths = workspace({ repo: { dependencies: { [RNGH]: "latest" } } });
+    expect(inDir(paths.repo!, () => detect(undefined, [RNGH], 3))).toBe(false);
+  });
+
+  it("ignores an installed copy of a package no package.json declares", () => {
+    const paths = workspace({ repo: {} });
+    install(paths.repo!, RNGH, "3.5.0");
+    expect(inDir(paths.repo!, () => detect(undefined, [RNGH], 3))).toBe(false);
+  });
+
+  it("lets an explicit true win over an earlier major", () => {
+    const paths = workspace({ repo: { dependencies: { [RNGH]: "^2.28.0" } } });
+    expect(inDir(paths.repo!, () => detect(true, [RNGH], 3))).toBe(true);
+  });
+
+  it("asks nothing of the version when no major is given", () => {
+    const paths = workspace({ repo: { dependencies: { [RNGH]: "latest" } } });
+    expect(inDir(paths.repo!, () => detect(undefined, [RNGH]))).toBe(true);
   });
 });
