@@ -62,6 +62,8 @@ export type ReactNativeRuleId =
   | "@ashstack/reanimated/prefer-lazy-shared-value-initializer"
   | "@ashstack/reanimated/schedule-on-rn-scope"
   | "@ashstack/reanimated/shared-value-usage"
+  | "@ashstack/reanimated/layout-animation-needs-animated-component"
+  | "@ashstack/reanimated/check-finished"
   | "@ashstack/turbo-image/require-resize"
   | "@ashstack/turbo-image/require-cache-policy"
   | "@ashstack/skia/canvas-opaque"
@@ -449,7 +451,7 @@ declare module "oxlint" {
      */
     "@ashstack/reanimated/animated-updater-purity"?: RuleSetting;
     /**
-     * Animate `transform` and `opacity` in `useAnimatedStyle` and `useAnimatedProps`. Layout properties such as `width` or `margin` recalculate layout every frame.
+     * Animate `transform` and `opacity` in `useAnimatedStyle` and `useAnimatedProps`, and `boxShadow` for a shadow. Layout properties such as `width` or `margin` recalculate layout every frame, and `shadowOffset`, `shadowOpacity`, `shadowRadius` and `elevation` each render on one platform only.
      *
      * **Default: on**, when `react-native-reanimated` is a dependency.
      *
@@ -512,6 +514,22 @@ declare module "oxlint" {
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedshared-value-usage
      */
     "@ashstack/reanimated/shared-value-usage"?: RuleSetting;
+    /**
+     * Disallow `entering`, `exiting` or `layout` on a component imported from `react-native`. Only an `Animated.*` component or a `createAnimatedComponent` wrapper runs a layout animation; a plain one ignores the prop.
+     *
+     * **Default: on**, when `react-native-reanimated` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedlayout-animation-needs-animated-component
+     */
+    "@ashstack/reanimated/layout-animation-needs-animated-component"?: RuleSetting;
+    /**
+     * Require an animation completion callback that calls `scheduleOnRN` to read its `finished` argument. The callback also runs when the animation is cancelled, and then `finished` is false.
+     *
+     * **Default: on**, when `react-native-reanimated` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/reanimated.md#ashstackreanimatedcheck-finished
+     */
+    "@ashstack/reanimated/check-finished"?: RuleSetting;
     /**
      * Require `resize` on a TurboImage so the native decoder downsamples before the bitmap reaches memory. A full-resolution decode wastes tens of megabytes and stalls the first frame.
      *

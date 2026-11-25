@@ -2,9 +2,11 @@ import { defineModule } from "../../../lib/module.js";
 import { animatedReactionSafety } from "./animated-reaction-safety.js";
 import { animatedStyleNeedsAnimatedComponent } from "./animated-style-needs-animated-component.js";
 import { animatedUpdaterPurity } from "./animated-updater-purity.js";
+import { checkFinished } from "./check-finished.js";
 import { gpuPropertiesOnly } from "./gpu-properties-only.js";
 import { hoistLayoutAnimationBuilder } from "./hoist-layout-animation-builder.js";
 import { interpolateNeedsClamp } from "./interpolate-needs-clamp.js";
+import { layoutAnimationNeedsAnimatedComponent } from "./layout-animation-needs-animated-component.js";
 import { noReactStateFromContinuousWorklet } from "./no-react-state-from-continuous-worklet.js";
 import { noSharedValueDotValue } from "./no-shared-value-dot-value.js";
 import { preferLazySharedValueInitializer } from "./prefer-lazy-shared-value-initializer.js";
@@ -29,6 +31,8 @@ export default defineModule({
     "prefer-lazy-shared-value-initializer": preferLazySharedValueInitializer,
     "schedule-on-rn-scope": scheduleOnRnScope,
     "shared-value-usage": sharedValueUsage,
+    "layout-animation-needs-animated-component": layoutAnimationNeedsAnimatedComponent,
+    "check-finished": checkFinished,
   },
   restrictedImports: {
     paths: [

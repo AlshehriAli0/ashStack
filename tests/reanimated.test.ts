@@ -997,6 +997,18 @@ export const useCard = (opacity) =>
   "gpu-properties-only": {
     valid: [
       {
+        name: "boxShadow is the cross-platform shadow to animate",
+        code: `import { useAnimatedStyle } from "react-native-reanimated";
+export const useLift = (lift) => useAnimatedStyle(() => ({ boxShadow: \`0 \${lift.get()}px 8px black\` }));
+`,
+      },
+      {
+        name: "a shadow in a static style outside the updater",
+        code: `import { StyleSheet } from "react-native";
+export const styles = StyleSheet.create({ card: { shadowOpacity: 0.2, elevation: 2 } });
+`,
+      },
+      {
         name: "a destructuring pattern key is not a style key",
         code: `import { useAnimatedStyle } from "react-native-reanimated";
 export const useBar = (props) =>
@@ -1203,6 +1215,30 @@ export const useBar = (progress) =>
   });
 `,
         errors: [{ message: "relayouts every frame", line: 4, column: 37 }],
+      },
+      {
+        name: "each platform-only shadow property points at boxShadow; shadowColor also tints Android's",
+        code: `import { useAnimatedStyle } from "react-native-reanimated";
+export const useLift = (lift) =>
+  useAnimatedStyle(() => ({
+    shadowOffset: { width: 0, height: lift.get() },
+    shadowOpacity: lift.get(),
+    shadowRadius: lift.get() * 4,
+    shadowColor: "black",
+    elevation: lift.get() * 8,
+  }));
+`,
+        errors: [
+          {
+            message:
+              "Animate `boxShadow` instead, which renders on both platforms. `shadowOffset`, `shadowOpacity` and `shadowRadius` render on iOS only, and `elevation` on Android only.",
+            line: 4,
+            column: 5,
+          },
+          { message: "Animate `boxShadow` instead", line: 5 },
+          { message: "Animate `boxShadow` instead", line: 6 },
+          { message: "Animate `boxShadow` instead", line: 8 },
+        ],
       },
     ],
   },
@@ -2743,6 +2779,186 @@ export const Card = () => {
           { line: 6, column: 29 },
           { line: 7, column: 14 },
         ],
+      },
+    ],
+  },
+
+  "layout-animation-needs-animated-component": {
+    valid: [
+      {
+        name: "the docs' Animated.View",
+        code: `import Animated, { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
+export const Card = () => <Animated.View entering={FadeIn} exiting={FadeOut} layout={LinearTransition} />;
+`,
+      },
+      {
+        name: "a createAnimatedComponent wrapper",
+        code: `import { Pressable } from "react-native";
+import { createAnimatedComponent, FadeIn } from "react-native-reanimated";
+const AnimatedPressable = createAnimatedComponent(Pressable);
+export const Card = () => <AnimatedPressable entering={FadeIn} />;
+`,
+      },
+      {
+        name: "a component that is not React Native's",
+        code: `import { View } from "@/components/ui";
+import { FadeIn } from "react-native-reanimated";
+export const Card = () => <View entering={FadeIn} />;
+`,
+      },
+      {
+        name: "other props on a React Native View",
+        code: `import { View } from "react-native";
+export const Card = ({ onLayout }) => <View onLayout={onLayout} collapsable={false} />;
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "entering on a React Native View",
+        code: `import { View } from "react-native";
+import { FadeIn } from "react-native-reanimated";
+export const Card = () => <View entering={FadeIn} />;
+`,
+        errors: [
+          {
+            message: "Render this as `Animated.View`. A plain `View` ignores `entering`, so nothing animates.",
+            line: 3,
+            column: 33,
+          },
+        ],
+      },
+      {
+        name: "an aliased Text names the component, not the alias",
+        code: `import { Text as RNText } from "react-native";
+import { FadeOut } from "react-native-reanimated";
+export const Label = () => <RNText exiting={FadeOut} />;
+`,
+        errors: [{ message: "Render this as `Animated.Text`. A plain `Text` ignores `exiting`" }],
+      },
+      {
+        name: "a component with no Animated version points at createAnimatedComponent",
+        code: `import { Pressable } from "react-native";
+import { LinearTransition } from "react-native-reanimated";
+export const Row = () => <Pressable layout={LinearTransition} />;
+`,
+        errors: [
+          {
+            message:
+              "Render `createAnimatedComponent(Pressable)`, created once at module scope. A plain `Pressable` ignores `layout`",
+          },
+        ],
+      },
+    ],
+  },
+
+  "check-finished": {
+    valid: [
+      {
+        name: "the docs' dismiss: guarded by if (finished)",
+        code: `import { withTiming } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+export const dismiss = (translateX, onDismiss) => {
+  translateX.set(
+    withTiming(400, { duration: 200 }, finished => {
+      if (finished) scheduleOnRN(onDismiss);
+    })
+  );
+};
+`,
+      },
+      {
+        name: "an early return on !finished",
+        code: `import { withSpring } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+export const settle = (offset, onSettled) =>
+  offset.set(
+    withSpring(0, {}, finished => {
+      if (!finished) return;
+      scheduleOnRN(onSettled);
+    })
+  );
+`,
+      },
+      {
+        name: "finished handed on to the React Native side",
+        code: `import { withDecay } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+export const fling = (x, velocity, report) => x.set(withDecay({ velocity }, finished => scheduleOnRN(report, finished)));
+`,
+      },
+      {
+        name: "a callback that stays on the UI thread",
+        code: `import { withTiming } from "react-native-reanimated";
+export const pulse = (scale, opacity) => scale.set(withTiming(1, {}, () => opacity.set(1)));
+`,
+      },
+      {
+        name: "withTiming's config is not the callback",
+        code: `import { withTiming } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+export const fade = (opacity, done) => opacity.set(withTiming(0, { duration: 200 }));
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "a withTiming callback that ignores finished",
+        code: `import { withTiming } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+export const dismiss = (translateX, onDismiss) =>
+  translateX.set(withTiming(400, { duration: 200 }, () => scheduleOnRN(onDismiss)));
+`,
+        errors: [
+          {
+            message:
+              "Take `finished` and call `scheduleOnRN` only `if (finished)`. The callback also runs when the animation is cancelled or interrupted, with `finished` false, so this fires for an animation that never landed.",
+            line: 4,
+            column: 53,
+          },
+        ],
+      },
+      {
+        name: "withDecay's callback is its second argument",
+        code: `import { withDecay } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+export const fling = (x, velocity, onStop) =>
+  x.set(
+    withDecay({ velocity }, finished => {
+      scheduleOnRN(onStop);
+    })
+  );
+`,
+        errors: [{ message: "Take `finished`", line: 5, column: 29 }],
+      },
+      {
+        name: "withRepeat's callback is its fourth argument",
+        code: `import { withRepeat, withTiming } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+export const pulse = (scale, onDone) => scale.set(withRepeat(withTiming(1.2), 3, true, () => scheduleOnRN(onDone)));
+`,
+        errors: [{ message: "Take `finished`", line: 3, column: 88 }],
+      },
+      {
+        name: "a layout animation's withCallback",
+        code: `import { FadeOut } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+export const exit = (onGone) => FadeOut.withCallback(() => scheduleOnRN(onGone));
+`,
+        errors: [{ message: "Take `finished`" }],
+      },
+      {
+        name: "a withSpring callback as a function expression",
+        code: `import { withSpring } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+export const open = (progress, onOpen) =>
+  progress.set(
+    withSpring(1, {}, function () {
+      scheduleOnRN(onOpen);
+    })
+  );
+`,
+        errors: 1,
       },
     ],
   },
