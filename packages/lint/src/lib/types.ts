@@ -40,6 +40,8 @@ export type RuleBody = (Pick<CreateRule, "create"> | { createOnce: CreateOnceRul
 export interface RestrictedPath {
   name: string;
   importNames?: string[];
+  /** On a whole-module ban: the names still allowed. */
+  allowImportNames?: string[];
   message: string;
 }
 

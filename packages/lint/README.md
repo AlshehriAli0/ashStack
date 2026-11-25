@@ -106,7 +106,9 @@ reactNative({
 
 `allow` lifts bans in some files only: the listed names from `from`, or every
 ban on `from` when `importNames` is left out. It lifts path bans, not
-`patterns`.
+`patterns`. Each distinct `files` list becomes one `overrides` entry that
+replaces the setting for those files, so put every lift for a folder under the
+same `files`; where two different globs match one file, the later one wins.
 
 ## Opt-in rules
 

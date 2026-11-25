@@ -425,6 +425,36 @@ describe("module toggles", () => {
     expect(restricted(await codesFrom(reactNative(ALL_ON), 'import { FlatList } from "react-native";\n'))).toBe(1);
   });
 
+  const lodash = { name: "lodash", message: "Use the standard library." };
+  const restricted = (codes: string[]) => codes.filter(code => code === "eslint(no-restricted-imports)").length;
+
+  it("lifts names from a whole-module ban", async () => {
+    const partial = reactNative({
+      ...ALL_ON,
+      restrictedImports: {
+        paths: [lodash],
+        allow: [{ files: ["**/case.tsx"], from: "lodash", importNames: ["debounce"] }],
+      },
+    });
+    expect(restricted(await codesFrom(partial, 'import { debounce } from "lodash";\n'))).toBe(0);
+    expect(restricted(await codesFrom(partial, 'import { chunk } from "lodash";\n'))).toBe(1);
+  });
+
+  it("combines allowances on the same files", async () => {
+    const both = reactNative({
+      ...ALL_ON,
+      restrictedImports: {
+        paths: [lodash],
+        allow: [
+          { files: ["**/case.tsx"], from: "react-native", importNames: ["FlatList"] },
+          { files: ["**/case.tsx"], from: "lodash" },
+        ],
+      },
+    });
+    const code = 'import { FlatList } from "react-native";\nimport { chunk } from "lodash";\n';
+    expect(restricted(await codesFrom(both, code))).toBe(0);
+  });
+
   it("lifts every ban on a module when the allowance names none", () => {
     const config = reactNative({
       ...ALL_ON,
