@@ -239,6 +239,21 @@ export const Sheet = ({ pan, children }) => (
 `,
       },
       {
+        name: "an aliased root view, a level down",
+        code: `import { Modal, View } from "react-native";
+import { GestureHandlerRootView as Root, Touchable } from "react-native-gesture-handler";
+export const Confirm = ({ onConfirm }) => (
+  <Modal>
+    <Root style={{ flex: 1 }}>
+      <View>
+        <Touchable onPress={onConfirm} />
+      </View>
+    </Root>
+  </Modal>
+);
+`,
+      },
+      {
         name: "a modal with no Gesture Handler component in it",
         code: `import { Modal, Pressable, Text } from "react-native";
 export const Notice = ({ onClose }) => (
@@ -295,6 +310,31 @@ export const Sheet = ({ pan, children }) => (
             column: 4,
           },
         ],
+      },
+      {
+        name: "a root view beside the gesture instead of around it",
+        code: `import { Modal } from "react-native";
+import { GestureHandlerRootView as Root, RectButton } from "react-native-gesture-handler";
+export const Sheet = ({ onClose }) => (
+  <Modal>
+    <Root style={{ flex: 1 }} />
+    <RectButton onPress={onClose} />
+  </Modal>
+);
+`,
+        errors: [{ line: 4, column: 4 }],
+      },
+      {
+        name: "a Gesture Handler component from a subpath",
+        code: `import { Modal } from "react-native";
+import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeable";
+export const Row = ({ children }) => (
+  <Modal>
+    <ReanimatedSwipeable>{children}</ReanimatedSwipeable>
+  </Modal>
+);
+`,
+        errors: 1,
       },
       {
         name: "an aliased Gesture Handler Pressable nested deeper",

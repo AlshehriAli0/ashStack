@@ -565,7 +565,7 @@ declare module "oxlint" {
      */
     "@ashstack/skia/canvas-opaque"?: RuleSetting;
     /**
-     * Require a `GestureHandlerRootView` inside a React Native `Modal` whose content uses a `GestureDetector` or a Gesture Handler `Touchable` or `Pressable`. A `Modal` renders outside the app's root view, so those gestures never fire without one.
+     * Require a `GestureHandlerRootView` around every Gesture Handler component inside a React Native `Modal`. A `Modal` renders outside the app's root view, so those gestures never fire without one.
      *
      * **Default: on**, when `react-native-gesture-handler` 3 or later is a dependency.
      *
