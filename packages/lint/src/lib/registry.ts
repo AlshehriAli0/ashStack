@@ -529,7 +529,9 @@ export const reactNativeRegistry: ModuleMeta[] = [
         },
       ],
     },
-    rules: {},
+    rules: {
+      "modal-needs-root-view": {},
+    },
   },
   {
     meta: { name: "@ashstack/worklets" },

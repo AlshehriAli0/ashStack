@@ -3,7 +3,7 @@ import { describe, expect, it } from "bun:test";
 import type { RestrictedImports } from "../packages/lint/dist/lib/types.js";
 import { banGroups, reactNative } from "../packages/lint/dist/react-native/index.js";
 import gestureHandler from "../packages/lint/dist/react-native/rules/gesture-handler/index.js";
-import { banTests } from "./harness.js";
+import { banTests, moduleTests } from "./harness.js";
 import { inDir, install, workspace } from "./workspace.js";
 
 const RNGH = "react-native-gesture-handler";
@@ -220,4 +220,96 @@ banTests("react-native Pressable ban with react-native-gesture-handler", pressab
       ],
     },
   ],
+});
+
+moduleTests(gestureHandler, {
+  "modal-needs-root-view": {
+    valid: [
+      {
+        name: "the gestures doc's fix: a root view inside the modal",
+        code: `import { Modal } from "react-native";
+import { GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
+export const Sheet = ({ pan, children }) => (
+  <Modal transparent>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureDetector gesture={pan}>{children}</GestureDetector>
+    </GestureHandlerRootView>
+  </Modal>
+);
+`,
+      },
+      {
+        name: "a modal with no Gesture Handler component in it",
+        code: `import { Modal, Pressable, Text } from "react-native";
+export const Notice = ({ onClose }) => (
+  <Modal>
+    <Pressable onPress={onClose}>
+      <Text>Close</Text>
+    </Pressable>
+  </Modal>
+);
+`,
+      },
+      {
+        name: "a modal that is not React Native's",
+        code: `import { Modal } from "@/components/ui";
+import { Touchable } from "react-native-gesture-handler";
+export const Confirm = ({ onConfirm }) => (
+  <Modal>
+    <Touchable onPress={onConfirm} />
+  </Modal>
+);
+`,
+      },
+      {
+        name: "a gesture next to the modal, not inside it",
+        code: `import { Modal, View } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
+export const Screen = ({ pan }) => (
+  <View>
+    <GestureDetector gesture={pan}>
+      <View />
+    </GestureDetector>
+    <Modal />
+  </View>
+);
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "a GestureDetector straight inside a Modal",
+        code: `import { Modal } from "react-native";
+import { GestureDetector } from "react-native-gesture-handler";
+export const Sheet = ({ pan, children }) => (
+  <Modal transparent>
+    <GestureDetector gesture={pan}>{children}</GestureDetector>
+  </Modal>
+);
+`,
+        errors: [
+          {
+            message:
+              "Wrap this `Modal`'s content in `GestureHandlerRootView` with `style={{ flex: 1 }}`. A `Modal` renders outside the app's root view, so the gestures inside it never fire without one.",
+            line: 4,
+            column: 4,
+          },
+        ],
+      },
+      {
+        name: "an aliased Gesture Handler Pressable nested deeper",
+        code: `import { Modal as RNModal, View } from "react-native";
+import { Pressable as GHPressable } from "react-native-gesture-handler";
+export const Picker = ({ onPick }) => (
+  <RNModal>
+    <View>
+      <GHPressable onPress={onPick} />
+    </View>
+  </RNModal>
+);
+`,
+        errors: [{ line: 4, column: 4 }],
+      },
+    ],
+  },
 });

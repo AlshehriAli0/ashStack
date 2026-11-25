@@ -6,6 +6,7 @@
 
 _auto-enabled when `react-native-gesture-handler` 3 or later is a dependency._
 
+- [`modal-needs-root-view`](#ashstackgesture-handlermodal-needs-root-view)
 
 **Import bans that ship with this module**
 
@@ -20,3 +21,39 @@ _auto-enabled when `react-native-gesture-handler` 3 or later is a dependency._
 - `GestureHandlerGestureEvent`, `GestureHandlerStateChangeEvent`, `PanGestureHandlerGestureEvent`, `PanGestureHandlerStateChangeEvent`, `PanGestureHandlerProps`, `PanGestureHandlerProperties`, `TapGestureHandlerGestureEvent`, `TapGestureHandlerStateChangeEvent`, `TapGestureHandlerProps`, `TapGestureHandlerProperties`, `LongPressGestureHandlerGestureEvent`, `LongPressGestureHandlerStateChangeEvent`, `LongPressGestureHandlerProps`, `LongPressGestureHandlerProperties`, `PinchGestureHandlerGestureEvent`, `PinchGestureHandlerStateChangeEvent`, `PinchGestureHandlerProps`, `PinchGestureHandlerProperties`, `RotationGestureHandlerGestureEvent`, `RotationGestureHandlerStateChangeEvent`, `RotationGestureHandlerProps`, `RotationGestureHandlerProperties`, `FlingGestureHandlerGestureEvent`, `FlingGestureHandlerStateChangeEvent`, `FlingGestureHandlerProps`, `FlingGestureHandlerProperties`, `ForceTouchGestureHandlerGestureEvent`, `ForceTouchGestureHandlerStateChangeEvent`, `ForceTouchGestureHandlerProps`, `ForceTouchGestureHandlerProperties`, `NativeViewGestureHandlerGestureEvent`, `NativeViewGestureHandlerStateChangeEvent`, `NativeViewGestureHandlerProps`, `NativeViewGestureHandlerProperties` from `react-native-gesture-handler`
 - `LegacyExclusiveGesture`, `LegacyRaceGesture`, `LegacySimultaneousGesture` from `react-native-gesture-handler`
 - `LegacyForceTouchGesture` from `react-native-gesture-handler`
+
+## `@ashstack/gesture-handler/modal-needs-root-view`
+
+Require a `GestureHandlerRootView` inside a React Native `Modal` whose content uses a `GestureDetector` or a Gesture Handler `Touchable` or `Pressable`. A `Modal` renders outside the app's root view, so those gestures never fire without one.
+
+**Default: on**, when `react-native-gesture-handler` 3 or later is a dependency.
+
+**Fails**
+
+```tsx
+import type { ReactNode } from "react";
+import { Modal } from "react-native";
+import { GestureDetector, type PanGesture } from "react-native-gesture-handler";
+
+export const Sheet = ({ pan, children }: { pan: PanGesture; children: ReactNode }) => (
+  <Modal transparent>
+    <GestureDetector gesture={pan}>{children}</GestureDetector>
+  </Modal>
+);
+```
+
+**Passes**
+
+```tsx
+import type { ReactNode } from "react";
+import { Modal } from "react-native";
+import { GestureDetector, GestureHandlerRootView, type PanGesture } from "react-native-gesture-handler";
+
+export const Sheet = ({ pan, children }: { pan: PanGesture; children: ReactNode }) => (
+  <Modal transparent>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureDetector gesture={pan}>{children}</GestureDetector>
+    </GestureHandlerRootView>
+  </Modal>
+);
+```
