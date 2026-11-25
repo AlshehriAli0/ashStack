@@ -308,7 +308,7 @@ declare module "oxlint" {
      */
     "@ashstack/legend-list/no-remount-key"?: RuleSetting;
     /**
-     * Disallow inline object and array literals on props nested inside `renderItem`. A row whose props take a new identity every render can never be skipped.
+     * Disallow inline object literals, array literals and functions on props nested inside `renderItem`. A row whose props take a new identity every render can never be skipped.
      *
      * **Default: on**, when `@legendapp/list` is a dependency.
      *
