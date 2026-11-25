@@ -1,5 +1,26 @@
 # @ashstack/lint
 
+## 0.13.0 (2026-11-25)
+
+### Features
+
+- let a project add import bans without wiping the shipped ones ([`4b70072`](https://github.com/AlshehriAli0/ashStack/commit/4b70072))
+- require a GestureHandlerRootView inside a Modal that uses gestures ([`cbf6f28`](https://github.com/AlshehriAli0/ashStack/commit/cbf6f28))
+- report inline functions on renderItem row props ([`a8f790a`](https://github.com/AlshehriAli0/ashStack/commit/a8f790a))
+- React 19 and compiler rules: lazy, use no memo, Context.Provider, router objects, effect cleanup ([`26b2f0e`](https://github.com/AlshehriAli0/ashStack/commit/26b2f0e))
+- reanimated layout animations on plain components, platform shadows, unchecked finished ([`84c44e1`](https://github.com/AlshehriAli0/ashStack/commit/84c44e1))
+- legend-state collection reads, dropped observers, and an observer ban ([`499c5ee`](https://github.com/AlshehriAli0/ashStack/commit/499c5ee))
+- four more query rules: key coverage, spreads, optimistic updates, signals ([`324f955`](https://github.com/AlshehriAli0/ashStack/commit/324f955))
+
+### Bug Fixes
+
+- combine allowances on the same files and lift names from whole-module bans ([`18982b8`](https://github.com/AlshehriAli0/ashStack/commit/18982b8))
+- require the root view around each gesture in a Modal, from any Gesture Handler import ([`ad0ce74`](https://github.com/AlshehriAli0/ashStack/commit/ad0ce74))
+- stop counting a returned interval id as effect cleanup; drop the lazy exemption ([`7dc4bd3`](https://github.com/AlshehriAli0/ashStack/commit/7dc4bd3))
+- cover withRepeat and withCallback in check-finished; drop shadowColor ([`08cee2d`](https://github.com/AlshehriAli0/ashStack/commit/08cee2d))
+- treat useWhen and useWhenReady predicates as tracking contexts ([`591fe49`](https://github.com/AlshehriAli0/ashStack/commit/591fe49))
+- tighten the four query rules against false negatives and v5 typing ([`7306745`](https://github.com/AlshehriAli0/ashStack/commit/7306745))
+
 ## 0.12.0 (2026-11-25)
 
 ### Features
