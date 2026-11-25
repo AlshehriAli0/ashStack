@@ -62,7 +62,11 @@ export type ReactNativeRuleId =
   | "@ashstack/reanimated/shared-value-usage"
   | "@ashstack/turbo-image/require-resize"
   | "@ashstack/turbo-image/require-cache-policy"
-  | "@ashstack/skia/canvas-opaque";
+  | "@ashstack/skia/canvas-opaque"
+  | "@ashstack/worklets/no-runtime-in-render"
+  | "@ashstack/worklets/no-inline-worklet-schedule"
+  | "@ashstack/worklets/no-sync-runtime-call"
+  | "@ashstack/worklets/no-js-timer-schedule";
 
 declare module "oxlint" {
   interface DummyRuleMap {
@@ -514,5 +518,37 @@ declare module "oxlint" {
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/skia.md#ashstackskiacanvas-opaque
      */
     "@ashstack/skia/canvas-opaque"?: RuleSetting;
+    /**
+     * Disallow `createWorkletRuntime` inside a component or hook. Each call starts a new JavaScript runtime and, with the default queue, a new thread; create it once at module scope and reuse it.
+     *
+     * **Default: on**, when `react-native-worklets` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/worklets.md#ashstackworkletsno-runtime-in-render
+     */
+    "@ashstack/worklets/no-runtime-in-render"?: RuleSetting;
+    /**
+     * Disallow an inline function as the worklet of `scheduleOnUI`, `scheduleOnRuntime`, `runOnUIAsync`, `runOnUISync`, `runOnRuntimeAsync` or `runOnRuntimeSync` inside a function. The serialized copy is cached by function identity, so a new function object is serialized again on every call. Module scope runs once and is allowed.
+     *
+     * **Default: on**, when `react-native-worklets` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/worklets.md#ashstackworkletsno-inline-worklet-schedule
+     */
+    "@ashstack/worklets/no-inline-worklet-schedule"?: RuleSetting;
+    /**
+     * Disallow `runOnUISync` and `runOnRuntimeSync`. They block the calling thread until the worklet finishes; `runOnUIAsync` and `runOnRuntimeAsync` return the same value as a promise.
+     *
+     * **Default: on**, when `react-native-worklets` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/worklets.md#ashstackworkletsno-sync-runtime-call
+     */
+    "@ashstack/worklets/no-sync-runtime-call"?: RuleSetting;
+    /**
+     * Disallow a `setInterval` or `setTimeout` callback that calls `scheduleOnUI` or `scheduleOnRuntime`. Each tick sends a new job to the other runtime; start the timer on the target runtime instead.
+     *
+     * **Default: on**, when `react-native-worklets` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/worklets.md#ashstackworkletsno-js-timer-schedule
+     */
+    "@ashstack/worklets/no-js-timer-schedule"?: RuleSetting;
   }
 }

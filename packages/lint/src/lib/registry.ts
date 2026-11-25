@@ -512,4 +512,16 @@ export const reactNativeRegistry: ModuleMeta[] = [
     },
     rules: {},
   },
+  {
+    meta: { name: "@ashstack/worklets" },
+    url: at("../react-native/rules/worklets/index.js"),
+    option: "worklets",
+    packages: ["react-native-worklets"],
+    rules: {
+      "no-runtime-in-render": {},
+      "no-inline-worklet-schedule": {},
+      "no-sync-runtime-call": {},
+      "no-js-timer-schedule": {},
+    },
+  },
 ];

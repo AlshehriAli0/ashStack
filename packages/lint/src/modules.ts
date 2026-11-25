@@ -9,6 +9,7 @@ import reanimatedModule from "./react-native/rules/reanimated/index.js";
 import skiaModule from "./react-native/rules/skia/index.js";
 import turboImageModule from "./react-native/rules/turbo-image/index.js";
 import unistylesModule from "./react-native/rules/unistyles/index.js";
+import workletsModule from "./react-native/rules/worklets/index.js";
 import i18nModule from "./react/rules/i18n/index.js";
 import queryModule from "./react/rules/query/index.js";
 import reactWebModule from "./react/rules/react/index.js";
@@ -48,4 +49,5 @@ export const reactNativeModules = [
   skiaModule,
   keyboardModule,
   gestureHandlerModule,
+  workletsModule,
 ];
