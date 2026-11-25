@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type { ModuleManifest } from "../packages/lint/dist/lib/types.js";
+import type { ModuleManifest, RestrictedImports } from "../packages/lint/dist/lib/types.js";
 
 const OXLINT = join(import.meta.dir, "..", "node_modules", ".bin", "oxlint");
 const CATEGORIES_OFF = {
@@ -66,6 +66,8 @@ interface Span {
 
 interface Diagnostic {
   message: string;
+  /** Where `no-restricted-imports` puts the configured message. */
+  help?: string;
   code: string;
   filename: string;
   labels?: { span: Span }[];
@@ -275,5 +277,60 @@ export const moduleTests = (module: ModuleManifest, byRule: Record<string, RuleC
         });
       });
     }
+  });
+};
+
+const RESTRICTED_IMPORTS_CODE = "eslint(no-restricted-imports)";
+
+/**
+ * Run import-ban cases through real oxlint's `no-restricted-imports`, set to
+ * exactly `bans`: what a module or ban group ships, with nothing else on. One
+ * run lints every case, each in its own file.
+ */
+export const banTests = (title: string, bans: RestrictedImports, cases: RuleCases): void => {
+  const root = mkdtempSync(join(tmpdir(), "ashstack-bans-"));
+  const pathOf = (kind: "valid" | "invalid", index: number): string => join(kind, String(index), "case.tsx");
+  const write = (kind: "valid" | "invalid", index: number, input: string | ValidCase): void => {
+    const path = join(root, pathOf(kind, index));
+    mkdirSync(dirname(path), { recursive: true });
+    writeFileSync(path, asCase(input).code);
+  };
+  cases.valid.forEach((input, index) => write("valid", index, input));
+  cases.invalid.forEach((input, index) => write("invalid", index, input));
+
+  const config = { plugins: [], categories: CATEGORIES_OFF, rules: { "no-restricted-imports": ["error", bans] } };
+  const linted = runOxlint(root, config)
+    .then(diagnostics => diagnostics.filter(diagnostic => diagnostic.code === RESTRICTED_IMPORTS_CODE))
+    .finally(() => rmSync(root, { recursive: true, force: true }));
+  const firedOn = async (path: string): Promise<Diagnostic[]> =>
+    (await linted)
+      .filter(diagnostic => diagnostic.filename === path)
+      .sort((a, b) => (spanOf(a)?.offset ?? 0) - (spanOf(b)?.offset ?? 0));
+  const text = (diagnostic: Diagnostic): string => `${diagnostic.message} ${diagnostic.help ?? ""}`;
+  const shown = (diagnostic: Diagnostic): string =>
+    `${spanOf(diagnostic)?.line}:${spanOf(diagnostic)?.column} ${text(diagnostic)}`;
+
+  describe(title, () => {
+    cases.valid.forEach((input, index) => {
+      it(`valid: ${label(asCase(input))}`, async () => {
+        expect((await firedOn(pathOf("valid", index))).map(shown)).toEqual([]);
+      });
+    });
+    cases.invalid.forEach((testCase, index) => {
+      it(`invalid: ${label(testCase)}`, async () => {
+        const fired = await firedOn(pathOf("invalid", index));
+        const want = testCase.errors;
+        expect(fired.map(shown)).toHaveLength(typeof want === "number" ? want : want.length);
+        if (typeof want === "number") return;
+        want.forEach((expected, position) => {
+          const got = fired[position]!;
+          if (expected.message !== undefined && !messageMatches(text(got), expected.message)) {
+            throw new Error(`error ${position}: ${JSON.stringify(text(got))} does not match ${expected.message}`);
+          }
+          if (expected.line !== undefined) expect(spanOf(got)?.line).toBe(expected.line);
+          if (expected.column !== undefined) expect(spanOf(got)?.column).toBe(expected.column);
+        });
+      });
+    });
   });
 };

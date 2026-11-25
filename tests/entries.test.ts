@@ -89,6 +89,7 @@ const ALL_ON: Required<ReactNativeOptions> = {
   turboImage: true,
   skia: true,
   keyboard: true,
+  gestureHandler: true,
 };
 const ALL_OFF = Object.fromEntries(Object.keys(ALL_ON).map(key => [key, false]));
 

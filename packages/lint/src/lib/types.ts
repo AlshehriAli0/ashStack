@@ -144,6 +144,8 @@ export type ReactNativeOptions = ReactOptions & {
   skia?: boolean;
   /** [`@ashstack/keyboard` import bans](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/keyboard.md#ashstackkeyboard) — `react-native-keyboard-controller` */
   keyboard?: boolean;
+  /** [`@ashstack/gesture-handler` import bans](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/gesture-handler.md#ashstackgesture-handler) on the Gesture Handler 2 API — `react-native-gesture-handler` 3 or later */
+  gestureHandler?: boolean;
 };
 
 /** The config object an entry returns: oxlint's own shape, so `defineConfig({ extends: [core()] })` typechecks. */

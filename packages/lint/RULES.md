@@ -44,3 +44,4 @@ Match the diagnostic prefix, or use the activation column when configuring a lib
 | [`@ashstack/turbo-image`](rules/turbo-image.md) | `react-native()` | 2 | auto-enabled when `react-native-turbo-image` is a dependency |
 | [`@ashstack/skia`](rules/skia.md) | `react-native()` | 1 | auto-enabled when `@shopify/react-native-skia` is a dependency |
 | [`@ashstack/keyboard`](rules/keyboard.md) | `react-native()` | Import bans only | auto-enabled when `react-native-keyboard-controller` is a dependency |
+| [`@ashstack/gesture-handler`](rules/gesture-handler.md) | `react-native()` | Import bans only | auto-enabled when `react-native-gesture-handler` 3 or later is a dependency |
