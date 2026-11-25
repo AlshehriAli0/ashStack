@@ -13,7 +13,13 @@ import {
 } from "../packages/lint/dist/index.js";
 import { EFFECT_NAMESPACE } from "../packages/lint/dist/lib/effect-plugin.js";
 import { shortName } from "../packages/lint/dist/lib/module.js";
-import type { ModuleManifest, OxlintConfig, ReactNativeOptions, Rule } from "../packages/lint/dist/lib/types.js";
+import type {
+  ModuleManifest,
+  OxlintConfig,
+  ReactNativeOptions,
+  RestrictedImports,
+  Rule,
+} from "../packages/lint/dist/lib/types.js";
 import { codesFrom } from "./harness.js";
 
 const MAX_LINES_CODE = "@ashstack/core(max-lines)";
@@ -73,7 +79,8 @@ ${keys}
 const ALL_MODULES = [...coreModules, ...reactModules, ...reactNativeModules];
 const FIXTURES = join(import.meta.dir, "..", "packages", "lint", "fixtures");
 
-const ALL_ON: Required<ReactNativeOptions> = {
+/** Every module toggle on. `restrictedImports` is a value, not a toggle. */
+const ALL_ON: Required<Omit<ReactNativeOptions, "restrictedImports">> = {
   reactCompiler: true,
   zod: true,
   query: true,
@@ -92,6 +99,9 @@ const ALL_ON: Required<ReactNativeOptions> = {
   gestureHandler: true,
   worklets: true,
 };
+const bansOf = (config: OxlintConfig) =>
+  (config.rules!["no-restricted-imports"] as [string, Required<RestrictedImports>])[1];
+
 const ALL_OFF = Object.fromEntries(Object.keys(ALL_ON).map(key => [key, false]));
 
 const ruleIds = (config: OxlintConfig): string[] => Object.keys(config.rules ?? {});
@@ -384,6 +394,76 @@ describe("module toggles", () => {
     }
     expect(enabledCodes).toContain("@ashstack/stylex(require-tokens)");
     expect(enabledCodes).toContain("@stylexjs(valid-styles)");
+  });
+
+  it("adds a project's own import bans to the shipped ones instead of replacing them", () => {
+    const shipped = bansOf(reactNative(ALL_ON));
+    const added = bansOf(
+      reactNative({
+        ...ALL_ON,
+        restrictedImports: {
+          paths: [{ name: "lodash", message: "Use the standard library." }],
+          patterns: [{ group: ["@/legacy/*"], message: "Import from the new module." }],
+        },
+      })
+    );
+    expect(added.paths).toEqual([...shipped.paths, { name: "lodash", message: "Use the standard library." }]);
+    expect(added.patterns).toEqual([
+      ...shipped.patterns,
+      { group: ["@/legacy/*"], message: "Import from the new module." },
+    ]);
+  });
+
+  it("lifts only the allowed names, only in the allowed files", async () => {
+    const config = reactNative({
+      ...ALL_ON,
+      restrictedImports: { allow: [{ files: ["**/case.tsx"], from: "react-native", importNames: ["FlatList"] }] },
+    });
+    const restricted = (codes: string[]) => codes.filter(code => code === "eslint(no-restricted-imports)").length;
+    expect(restricted(await codesFrom(config, 'import { FlatList } from "react-native";\n'))).toBe(0);
+    expect(restricted(await codesFrom(config, 'import { FlatList, SectionList } from "react-native";\n'))).toBe(1);
+    expect(restricted(await codesFrom(reactNative(ALL_ON), 'import { FlatList } from "react-native";\n'))).toBe(1);
+  });
+
+  const lodash = { name: "lodash", message: "Use the standard library." };
+  const restricted = (codes: string[]) => codes.filter(code => code === "eslint(no-restricted-imports)").length;
+
+  it("lifts names from a whole-module ban", async () => {
+    const partial = reactNative({
+      ...ALL_ON,
+      restrictedImports: {
+        paths: [lodash],
+        allow: [{ files: ["**/case.tsx"], from: "lodash", importNames: ["debounce"] }],
+      },
+    });
+    expect(restricted(await codesFrom(partial, 'import { debounce } from "lodash";\n'))).toBe(0);
+    expect(restricted(await codesFrom(partial, 'import { chunk } from "lodash";\n'))).toBe(1);
+  });
+
+  it("combines allowances on the same files", async () => {
+    const both = reactNative({
+      ...ALL_ON,
+      restrictedImports: {
+        paths: [lodash],
+        allow: [
+          { files: ["**/case.tsx"], from: "react-native", importNames: ["FlatList"] },
+          { files: ["**/case.tsx"], from: "lodash" },
+        ],
+      },
+    });
+    const code = 'import { FlatList } from "react-native";\nimport { chunk } from "lodash";\n';
+    expect(restricted(await codesFrom(both, code))).toBe(0);
+  });
+
+  it("lifts every ban on a module when the allowance names none", () => {
+    const config = reactNative({
+      ...ALL_ON,
+      restrictedImports: { allow: [{ files: ["src/host/**"], from: "react-native" }] },
+    });
+    const override = config.overrides?.find(entry => entry.files.includes("src/host/**"));
+    const [, lifted] = override!.rules!["no-restricted-imports"] as [string, { paths: { name: string }[] }];
+    expect(lifted.paths.some(path => path.name === "react-native")).toBe(false);
+    expect(bansOf(config).paths.some(path => path.name === "react-native")).toBe(true);
   });
 
   it("drops a module's import bans along with its rules", () => {

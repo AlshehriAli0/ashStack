@@ -87,6 +87,29 @@ reactNative({ unistyles: false, i18n: true });
 
 Import bans follow detection only; disable one by rule name.
 
+## Adding your own import bans
+
+`reactNative()` ships its import bans as one `no-restricted-imports` setting.
+A `no-restricted-imports` entry in your own `rules` block replaces that
+setting rather than adding to it, so every shipped ban silently stops. Pass
+your bans to the entry instead, and they join the shipped ones:
+
+```ts
+reactNative({
+  restrictedImports: {
+    paths: [{ name: "lodash", message: "Use the standard library." }],
+    patterns: [{ group: ["@/legacy/*"], message: "Import from `@/features` instead." }],
+    allow: [{ files: ["src/native-host/**"], from: "react-native", importNames: ["Pressable"] }],
+  },
+});
+```
+
+`allow` lifts bans in some files only: the listed names from `from`, or every
+ban on `from` when `importNames` is left out. It lifts path bans, not
+`patterns`. Each distinct `files` list becomes one `overrides` entry that
+replaces the setting for those files, so put every lift for a folder under the
+same `files`; where two different globs match one file, the later one wins.
+
 ## Opt-in rules
 
 <!-- opt-in -->Off by default, since they need a team decision first: `@ashstack/react/prefer-design-system` and `@ashstack/react/components-tsx-only`.<!-- /opt-in -->

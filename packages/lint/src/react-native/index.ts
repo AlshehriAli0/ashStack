@@ -1,6 +1,6 @@
 import { TEST_FILES } from "../core/index.js";
 import { mergeConfigs } from "../lib/merge.js";
-import { composeModules } from "../lib/module.js";
+import { composeModules, restrictedImportsConfig } from "../lib/module.js";
 import { coreRegistry, reactNativeRegistry, reactRegistry } from "../lib/registry.js";
 import type { BanGroup, OxlintConfig, ReactNativeOptions, RuleMap } from "../lib/types.js";
 import react, { COMPONENT_MAX_COMPLEXITY, COMPONENT_MAX_LINES } from "../react/index.js";
@@ -90,8 +90,9 @@ const compilerOnlyRules = (reactCompiler: boolean): RuleMap =>
  *
  * @see [every rule `react-native()` sets](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/entries/react-native.md#react-native)
  */
-const reactNative = (options: ReactNativeOptions = {}): OxlintConfig => {
+const reactNative = ({ restrictedImports, ...options }: ReactNativeOptions = {}): OxlintConfig => {
   const composed = composeModules([...coreRegistry, ...reactRegistry, ...reactNativeRegistry], options, banGroups);
+  const bans = restrictedImportsConfig(composed.restricted, restrictedImports);
 
   return mergeConfigs(react(options), {
     jsPlugins: composed.jsPlugins,
@@ -99,7 +100,7 @@ const reactNative = (options: ReactNativeOptions = {}): OxlintConfig => {
     rules: {
       ...FORBID_EMPTY_NOOP_HANDLERS,
       ...ALLOW_GESTURE_AND_ANIMATION_EFFECTS,
-      "no-restricted-imports": ["error", composed.restricted],
+      ...bans.rules,
       ...composed.rules,
       "@ashstack/core/max-lines": ["error", COMPONENT_MAX_LINES],
       "@ashstack/core/max-complexity": ["error", COMPONENT_MAX_COMPLEXITY],
@@ -114,6 +115,7 @@ const reactNative = (options: ReactNativeOptions = {}): OxlintConfig => {
           "@ashstack/react-native/hoist-stateless-function": "off",
         },
       },
+      ...bans.overrides,
     ],
   });
 };
