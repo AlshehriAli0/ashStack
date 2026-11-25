@@ -11,6 +11,10 @@ _auto-enabled by `react()` when `@tanstack/react-query` is a dependency._
 - [`require-destructured-hooks`](#ashstackqueryrequire-destructured-hooks)
 - [`no-fetch-in-query-fn`](#ashstackqueryno-fetch-in-query-fn)
 - [`next-page-param-undefined`](#ashstackquerynext-page-param-undefined)
+- [`exhaustive-key`](#ashstackqueryexhaustive-key)
+- [`no-overridden-callbacks`](#ashstackqueryno-overridden-callbacks)
+- [`optimistic-update-complete`](#ashstackqueryoptimistic-update-complete)
+- [`forward-signal`](#ashstackqueryforward-signal)
 
 ## `@ashstack/query/no-inline-keys`
 
@@ -200,5 +204,166 @@ export const PostFeed = () => {
     },
   });
   return <View accessible={data !== undefined} />;
+};
+```
+
+## `@ashstack/query/exhaustive-key`
+
+Require every value a `queryFn` reads from the function around it in that query's `queryKey` array. The cache keeps one entry per key, so a value left out shares one result across all of its values and never triggers a refetch.
+
+**Default: on**, when `@tanstack/react-query` is a dependency.
+
+**Fails**
+
+```tsx
+import { queryOptions } from "@tanstack/react-query";
+
+import { fetchPosts } from "@/api/posts/posts.requests";
+
+export const postQueries = {
+  all: () => ["posts"] as const,
+  list: (page: number) =>
+    queryOptions({ queryKey: [...postQueries.all(), "list"], queryFn: ({ signal }) => fetchPosts(page, signal) }),
+};
+```
+
+**Passes**
+
+```tsx
+import { queryOptions } from "@tanstack/react-query";
+
+import { fetchPosts } from "@/api/posts/posts.requests";
+
+export const postQueries = {
+  all: () => ["posts"] as const,
+  list: (page: number) =>
+    queryOptions({ queryKey: [...postQueries.all(), "list", page], queryFn: ({ signal }) => fetchPosts(page, signal) }),
+};
+```
+
+## `@ashstack/query/no-overridden-callbacks`
+
+Disallow a spread after `onSuccess`, `onError`, `onSettled`, `mutationFn`, `queryFn` or `queryKey` in a query or mutation options object. Whatever the spread carries under those keys replaces the ones written before it.
+
+**Default: on**, when `@tanstack/react-query` is a dependency.
+
+**Fails**
+
+```tsx
+import { useMutation, useQueryClient, type UseMutationOptions } from "@tanstack/react-query";
+
+import { createPost } from "@/api/posts/posts.requests";
+import { postQueries } from "@/api/posts/posts.keys";
+
+export const useCreatePost = (mutationConfig: UseMutationOptions = {}) => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createPost,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: postQueries.all() }),
+    ...mutationConfig,
+  });
+};
+```
+
+**Passes**
+
+```tsx
+import { useMutation, useQueryClient, type UseMutationOptions } from "@tanstack/react-query";
+
+import { createPost } from "@/api/posts/posts.requests";
+import { postQueries } from "@/api/posts/posts.keys";
+
+export const useCreatePost = (mutationConfig: UseMutationOptions = {}) => {
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = mutationConfig;
+  return useMutation({
+    onSuccess: (...args) => {
+      void queryClient.invalidateQueries({ queryKey: postQueries.all() });
+      onSuccess?.(...args);
+    },
+    ...rest,
+    mutationFn: createPost,
+  });
+};
+```
+
+## `@ashstack/query/optimistic-update-complete`
+
+Require a mutation whose `onMutate` writes the query cache to await `cancelQueries` before the write, return a snapshot, and roll back in `onError`. Skip one and the UI looks right until the next refresh.
+
+**Default: on**, when `@tanstack/react-query` is a dependency.
+
+**Fails**
+
+```tsx
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { postQueries } from "@/api/posts/posts.keys";
+import { toggleLike } from "@/api/posts/posts.requests";
+
+export const useToggleLike = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    onMutate: ({ id, liked }: { id: string; liked: boolean }) => {
+      queryClient.setQueryData(postQueries.detail(id).queryKey, post => post && { ...post, liked });
+    },
+    mutationFn: toggleLike,
+  });
+};
+```
+
+**Passes**
+
+```tsx
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { postQueries } from "@/api/posts/posts.keys";
+import { toggleLike } from "@/api/posts/posts.requests";
+
+export const useToggleLike = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    onMutate: async ({ id, liked }: { id: string; liked: boolean }) => {
+      await queryClient.cancelQueries({ queryKey: postQueries.detail(id).queryKey });
+      const previous = queryClient.getQueryData(postQueries.detail(id).queryKey);
+      queryClient.setQueryData(postQueries.detail(id).queryKey, post => post && { ...post, liked });
+      return { previous };
+    },
+    onError: (_error, { id }, context) => {
+      queryClient.setQueryData(postQueries.detail(id).queryKey, context?.previous);
+    },
+    mutationFn: toggleLike,
+  });
+};
+```
+
+## `@ashstack/query/forward-signal`
+
+Require an inline `queryFn` that calls a `*.requests` function to take the `signal` from its context. TanStack Query aborts that signal when the query is cancelled or nothing uses it any more, and only a request that received it can stop.
+
+**Default: on**, when `@tanstack/react-query` is a dependency.
+
+**Fails**
+
+```tsx
+import { queryOptions } from "@tanstack/react-query";
+
+import { fetchPost } from "@/api/posts/posts.requests";
+
+export const postQueries = {
+  detail: (id: string) => queryOptions({ queryKey: ["posts", "detail", id], queryFn: () => fetchPost(id) }),
+};
+```
+
+**Passes**
+
+```tsx
+import { queryOptions } from "@tanstack/react-query";
+
+import { fetchPost } from "@/api/posts/posts.requests";
+
+export const postQueries = {
+  detail: (id: string) =>
+    queryOptions({ queryKey: ["posts", "detail", id], queryFn: ({ signal }) => fetchPost(id, signal) }),
 };
 ```

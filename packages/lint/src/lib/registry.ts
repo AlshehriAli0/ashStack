@@ -50,6 +50,10 @@ export const reactRegistry: ModuleMeta[] = [
       "require-destructured-hooks": {},
       "no-fetch-in-query-fn": {},
       "next-page-param-undefined": {},
+      "exhaustive-key": {},
+      "no-overridden-callbacks": {},
+      "optimistic-update-complete": {},
+      "forward-signal": {},
     },
   },
   {

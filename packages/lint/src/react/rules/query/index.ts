@@ -1,8 +1,12 @@
 import { defineModule } from "../../../lib/module.js";
+import { exhaustiveKey } from "./exhaustive-key.js";
+import { forwardSignal } from "./forward-signal.js";
 import { nextPageParamUndefined } from "./next-page-param-undefined.js";
 import { noDeprecatedFilters } from "./no-deprecated-filters.js";
 import { noFetchInQueryFn } from "./no-fetch-in-query-fn.js";
 import { noInlineKeys } from "./no-inline-keys.js";
+import { noOverriddenCallbacks } from "./no-overridden-callbacks.js";
+import { optimisticUpdateComplete } from "./optimistic-update-complete.js";
 import { requireDestructuredHooks } from "./require-destructured-hooks.js";
 
 export default defineModule({
@@ -17,5 +21,9 @@ export default defineModule({
     "require-destructured-hooks": requireDestructuredHooks,
     "no-fetch-in-query-fn": noFetchInQueryFn,
     "next-page-param-undefined": nextPageParamUndefined,
+    "exhaustive-key": exhaustiveKey,
+    "no-overridden-callbacks": noOverriddenCallbacks,
+    "optimistic-update-complete": optimisticUpdateComplete,
+    "forward-signal": forwardSignal,
   },
 });

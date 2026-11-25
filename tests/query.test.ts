@@ -240,6 +240,478 @@ const options = {
     ],
   },
 
+  "exhaustive-key": {
+    valid: [
+      {
+        name: "the docs' detail entry: the id the queryFn reads is in the key",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+import { fetchPost } from "./posts.requests";
+
+export const postQueries = {
+  details: () => ["posts", "detail"] as const,
+  detail: (id: string) => queryOptions({ queryKey: [...postQueries.details(), id], queryFn: () => fetchPost(id) }),
+};
+`,
+      },
+      {
+        name: "module-scope constants and imports are the same for every key",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+import { fetchPage, PAGE_SIZE } from "./posts.requests";
+
+const LIMIT = 20;
+
+export const feed = () => queryOptions({ queryKey: ["feed"], queryFn: () => fetchPage(PAGE_SIZE, LIMIT) });
+`,
+      },
+      {
+        name: "a value nested inside an object in the key counts",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+
+export const search = (term: string, limit: number) =>
+  queryOptions({ queryKey: ["search", { term, limit }] as const, queryFn: () => find(term, limit) });
+`,
+      },
+      {
+        name: "a member read is covered by its root in the key",
+        code: `
+import { useQuery } from "@tanstack/react-query";
+
+export const usePost = (props: { id: string }) =>
+  useQuery({ queryKey: ["post", props.id], queryFn: () => load(props.id) });
+`,
+      },
+      {
+        name: "the queryFn's own parameters and locals are not read from outside",
+        code: `
+import { infiniteQueryOptions } from "@tanstack/react-query";
+
+export const feed = () =>
+  infiniteQueryOptions({
+    queryKey: ["feed"],
+    queryFn: ({ pageParam }) => {
+      const cursor = pageParam;
+      return load(cursor);
+    },
+    initialPageParam: 0,
+    getNextPageParam: last => last.next,
+  });
+`,
+      },
+      {
+        name: "a client the queryFn calls through is not a key part",
+        code: `
+import { useQuery } from "@tanstack/react-query";
+
+export const usePosts = (api: { get: (path: string) => Promise<unknown> }) =>
+  useQuery({ queryKey: ["posts"], queryFn: () => api.get("/posts") });
+`,
+      },
+      {
+        name: "a local function, called or passed, is not a key part",
+        code: `
+import { useQuery } from "@tanstack/react-query";
+
+export const usePosts = () => {
+  const parse = (raw: unknown) => raw;
+  function load() {
+    return get("/posts");
+  }
+  return useQuery({ queryKey: ["posts"], queryFn: () => load().then(parse) });
+};
+`,
+      },
+      {
+        name: "a type argument is not a value",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+
+export const make = <T,>(id: string) => {
+  type Row = { value: T };
+  return queryOptions({ queryKey: ["row", id], queryFn: () => get<Row>(id) });
+};
+`,
+      },
+      {
+        name: "a key that is not an array literal is not checked",
+        code: `
+import { useQuery } from "@tanstack/react-query";
+
+export const usePost = (id: string, key: string[]) => useQuery({ queryKey: key, queryFn: () => load(id) });
+`,
+      },
+      {
+        name: "a queryFn passed by reference closes over nothing here",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+
+export const list = (id: string) => queryOptions({ queryKey: ["list"], queryFn: fetchList });
+`,
+      },
+      {
+        name: "an options object outside a query call",
+        code: `
+export const make = (id: string) => ({ queryKey: ["x"], queryFn: () => load(id) });
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "a factory argument the key leaves out",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+
+export const postQueries = {
+  list: (page: number) => queryOptions({ queryKey: ["posts", "list"], queryFn: () => fetchPosts(page) }),
+};
+`,
+        errors: [{ message: "Add `page` to this `queryKey`; the `queryFn` reads it.", line: 5, column: 52 }],
+      },
+      {
+        name: "each missing value reports once, through as const",
+        code: `
+import { useQuery } from "@tanstack/react-query";
+
+export const useSearch = (term: string, locale: string) =>
+  useQuery({ queryKey: ["search"] as const, queryFn: () => find(term, locale, term) });
+`,
+        errors: [{ message: "Add `term`" }, { message: "Add `locale`" }],
+      },
+      {
+        name: "a value read inside a nested callback of the queryFn",
+        code: `
+import { useQuery } from "@tanstack/react-query";
+
+export const usePosts = (userId: string) =>
+  useQuery({
+    queryKey: ["posts"],
+    queryFn: async () => (await load()).filter(post => post.author === userId),
+  });
+`,
+        errors: [{ message: "Add `userId`", line: 6, column: 15 }],
+      },
+      {
+        name: "the function branch of a skipToken conditional",
+        code: `
+import { skipToken, useQuery } from "@tanstack/react-query";
+
+export const usePost = (id?: string) => useQuery({ queryKey: ["post"], queryFn: id ? () => load(id) : skipToken });
+`,
+        errors: [{ message: "Add `id`" }],
+      },
+      {
+        name: "a component's local state",
+        code: `
+import { useState } from "react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+
+export const Feed = () => {
+  const [sort] = useState("new");
+  const { data } = useSuspenseQuery({ queryKey: ["feed"], queryFn: () => load(sort) });
+  return data;
+};
+`,
+        errors: [{ message: "Add `sort`" }],
+      },
+    ],
+  },
+  "no-overridden-callbacks": {
+    valid: [
+      {
+        name: "the docs' mutation hook: onSuccess taken out of the rest, which goes before mutationFn",
+        code: `
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+export const useCreatePost = ({ mutationConfig }: { mutationConfig?: Config } = {}) => {
+  const queryClient = useQueryClient();
+  const { onSuccess, ...rest } = mutationConfig ?? {};
+  return useMutation({
+    onSuccess: (...args) => {
+      void queryClient.invalidateQueries({ queryKey: ["posts"] });
+      onSuccess?.(...args);
+    },
+    ...rest,
+    mutationFn: createPost,
+  });
+};
+`,
+      },
+      {
+        name: "the docs' query hook: the factory first, the config after options it may override",
+        code: `
+import { useQuery } from "@tanstack/react-query";
+
+export const usePosts = ({ queryConfig = {} } = {}) =>
+  useQuery({ ...postQueries.list(), staleTime: 60_000, ...queryConfig });
+`,
+      },
+      {
+        name: "a spread before every guarded key",
+        code: `
+import { useMutation } from "@tanstack/react-query";
+
+export const useSync = (config: Config) => useMutation({ retry: false, ...config, mutationFn: sync });
+`,
+      },
+      {
+        name: "a spread in an object that is not query or mutation options",
+        code: `
+export const merged = (config: Config) => ({ onSuccess: done, ...config });
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "a caller's onSuccess replaces the hook's",
+        code: `
+import { useMutation } from "@tanstack/react-query";
+
+export const useCreate = (config: Config) =>
+  useMutation({ mutationFn: create, onSuccess: invalidate, ...config });
+`,
+        errors: [
+          {
+            message:
+              "Move this spread above `mutationFn`, `onSuccess`: a later spread replaces every key it shares, so the value written here is silently dropped. To keep the caller's `onSuccess` too, destructure it out (`const { onSuccess, ...rest } = config`) and call it from yours.",
+            line: 5,
+            column: 60,
+          },
+        ],
+      },
+      {
+        name: "a rest that took out only one of the callbacks",
+        code: `
+import { useMutation } from "@tanstack/react-query";
+
+export const useCreate = (config: Config) => {
+  const { onSuccess, ...rest } = config;
+  return useMutation({ onSuccess, onError: rollback, ...rest });
+};
+`,
+        errors: [{ message: "Move this spread above `onError`:" }],
+      },
+      {
+        name: "a queryKey a spread can replace",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+
+export const detail = (id: string, extra: object) =>
+  queryOptions({ queryKey: ["post", id], queryFn: () => load(id), ...extra });
+`,
+        errors: [{ message: /^Move this spread above `queryKey`, `queryFn`: .* dropped\.$/ }],
+      },
+    ],
+  },
+  "optimistic-update-complete": {
+    valid: [
+      {
+        name: "the docs' toggle: cancel, snapshot, write, roll back",
+        code: `
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+export const useToggleLike = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    onMutate: async ({ id, liked }) => {
+      await queryClient.cancelQueries({ queryKey: postQueries.detail(id).queryKey });
+      const previous = queryClient.getQueryData(postQueries.detail(id).queryKey);
+      if (previous) {
+        queryClient.setQueryData(postQueries.detail(id).queryKey, { ...previous, liked });
+      }
+      return { previous };
+    },
+    onError: (_error, { id }, context) => {
+      if (context?.previous) queryClient.setQueryData(postQueries.detail(id).queryKey, context.previous);
+    },
+    mutationFn: toggleLike,
+  });
+};
+`,
+      },
+      {
+        name: "several cancels awaited together",
+        code: `
+import { useMutation } from "@tanstack/react-query";
+
+export const useRename = () =>
+  useMutation({
+    onMutate: async ({ id, name }) => {
+      await Promise.all([queryClient.cancelQueries({ queryKey: a }), queryClient.cancelQueries({ queryKey: b })]);
+      const previous = queryClient.getQueriesData({ queryKey: a });
+      queryClient.setQueriesData({ queryKey: a }, rename(id, name));
+      return { previous };
+    },
+    onError: (_error, _vars, context) => restore(context),
+    mutationFn: rename,
+  });
+`,
+      },
+      {
+        name: "an onMutate that does not write the cache",
+        code: `
+import { useMutation } from "@tanstack/react-query";
+
+export const useTrack = () => useMutation({ onMutate: () => log("start"), mutationFn: track });
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "no cancel, no snapshot, no rollback",
+        code: `
+import { useMutation } from "@tanstack/react-query";
+
+export const useToggle = () =>
+  useMutation({
+    onMutate: ({ id }) => {
+      queryClient.setQueryData(postQueries.detail(id).queryKey, toggle);
+    },
+    mutationFn: toggleLike,
+  });
+`,
+        errors: [
+          { message: "Return the snapshot from `onMutate`", line: 6, column: 15 },
+          { message: "Add an `onError` that writes the `onMutate` snapshot back", line: 6, column: 15 },
+          { message: "Await `queryClient.cancelQueries({ queryKey })` before this first cache write", line: 7 },
+        ],
+      },
+      {
+        name: "a cancel awaited after the write is too late",
+        code: `
+import { useMutation } from "@tanstack/react-query";
+
+export const useToggle = () =>
+  useMutation({
+    onMutate: async ({ id }) => {
+      const previous = queryClient.getQueryData(key(id));
+      queryClient.setQueryData(key(id), toggle);
+      await queryClient.cancelQueries({ queryKey: key(id) });
+      return { previous };
+    },
+    onError: rollback,
+    mutationFn: toggleLike,
+  });
+`,
+        errors: [{ message: "Await `queryClient.cancelQueries", line: 8 }],
+      },
+      {
+        name: "a cancel that is not awaited",
+        code: `
+import { mutationOptions } from "@tanstack/react-query";
+
+export const toggle = mutationOptions({
+  onMutate: async ({ id }) => {
+    void queryClient.cancelQueries({ queryKey: key(id) });
+    const previous = queryClient.getQueryData(key(id));
+    queryClient.setQueryData(key(id), flip);
+    return { previous };
+  },
+  onError: rollback,
+  mutationFn: toggleLike,
+});
+`,
+        errors: [{ message: "Await `queryClient.cancelQueries" }],
+      },
+      {
+        name: "a return inside a nested callback is not onMutate's",
+        code: `
+import { useMutation } from "@tanstack/react-query";
+
+export const useToggle = () =>
+  useMutation({
+    onMutate: async ({ id }) => {
+      await queryClient.cancelQueries({ queryKey: key(id) });
+      queryClient.setQueryData(key(id), previous => {
+        return flip(previous);
+      });
+    },
+    onError: rollback,
+    mutationFn: toggleLike,
+  });
+`,
+        errors: [{ message: "Return the snapshot from `onMutate`" }],
+      },
+    ],
+  },
+  "forward-signal": {
+    valid: [
+      {
+        name: "the signal taken and forwarded",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+import { fetchProduct } from "./products.requests";
+
+export const detail = (id: string) =>
+  queryOptions({ queryKey: ["product", id], queryFn: ({ signal }) => fetchProduct(id, signal) });
+`,
+      },
+      {
+        name: "the whole context taken, which may carry it",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+import { fetchFeed } from "@/api/feed/feed.requests";
+
+export const feed = () => queryOptions({ queryKey: ["feed"], queryFn: context => fetchFeed(context) });
+`,
+      },
+      {
+        name: "a request function passed by reference receives the context",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+import { fetchPosts } from "./posts.requests";
+
+export const list = () => queryOptions({ queryKey: ["posts"], queryFn: fetchPosts });
+`,
+      },
+      {
+        name: "a queryFn that calls nothing from a requests module",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+import { readCache } from "./cache";
+
+export const cached = () => queryOptions({ queryKey: ["cached"], queryFn: () => readCache() });
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "the docs' detail entry ignores its context",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+import { fetchPost } from "./posts.requests";
+
+export const detail = (id: string) => queryOptions({ queryKey: ["post", id], queryFn: () => fetchPost(id) });
+`,
+        errors: [
+          {
+            message:
+              "Take `{ signal }` in this `queryFn` and pass it to `fetchPost`, on through to the client. TanStack Query aborts it when the query is cancelled or unused, and only a request that received it stops.",
+            line: 5,
+            column: 87,
+          },
+        ],
+      },
+      {
+        name: "a destructure that takes the page but not the signal",
+        code: `
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { fetchFeed as loadFeed } from "@/api/feed/feed.requests";
+
+export const useFeed = () =>
+  useInfiniteQuery({
+    queryKey: ["feed"],
+    queryFn: async ({ pageParam }) => loadFeed(pageParam),
+    initialPageParam: 0,
+    getNextPageParam: last => last.next,
+  });
+`,
+        errors: [{ message: "pass it to `loadFeed`", line: 8 }],
+      },
+    ],
+  },
+
   "no-deprecated-filters": {
     valid: [
       {
