@@ -543,7 +543,7 @@ declare module "oxlint" {
      */
     "@ashstack/worklets/no-sync-runtime-call"?: RuleSetting;
     /**
-     * Disallow a `setInterval` or `setTimeout` callback that calls `scheduleOnUI` or `scheduleOnRuntime`. Each tick sends a new job to the other runtime; start the timer on the target runtime instead.
+     * Disallow a React Native Runtime `setInterval` or `setTimeout` callback that calls `scheduleOnUI` or `scheduleOnRuntime`. Each time the timer fires it waits for the JavaScript thread and sends a new job; start the timer on the target runtime instead.
      *
      * **Default: on**, when `react-native-worklets` is a dependency.
      *

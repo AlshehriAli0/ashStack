@@ -1,15 +1,5 @@
-import { ancestors, calleeName, COMPONENT_OR_HOOK, gate, isFunction, problem } from "../../../lib/ast.js";
-import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
-import { boundFunctionName } from "./shared.js";
-
-const componentOrHookAround = (node: AstNode): string | null => {
-  for (const current of ancestors(node)) {
-    if (!isFunction(current)) continue;
-    const name = boundFunctionName(current);
-    if (name !== null && COMPONENT_OR_HOOK.test(name)) return name;
-  }
-  return null;
-};
+import { calleeName, enclosingComponentOrHook, gate, problem } from "../../../lib/ast.js";
+import type { Rule, RuleContext } from "../../../lib/types.js";
 
 export const noRuntimeInRender: Rule = problem(
   "Disallow `createWorkletRuntime` inside a component or hook. Each call starts a new JavaScript runtime and, with the default queue, a new thread; create it once at module scope and reuse it.",
@@ -20,12 +10,11 @@ export const noRuntimeInRender: Rule = problem(
           return gate(context, "createWorkletRuntime");
         },
         CallExpression(node) {
-          if (calleeName(node) !== "createWorkletRuntime") return;
-          const owner = componentOrHookAround(node);
-          if (owner === null) return;
+          if (calleeName(node) !== "createWorkletRuntime" || enclosingComponentOrHook(node) === null) return;
           context.report({
             node,
-            message: `Create this runtime once at module scope and reuse it. Inside \`${owner}\`, \`createWorkletRuntime\` starts a new JavaScript runtime and thread every time \`${owner}\` runs.`,
+            message:
+              "Create this runtime once at module scope and reuse it. Inside a component or hook, each `createWorkletRuntime` call starts a new JavaScript runtime and, with the default queue, a new thread.",
           });
         },
       };

@@ -1,8 +1,8 @@
-import { isFunction } from "../../../lib/ast.js";
+import { calleeName } from "../../../lib/ast.js";
 import type { AstNode } from "../../../lib/types.js";
 
 /** Scheduling call to the index of the worklet it takes: the runtime, when there is one, comes first. */
-export const WORKLET_ARGUMENT = new Map([
+const WORKLET_ARGUMENT = new Map([
   ["scheduleOnUI", 0],
   ["runOnUIAsync", 0],
   ["runOnUISync", 0],
@@ -14,18 +14,22 @@ export const WORKLET_ARGUMENT = new Map([
   ["runOnRuntimeSyncWithId", 1],
 ]);
 
-/** The function that encloses `node`, or `null` at module scope. */
-export const enclosingFunction = (node: AstNode): AstNode | null => {
-  for (let current = node.parent; current; current = current.parent) {
-    if (isFunction(current)) return current;
-  }
-  return null;
+/** The argument a scheduling call runs on the other runtime, which the worklets Babel plugin workletizes. */
+export const workletArgument = (call: Extract<AstNode, { type: "CallExpression" }>): AstNode | undefined => {
+  const index = WORKLET_ARGUMENT.get(calleeName(call));
+  return index === undefined ? undefined : call.arguments[index];
 };
 
-/** The name a function is bound to: its declaration's id, or the variable it initializes. */
-export const boundFunctionName = (node: AstNode): string | null => {
-  if (node.type === "FunctionDeclaration") return node.id?.name ?? null;
-  const { parent } = node;
-  if (parent?.type !== "VariableDeclarator" || parent.id.type !== "Identifier") return null;
-  return parent.id.name;
+/** Whether `node` is a function that runs as a worklet: it opens with the directive, or it is a scheduling call's worklet. */
+export const isWorklet = (node: AstNode): boolean => {
+  if (
+    node.type !== "FunctionDeclaration" &&
+    node.type !== "FunctionExpression" &&
+    node.type !== "ArrowFunctionExpression"
+  ) {
+    return false;
+  }
+  const first = node.body?.type === "BlockStatement" ? node.body.body[0] : undefined;
+  if (first?.type === "ExpressionStatement" && first.directive === "worklet") return true;
+  return node.parent.type === "CallExpression" && workletArgument(node.parent) === node;
 };

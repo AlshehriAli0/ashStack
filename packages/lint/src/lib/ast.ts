@@ -187,6 +187,24 @@ export const COMPONENT_OR_HOOK = /^(?:[A-Z]|use[A-Z])/;
 
 export const isFunction = (node: AstNode | null | undefined): boolean => !!node && FUNCTION_TYPES.has(node.type);
 
+/** The name a function is bound to: its declaration's id, or the variable it initializes. */
+export const boundFunctionName = (node: AstNode): string | null => {
+  if (node.type === "FunctionDeclaration") return node.id?.name ?? null;
+  const { parent } = node;
+  if (parent === null || parent.type !== "VariableDeclarator" || parent.id.type !== "Identifier") return null;
+  return parent.id.name;
+};
+
+/** The innermost function around `node` bound to a component or hook name, or `null`. */
+export const enclosingComponentOrHook = (node: AstNode): AstNode | null => {
+  for (const current of ancestors(node)) {
+    if (!isFunction(current)) continue;
+    const name = boundFunctionName(current);
+    if (name !== null && COMPONENT_OR_HOOK.test(name)) return current;
+  }
+  return null;
+};
+
 /** Source-text gate for createOnce rules: skip whole files that cannot contain the pattern. */
 export const gate = (context: RuleContext, ...markers: string[]): boolean =>
   markers.some(marker => context.sourceCode.text.includes(marker));

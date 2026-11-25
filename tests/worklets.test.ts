@@ -33,7 +33,11 @@ moduleTests(worklets, {
         name: "inside a component declaration",
         code: `${IMPORTS}export function Screen() {\n  const worker = createWorkletRuntime({ name: "worker" });\n  return <>{String(worker)}</>;\n}\n`,
         errors: [
-          { message: "Inside `Screen`, `createWorkletRuntime` starts a new JavaScript runtime", line: 11, column: 18 },
+          {
+            message: "Inside a component or hook, each `createWorkletRuntime` call starts a new JavaScript runtime",
+            line: 11,
+            column: 18,
+          },
         ],
       },
       {
@@ -44,12 +48,12 @@ moduleTests(worklets, {
       {
         name: "inside an effect in a component",
         code: `import { useEffect } from "react";\n${IMPORTS}export const Screen = () => {\n  useEffect(() => {\n    createWorkletRuntime("worker");\n  }, []);\n  return null;\n};\n`,
-        errors: [{ message: "Inside `Screen`", line: 13 }],
+        errors: [{ message: "Create this runtime once at module scope", line: 13 }],
       },
       {
         name: "a namespace call",
         code: `import * as Worklets from "react-native-worklets";\nexport function useWorker() {\n  return Worklets.createWorkletRuntime("worker");\n}\n`,
-        errors: [{ message: "Inside `useWorker`", line: 3 }],
+        errors: [{ message: "Create this runtime once at module scope", line: 3 }],
       },
     ],
   },
@@ -79,7 +83,8 @@ moduleTests(worklets, {
         code: `${IMPORTS}export function onPress(value: number) {\n  scheduleOnUI((value) => {\n    "worklet";\n    console.log(value);\n  }, value);\n}\n`,
         errors: [
           {
-            message: "`scheduleOnUI(work, a, b)`. A new function object here is serialized on every call.",
+            message:
+              "pass what it needs as `scheduleOnUI`'s extra arguments. A new function object here is serialized on every call.",
             line: 11,
             column: 16,
           },
@@ -99,15 +104,15 @@ moduleTests(worklets, {
         name: "the worklet position of each runtime call",
         code: `${IMPORTS}declare const worker: Parameters<typeof scheduleOnRuntime>[0];\nexport async function run(a: number) {\n  scheduleOnRuntime(worker, () => {\n    "worklet";\n    return a;\n  });\n  await runOnRuntimeAsync(worker, function work() {\n    "worklet";\n    return a;\n  });\n  await runOnUIAsync(() => a);\n}\n`,
         errors: [
-          { message: "`scheduleOnRuntime(runtime, work, a, b)`", line: 12, column: 29 },
-          { message: "`runOnRuntimeAsync(runtime, work, a, b)`", line: 16, column: 35 },
-          { message: "`runOnUIAsync(work, a, b)`", line: 20, column: 22 },
+          { message: "`scheduleOnRuntime`'s extra arguments", line: 12, column: 29 },
+          { message: "`runOnRuntimeAsync`'s extra arguments", line: 16, column: 35 },
+          { message: "`runOnUIAsync`'s extra arguments", line: 20, column: 22 },
         ],
       },
       {
         name: "a sync call with an inline worklet",
         code: `${IMPORTS}export function read(a: number) {\n  return runOnUISync(() => a);\n}\n`,
-        errors: [{ message: "`runOnUISync(work, a, b)`" }],
+        errors: [{ message: "`runOnUISync`'s extra arguments" }],
       },
       {
         name: "inside a component's handler",
@@ -165,6 +170,14 @@ moduleTests(worklets, {
         code: `${IMPORTS}declare function tick(i: number): void;\ndeclare const items: number[];\nsetTimeout(() => {\n  items.forEach(i => scheduleOnUI(tick, i));\n}, 0);\n`,
       },
       {
+        name: "a timer inside a worklet, which runs on that runtime's event loop",
+        code: `${IMPORTS}declare function draw(): void;\nexport function startDrawing() {\n  "worklet";\n  setInterval(() => scheduleOnUI(draw), 16);\n}\n`,
+      },
+      {
+        name: "a timer inside a scheduled worklet without the directive",
+        code: `${IMPORTS}declare function draw(): void;\nconst worker = createWorkletRuntime("worker");\nscheduleOnRuntime(worker, () => setInterval(() => scheduleOnUI(draw), 16));\n`,
+      },
+      {
         name: "a schedule in the delay position is not in the callback",
         code: `${IMPORTS}declare function tick(): void;\ndeclare function delay(fn: () => void): number;\nsetTimeout(tick, delay(() => scheduleOnUI(tick)));\n`,
       },
@@ -173,17 +186,17 @@ moduleTests(worklets, {
       {
         name: "the setInterval from the docs",
         code: `${IMPORTS}declare function tick(): void;\nconst worker = createWorkletRuntime("worker");\nsetInterval(() => {\n  scheduleOnRuntime(worker, tick);\n}, 100);\n`,
-        errors: [{ message: "`scheduleOnRuntime` a worklet that calls `setInterval` there once", line: 13, column: 3 }],
+        errors: [{ message: "`scheduleOnRuntime` a worklet that calls `setInterval` there.", line: 13, column: 3 }],
       },
       {
         name: "a setTimeout with a function expression",
         code: `${IMPORTS}declare function tick(): void;\nexport function later() {\n  setTimeout(function () {\n    scheduleOnUI(tick);\n  }, 16);\n}\n`,
-        errors: [{ message: "calls `setTimeout` there once", line: 13 }],
+        errors: [{ message: "A `setTimeout` on the React Native Runtime waits for the JavaScript thread", line: 13 }],
       },
       {
         name: "a concise arrow body through globalThis",
         code: `${IMPORTS}declare function tick(): void;\nglobalThis.setInterval(() => scheduleOnUI(tick), 16);\n`,
-        errors: [{ message: "every tick sends a new job to that runtime", line: 11, column: 30 }],
+        errors: [{ message: "sends a new job each time it fires", line: 11, column: 30 }],
       },
     ],
   },
