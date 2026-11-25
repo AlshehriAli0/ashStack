@@ -309,6 +309,8 @@ export const reactNativeRegistry: ModuleMeta[] = [
       "prefer-lazy-shared-value-initializer": {},
       "schedule-on-rn-scope": {},
       "shared-value-usage": {},
+      "layout-animation-needs-animated-component": {},
+      "check-finished": {},
     },
   },
   {

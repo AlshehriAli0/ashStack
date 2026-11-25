@@ -17,6 +17,8 @@ _auto-enabled when `react-native-reanimated` is a dependency._
 - [`prefer-lazy-shared-value-initializer`](#ashstackreanimatedprefer-lazy-shared-value-initializer)
 - [`schedule-on-rn-scope`](#ashstackreanimatedschedule-on-rn-scope)
 - [`shared-value-usage`](#ashstackreanimatedshared-value-usage)
+- [`layout-animation-needs-animated-component`](#ashstackreanimatedlayout-animation-needs-animated-component)
+- [`check-finished`](#ashstackreanimatedcheck-finished)
 
 **Import bans that ship with this module**
 
@@ -148,7 +150,7 @@ export function useGoodUpdater() {
 
 ## `@ashstack/reanimated/gpu-properties-only`
 
-Animate `transform` and `opacity` in `useAnimatedStyle` and `useAnimatedProps`. Layout properties such as `width` or `margin` recalculate layout every frame.
+Animate `transform` and `opacity` in `useAnimatedStyle` and `useAnimatedProps`, and `boxShadow` for a shadow. Layout properties such as `width` or `margin` recalculate layout every frame, and the `shadow*` properties and `elevation` each render on one platform only.
 
 **Default: on**, when `react-native-reanimated` is a dependency.
 
@@ -408,4 +410,67 @@ export function GoodSharedValueUsage() {
     </Animated.View>
   );
 }
+```
+
+## `@ashstack/reanimated/layout-animation-needs-animated-component`
+
+Disallow `entering`, `exiting` or `layout` on a component imported from `react-native`. Only an `Animated.*` component or a `createAnimatedComponent` wrapper runs a layout animation; a plain one ignores the prop.
+
+**Default: on**, when `react-native-reanimated` is a dependency.
+
+**Fails**
+
+```tsx
+import { View } from "react-native";
+import { FadeIn, FadeOut } from "react-native-reanimated";
+
+export const Toast = ({ children }: { children: React.ReactNode }) => (
+  <View entering={FadeIn} exiting={FadeOut}>
+    {children}
+  </View>
+);
+```
+
+**Passes**
+
+```tsx
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+
+export const Toast = ({ children }: { children: React.ReactNode }) => (
+  <Animated.View entering={FadeIn} exiting={FadeOut}>
+    {children}
+  </Animated.View>
+);
+```
+
+## `@ashstack/reanimated/check-finished`
+
+Require an animation completion callback that calls `scheduleOnRN` to read its `finished` argument. The callback also runs when the animation is cancelled, and then `finished` is false.
+
+**Default: on**, when `react-native-reanimated` is a dependency.
+
+**Fails**
+
+```tsx
+import { withTiming, type SharedValue } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+
+export const dismiss = (translateX: SharedValue<number>, onDismiss: () => void) => {
+  translateX.set(withTiming(400, { duration: 200 }, () => scheduleOnRN(onDismiss)));
+};
+```
+
+**Passes**
+
+```tsx
+import { withTiming, type SharedValue } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+
+export const dismiss = (translateX: SharedValue<number>, onDismiss: () => void) => {
+  translateX.set(
+    withTiming(400, { duration: 200 }, finished => {
+      if (finished) scheduleOnRN(onDismiss);
+    })
+  );
+};
 ```
