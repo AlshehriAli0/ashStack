@@ -157,6 +157,11 @@ describe("detect with a minimum major", () => {
     expect(inDir(paths.repo!, () => detect(undefined, [RNGH], 3))).toBe(true);
   });
 
+  it("reads a workspace protocol range by the version after the protocol", () => {
+    const paths = workspace({ repo: { dependencies: { [RNGH]: "workspace:^3.0.0" } } });
+    expect(inDir(paths.repo!, () => detect(undefined, [RNGH], 3))).toBe(true);
+  });
+
   it("is off when neither the install nor the range names a version", () => {
     const paths = workspace({ repo: { dependencies: { [RNGH]: "latest" } } });
     expect(inDir(paths.repo!, () => detect(undefined, [RNGH], 3))).toBe(false);

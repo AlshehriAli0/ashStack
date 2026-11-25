@@ -95,8 +95,6 @@ export interface ModuleMeta {
 /** A ban-only group: import bans gated on a library, with no rules of its own. */
 export interface BanGroup {
   packages: string[];
-  /** Only at this major of the package or later, installed or else declared. */
-  minMajor?: number;
   restrictedImports: RestrictedImports;
 }
 

@@ -16,12 +16,6 @@ const readPackageJson = (dir: string): PackageJson | null => {
   }
 };
 
-/** Every dependency a package.json declares, mapped to the range it declares. */
-const declaredRangesIn = (dir: string): [string, unknown][] => {
-  const pkg = readPackageJson(dir);
-  return Object.entries({ ...pkg?.peerDependencies, ...pkg?.devDependencies, ...pkg?.dependencies });
-};
-
 const isRepoBoundary = (dir: string): boolean => existsSync(join(dir, ".git"));
 
 /** The current working directory and each parent up to the repo boundary, nearest first. */
@@ -42,7 +36,6 @@ interface Found {
   dirs: string[];
   /** Dependency name to the range the nearest package.json declares for it. */
   declared: Map<string, unknown>;
-  majors: Map<string, number | null>;
 }
 
 const foundByStartDir = new Map<string, Found>();
@@ -55,40 +48,34 @@ const foundFromCwd = (): Found => {
   const dirs = dirsUpToRepoBoundary(start);
   const declared = new Map<string, unknown>();
   for (const dir of dirs) {
-    for (const [name, range] of declaredRangesIn(dir)) if (!declared.has(name)) declared.set(name, range);
+    const pkg = readPackageJson(dir);
+    const ranges = Object.entries({ ...pkg?.peerDependencies, ...pkg?.devDependencies, ...pkg?.dependencies });
+    for (const [name, range] of ranges) if (!declared.has(name)) declared.set(name, range);
   }
-  const found = { dirs, declared, majors: new Map() };
+  const found = { dirs, declared };
   foundByStartDir.set(start, found);
   return found;
 };
 
 /**
  * The lowest major a version or declared range allows: `3.5.0`, `^3.0.0`,
- * `~3.1`, `>=3 <4` and `npm:pkg@^3` all read as 3. `null` for anything that
- * names no number up front, such as `*`, `latest` or a git URL.
+ * `~3.1`, `>=3 <4`, `workspace:^3` and `npm:pkg@^3` all read as 3. `null` for
+ * anything that names no number up front, such as `*`, `latest` or a git URL.
  */
 const leadingMajor = (range: unknown): number | null => {
   if (typeof range !== "string") return null;
-  const bare = range.startsWith("npm:") ? range.slice(range.lastIndexOf("@") + 1) : range.replace(/^workspace:/, "");
-  const match = /^\s*(?:[~^]|>=?|=)?\s*v?(\d+)/.exec(bare);
+  const version = range.slice(Math.max(range.lastIndexOf("@"), range.lastIndexOf(":")) + 1);
+  const match = /^\s*(?:[~^]|>=?|=)?\s*v?(\d+)/.exec(version);
   return match ? Number(match[1]) : null;
 };
 
-/** The installed package's major, from the nearest `node_modules`, or the declared range's minimum. */
-const resolveMajor = (found: Found, name: string): number | null => {
+/** The nearest installed copy's major or, with nothing installed, the declared range's lowest. */
+const majorOf = (found: Found, name: string): number | null => {
   for (const dir of found.dirs) {
     const installed = readPackageJson(join(dir, "node_modules", name));
-    if (installed !== null) {
-      const major = leadingMajor(installed.version);
-      if (major !== null) return major;
-    }
+    if (installed !== null) return leadingMajor(installed.version);
   }
   return leadingMajor(found.declared.get(name));
-};
-
-const majorOf = (found: Found, name: string): number | null => {
-  if (!found.majors.has(name)) found.majors.set(name, resolveMajor(found, name));
-  return found.majors.get(name) ?? null;
 };
 
 const isPresent = (found: Found, name: string, minMajor: number | undefined): boolean => {
@@ -110,7 +97,7 @@ const isPresent = (found: Found, name: string, minMajor: number | undefined): bo
  * version is the installed one, read from the nearest
  * `node_modules/<name>/package.json` on the same walk; before an install it is
  * the lowest major the declared range allows. A version neither can tell
- * leaves the group off.
+ * leaves the module off.
  */
 export const detect = (option: boolean | undefined, packages: string[] | undefined, minMajor?: number): boolean =>
   option ?? (packages === undefined || packages.some(name => isPresent(foundFromCwd(), name, minMajor)));

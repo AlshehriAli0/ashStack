@@ -249,27 +249,28 @@ describe("composeModules", () => {
 
 describe("composeModules with a version gate", () => {
   const RNGH = "react-native-gesture-handler";
-  const gated = moduleWith({ name: "gesture-handler", option: "gestureHandler", packages: [RNGH], minMajor: 3 });
-  const group: BanGroup = {
+  const gated = moduleWith({
+    name: "gesture-handler",
+    option: "gestureHandler",
     packages: [RNGH],
     minMajor: 3,
     restrictedImports: { paths: [{ name: RNGH, importNames: ["Gesture"], message: "v2 API." }] },
-  };
+  });
 
   /** A repo that declares `range` and, when `installed` is given, has that version in node_modules. */
   const composedIn = (range: string, installed?: string, options: Record<string, boolean> = {}) => {
     const paths = workspace({ repo: { dependencies: { [RNGH]: range } } });
     if (installed !== undefined) install(paths.repo!, RNGH, installed);
-    return inDir(paths.repo!, () => composeModules([gated], options, [group]));
+    return inDir(paths.repo!, () => composeModules([gated], options));
   };
 
-  it("turns the module and the ban group on when the major is installed", () => {
+  it("turns the module and its bans on when the major is installed", () => {
     const composed = composedIn("^3.0.0", "3.5.0");
     expect(Object.keys(composed.rules)).toEqual(["@ashstack/gesture-handler/a-rule"]);
     expect(composed.restricted.paths).toHaveLength(1);
   });
 
-  it("leaves both off when an earlier major is installed", () => {
+  it("leaves it off when an earlier major is installed", () => {
     const composed = composedIn("^2.28.0", "2.28.0");
     expect(composed.rules).toEqual({});
     expect(composed.jsPlugins).toEqual([]);

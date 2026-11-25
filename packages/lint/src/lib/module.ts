@@ -62,7 +62,7 @@ export const composeModules = (
   }
 
   for (const group of banGroups) {
-    if (!detect(undefined, group.packages, group.minMajor)) continue;
+    if (!detect(undefined, group.packages)) continue;
     addRestrictedImports(composed.restricted, group.restrictedImports);
   }
 
