@@ -14,10 +14,13 @@ _auto-enabled when `@legendapp/state` is a dependency._
 - [`no-peek-in-selector`](#ashstacklegend-stateno-peek-in-selector)
 - [`no-object-selector`](#ashstacklegend-stateno-object-selector)
 - [`no-observable-in-component`](#ashstacklegend-stateno-observable-in-component)
+- [`no-untracked-collection-read`](#ashstacklegend-stateno-untracked-collection-read)
+- [`dispose-observe`](#ashstacklegend-statedispose-observe)
 
 **Import bans that ship with this module**
 
 - `use$`, `useSelector` from `@legendapp/state/react`
+- `observer` from `@legendapp/state/react`
 
 ## `@ashstack/legend-state/no-assignment`
 
@@ -257,5 +260,74 @@ import { View } from "react-native";
 export const Counter = () => {
   const count$ = useObservable(0);
   return <View accessible={count$ !== undefined} />;
+};
+```
+
+## `@ashstack/legend-state/no-untracked-collection-read`
+
+Disallow `has`, `entries`, `keys` or `values` called on an observable inside a tracking context. On an observable `Map` or `Set` they read the raw collection and subscribe to nothing, so the selector never re-runs.
+
+**Default: on**, when `@legendapp/state` is a dependency.
+
+**Fails**
+
+```tsx
+import { useValue } from "@legendapp/state/react";
+import { Text } from "react-native";
+
+import { selectedIds$ } from "@/stores/selection";
+
+export const SelectedMark = ({ id }: { id: string }) => {
+  const selected = useValue(() => selectedIds$.has(id));
+  return <Text>{selected ? "Selected" : ""}</Text>;
+};
+```
+
+**Passes**
+
+```tsx
+import { useValue } from "@legendapp/state/react";
+import { Text } from "react-native";
+
+import { selectedIds$ } from "@/stores/selection";
+
+export const SelectedMark = ({ id }: { id: string }) => {
+  const selected = useValue(() => selectedIds$.get().has(id));
+  return <Text>{selected ? "Selected" : ""}</Text>;
+};
+```
+
+## `@ashstack/legend-state/dispose-observe`
+
+Disallow an `observe(...)` statement inside a component or hook that drops the dispose function it returns. Each run starts an observer nothing ever stops.
+
+**Default: on**, when `@legendapp/state` is a dependency.
+
+**Fails**
+
+```tsx
+import { observe } from "@legendapp/state";
+import { useEffect } from "react";
+
+import { applyTheme } from "@/lib/theme";
+import { settings$ } from "@/stores/settings";
+
+export const useThemeSync = () => {
+  useEffect(() => {
+    observe(() => applyTheme(settings$.themeMode.get()));
+  }, []);
+};
+```
+
+**Passes**
+
+```tsx
+import { useObserve } from "@legendapp/state/react";
+
+import { applyTheme } from "@/lib/theme";
+import { settings$ } from "@/stores/settings";
+
+export const useThemeSync = () => {
+  useObserve(() => applyTheme(settings$.themeMode.get()));
 };
 ```

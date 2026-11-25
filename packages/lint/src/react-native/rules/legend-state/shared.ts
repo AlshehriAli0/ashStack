@@ -1,3 +1,4 @@
+import { hasAncestor, isFunction } from "../../../lib/ast.js";
 import type { AstNode, RuleContext } from "../../../lib/types.js";
 
 export const OBSERVABLE_FACTORIES = new Set(["observable", "useObservable"]);
@@ -26,3 +27,31 @@ export const factoryCalled = (node: AstNode | null | undefined): string | null =
 
 /** Source text for a node, for quoting it back in a message. */
 export const textOf = (context: RuleContext, node: AstNode): string => context.sourceCode.getText(node);
+
+/** Calls whose function argument Legend State runs as a tracking context: a `get()` inside subscribes. */
+const TRACKING_CONTEXT_CALLEES = new Set([
+  "useValue",
+  "observe",
+  "useObserve",
+  "useObserveEffect",
+  "when",
+  "whenReady",
+  "observable",
+  "useObservable",
+  "useComputed",
+]);
+
+/** A function Legend State runs as a tracking context: the first argument of `useValue(() => …)`, `observable(() => …)`, …. */
+const isTrackingCallback = (node: AstNode): boolean => {
+  const call = node.parent;
+  return (
+    isFunction(node) &&
+    call?.type === "CallExpression" &&
+    call.callee.type === "Identifier" &&
+    TRACKING_CONTEXT_CALLEES.has(call.callee.name) &&
+    call.arguments[0] === node
+  );
+};
+
+/** Whether `node` runs inside a tracking context, where a `get()` subscribes. */
+export const inTrackingContext = (node: AstNode): boolean => hasAncestor(node, isTrackingCallback);

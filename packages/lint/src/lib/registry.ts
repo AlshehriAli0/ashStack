@@ -250,6 +250,12 @@ export const reactNativeRegistry: ModuleMeta[] = [
           importNames: ["use$", "useSelector"],
           message: "Use `useValue` from `@legendapp/state/react`; `use$` and `useSelector` are deprecated.",
         },
+        {
+          name: "@legendapp/state/react",
+          importNames: ["observer"],
+          message:
+            "Read the value with `useValue` instead of wrapping the component in `observer`; the React Compiler and `useValue` cover what it did. Inside `observer` a bare `.get()` tracks, and moved out of it the same line silently stops updating.",
+        },
       ],
     },
     rules: {
@@ -261,6 +267,8 @@ export const reactNativeRegistry: ModuleMeta[] = [
       "no-peek-in-selector": {},
       "no-object-selector": {},
       "no-observable-in-component": {},
+      "no-untracked-collection-read": {},
+      "dispose-observe": {},
     },
   },
   {
