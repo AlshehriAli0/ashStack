@@ -1,6 +1,5 @@
-import { lazy } from "react";
 import { View } from "react-native";
 
-export const Details = lazy(() => import("./details"));
+import { formatPrice } from "./helpers";
 
-export const Panel = () => <View />;
+export const Panel = () => <View accessibilityLabel={formatPrice(1)} />;

@@ -18,6 +18,7 @@ export type ReactNativeRuleId =
   | "@ashstack/react-native/hoist-stateless-function"
   | "@ashstack/react-native/no-manual-memo"
   | "@ashstack/react-native/no-dynamic-import"
+  | "@ashstack/react-native/no-react-lazy"
   | "@ashstack/unistyles/animated-theme"
   | "@ashstack/unistyles/content-container"
   | "@ashstack/unistyles/in-sheet"
@@ -155,13 +156,21 @@ declare module "oxlint" {
      */
     "@ashstack/react-native/no-manual-memo"?: RuleSetting;
     /**
-     * Disallow dynamic `import()` outside a `React.lazy` or `dynamic` wrapper. Metro inlines it into the same bundle, so nothing is deferred and the module is hidden from the typechecker.
+     * Disallow dynamic `import()`. Metro inlines it into the same bundle, so nothing is deferred and the module is hidden from the typechecker. One inside a `lazy` or `dynamic` wrapper is left to `no-react-lazy`, which reports the wrapper.
      *
      * **Default: on.**
      *
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react-native.md#ashstackreact-nativeno-dynamic-import
      */
     "@ashstack/react-native/no-dynamic-import"?: RuleSetting;
+    /**
+     * Disallow `lazy` and `React.lazy` from `react`. The router already loads screens lazily, and the Suspense boundary `lazy` adds holds its fallback for up to 300ms and can loop forever inside a frozen screen.
+     *
+     * **Default: on.**
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react-native.md#ashstackreact-nativeno-react-lazy
+     */
+    "@ashstack/react-native/no-react-lazy"?: RuleSetting;
     /**
      * A Reanimated worklet hook cannot see `useUnistyles()` theme changes on the UI thread. Read the shared value from `useAnimatedTheme()` there instead.
      *

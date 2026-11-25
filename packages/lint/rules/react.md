@@ -11,6 +11,10 @@ _always on via `react()` and every entry above it._
 - [`hoist-intl`](#ashstackreacthoist-intl)
 - [`prefer-design-system`](#ashstackreactprefer-design-system)
 - [`components-tsx-only`](#ashstackreactcomponents-tsx-only)
+- [`no-use-no-memo`](#ashstackreactno-use-no-memo)
+- [`no-context-provider`](#ashstackreactno-context-provider)
+- [`require-destructured-router`](#ashstackreactrequire-destructured-router)
+- [`require-effect-cleanup`](#ashstackreactrequire-effect-cleanup)
 
 ## `@ashstack/react/no-unlabeled-icon-button`
 
@@ -199,4 +203,120 @@ export const formatFullName = (first: string, last: string) => `${first} ${last}
 import { View } from "react-native";
 
 export const Panel = () => <View />;
+```
+
+## `@ashstack/react/no-use-no-memo`
+
+Disallow the `"use no memo"` directive. It removes a component or file from the React Compiler, which clears the bailout report without fixing it.
+
+**Default: on.**
+
+**Fails**
+
+```tsx
+export const PriceChart = ({ points }: { points: number[] }) => {
+  "use no memo";
+  return <svg aria-label={`${points.length} points`} />;
+};
+```
+
+**Passes**
+
+```tsx
+export const PriceChart = ({ points }: { points: number[] }) => <svg aria-label={`${points.length} points`} />;
+```
+
+## `@ashstack/react/no-context-provider`
+
+Disallow `<Context.Provider>` for a context made by React's `createContext`. React 19 renders the context itself as the provider, and `.Provider` is deprecated.
+
+**Default: on.**
+
+**Fails**
+
+```tsx
+import { createContext, type ReactNode } from "react";
+
+const ThemeContext = createContext<"light" | "dark">("light");
+
+export const ThemeProvider = ({ children }: { children: ReactNode }) => (
+  <ThemeContext.Provider value="dark">{children}</ThemeContext.Provider>
+);
+```
+
+**Passes**
+
+```tsx
+import { createContext, type ReactNode } from "react";
+
+const ThemeContext = createContext<"light" | "dark">("light");
+
+export const ThemeProvider = ({ children }: { children: ReactNode }) => (
+  <ThemeContext value="dark">{children}</ThemeContext>
+);
+```
+
+## `@ashstack/react/require-destructured-router`
+
+Require destructuring the result of `useRouter` and `useNavigation` at the call site. A method called on the whole object makes the React Compiler cache on that object instead of on the function.
+
+**Default: on.**
+
+**Fails**
+
+```tsx
+import { useRouter } from "expo-router";
+
+export const BackButton = () => {
+  const router = useRouter();
+  return <button type="button" onClick={() => router.back()} />;
+};
+```
+
+**Passes**
+
+```tsx
+import { useRouter } from "expo-router";
+
+export const BackButton = () => {
+  const { back } = useRouter();
+  return <button type="button" onClick={back} />;
+};
+```
+
+## `@ashstack/react/require-effect-cleanup`
+
+Require a `useEffect` or `useLayoutEffect` that adds a listener, subscribes, starts an interval, or opens a `WebSocket` or `AbortController` to return a cleanup. Without one, every re-run and unmount leaves the previous one running.
+
+**Default: on.**
+
+**Fails**
+
+```tsx
+import { useEffect } from "react";
+import { AppState } from "react-native";
+
+export const useForeground = (onForeground: () => void) => {
+  useEffect(() => {
+    AppState.addEventListener("change", state => {
+      if (state === "active") onForeground();
+    });
+  }, [onForeground]);
+};
+```
+
+**Passes**
+
+```tsx
+import { useEffect } from "react";
+import { AppState } from "react-native";
+
+export const useForeground = (onForeground: () => void) => {
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", state => {
+      if (state === "active") onForeground();
+    });
+    return () => subscription.remove();
+  }, [onForeground]);
+};
 ```

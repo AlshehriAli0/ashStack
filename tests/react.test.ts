@@ -1274,4 +1274,290 @@ export const all = [Pressable, TouchableOpacity];
       },
     ],
   },
+  "no-use-no-memo": {
+    valid: [
+      {
+        name: "other directives",
+        code: `"use client";
+export const Card = () => {
+  "use memo";
+  return null;
+};
+`,
+      },
+      {
+        name: "the phrase in a plain string is not a directive",
+        code: `export const note = () => {
+  const reason = "use no memo";
+  return reason;
+};
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "a function directive",
+        code: `export const Chart = () => {
+  "use no memo";
+  return null;
+};
+`,
+        errors: [
+          {
+            message:
+              'Delete `"use no memo"` and fix what the compiler bails out on. The directive opts this code out of the React Compiler, so it alone stops being memoised and the bailout is hidden instead of fixed.',
+            line: 2,
+            column: 3,
+          },
+        ],
+      },
+      {
+        name: "a file directive",
+        code: `"use no memo";
+export const Chart = () => null;
+`,
+        errors: [{ line: 1, column: 1 }],
+      },
+    ],
+  },
+  "no-context-provider": {
+    valid: [
+      {
+        name: "React 19's form: the context is the provider",
+        code: `import { createContext } from "react";
+const ThemeContext = createContext("light");
+export const App = ({ children }) => <ThemeContext value="dark">{children}</ThemeContext>;
+`,
+      },
+      {
+        name: "a compound component's own Provider part",
+        code: `const Composer = { Provider: ({ children }) => children };
+export const App = ({ children }) => <Composer.Provider>{children}</Composer.Provider>;
+`,
+      },
+      {
+        name: "a context from another library, whose Provider is still required",
+        code: `import { createContext } from "use-context-selector";
+const Store = createContext(null);
+export const App = ({ children }) => <Store.Provider value={null}>{children}</Store.Provider>;
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "a named createContext",
+        code: `import { createContext } from "react";
+const ThemeContext = createContext("light");
+export const App = ({ children }) => <ThemeContext.Provider value="dark">{children}</ThemeContext.Provider>;
+`,
+        errors: [
+          {
+            message:
+              "Render `<ThemeContext value={…}>` instead of `<ThemeContext.Provider>`. React 19 makes the context its own provider, and `.Provider` is deprecated.",
+            line: 3,
+            column: 39,
+          },
+        ],
+      },
+      {
+        name: "React.createContext through the default import, and an aliased named import",
+        code: `import React, { createContext as make } from "react";
+const A = React.createContext(0);
+const B = make(0);
+export const App = () => (
+  <A.Provider value={1}>
+    <B.Provider value={2} />
+  </A.Provider>
+);
+`,
+        errors: [
+          { line: 5, column: 4 },
+          { line: 6, column: 6 },
+        ],
+      },
+    ],
+  },
+  "require-destructured-router": {
+    valid: [
+      {
+        name: "the docs' form: destructure what you call",
+        code: `import { useRouter } from "expo-router";
+export const Back = () => {
+  const { back } = useRouter();
+  return <button type="button" onClick={back} />;
+};
+`,
+      },
+      {
+        name: "a useRouter that is not a router module's",
+        code: `import { useRouter } from "next/router";
+export const Back = () => {
+  const router = useRouter();
+  return router.pathname;
+};
+`,
+      },
+      {
+        name: "a hook bound through a member call is not tracked",
+        code: `import * as Router from "expo-router";
+export const Back = () => {
+  const router = Router.useRouter();
+  return router;
+};
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "useRouter bound to a plain name",
+        code: `import { useRouter } from "expo-router";
+export const Back = () => {
+  const router = useRouter();
+  return <button type="button" onClick={() => router.back()} />;
+};
+`,
+        errors: [
+          {
+            message:
+              "Destructure what you call from `useRouter()`, as in `const { push } = useRouter()`. Called on the whole object, the React Compiler caches on the object instead of on the function.",
+            line: 3,
+            column: 9,
+          },
+        ],
+      },
+      {
+        name: "useNavigation from expo-router and from React Navigation",
+        code: `import { useNavigation } from "expo-router";
+import { useNavigation as useNav } from "@react-navigation/native";
+export const Screen = () => {
+  const navigation = useNavigation();
+  const other = useNav();
+  return [navigation, other];
+};
+`,
+        errors: [
+          { message: "from `useNavigation()`", line: 4 },
+          { message: "from `useNav()`", line: 5 },
+        ],
+      },
+    ],
+  },
+  "require-effect-cleanup": {
+    valid: [
+      {
+        name: "the docs' AppState listener with its cleanup",
+        code: `import { useEffect } from "react";
+import { AppState } from "react-native";
+export const useForeground = onForeground => {
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", state => {
+      if (state === "active") onForeground();
+    });
+    return () => subscription.remove();
+  }, []);
+};
+`,
+      },
+      {
+        name: "an expression body returns what the call returns",
+        code: `import { useEffect } from "react";
+export const useSync = store => {
+  useEffect(() => store.subscribe(render), [store]);
+};
+`,
+      },
+      {
+        name: "a one-shot setTimeout",
+        code: `import { useEffect } from "react";
+export const useHint = show => {
+  useEffect(() => {
+    setTimeout(show, 1000);
+  }, [show]);
+};
+`,
+      },
+      {
+        name: "an early return before the cleanup",
+        code: `import { useLayoutEffect } from "react";
+export const useTicker = (enabled, tick) => {
+  useLayoutEffect(() => {
+    if (!enabled) return;
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [enabled, tick]);
+};
+`,
+      },
+      {
+        name: "registering outside an effect",
+        code: `import { AppState } from "react-native";
+export const start = () => AppState.addEventListener("change", log);
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "a listener with no cleanup",
+        code: `import { useEffect } from "react";
+import { Keyboard } from "react-native";
+export const useKeyboard = onShow => {
+  useEffect(() => {
+    Keyboard.addListener("keyboardDidShow", onShow);
+  }, [onShow]);
+};
+`,
+        errors: [
+          {
+            message:
+              "Return a cleanup from this effect that undoes `addListener`: remove the listener, unsubscribe, `clearInterval`, `close()` or `abort()`. Without one, every re-run and unmount leaves the previous one running.",
+            line: 5,
+            column: 5,
+          },
+        ],
+      },
+      {
+        name: "an interval in a layout effect",
+        code: `import { useLayoutEffect } from "react";
+export const useTicker = tick => {
+  useLayoutEffect(() => {
+    setInterval(tick, 1000);
+  }, [tick]);
+};
+`,
+        errors: [{ message: "undoes `setInterval`", line: 4 }],
+      },
+      {
+        name: "a socket and an abort controller",
+        code: `import { useEffect } from "react";
+export const useFeed = url => {
+  useEffect(() => {
+    const socket = new WebSocket(url);
+    socket.onmessage = render;
+  }, [url]);
+  useEffect(function load() {
+    const controller = new AbortController();
+    void fetch(url, { signal: controller.signal });
+  }, [url]);
+};
+`,
+        errors: [
+          { message: "undoes `new WebSocket`", line: 4 },
+          { message: "undoes `new AbortController`", line: 8 },
+        ],
+      },
+      {
+        name: "a return inside a nested callback is not the effect's",
+        code: `import { useEffect } from "react";
+export const useStore = store => {
+  useEffect(() => {
+    store.subscribe(() => {
+      return render();
+    });
+  }, [store]);
+};
+`,
+        errors: [{ message: "undoes `subscribe`", line: 4 }],
+      },
+    ],
+  },
 });

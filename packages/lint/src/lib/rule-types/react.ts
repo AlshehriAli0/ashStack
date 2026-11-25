@@ -12,6 +12,10 @@ export type ReactRuleId =
   | "@ashstack/react/hoist-intl"
   | "@ashstack/react/prefer-design-system"
   | "@ashstack/react/components-tsx-only"
+  | "@ashstack/react/no-use-no-memo"
+  | "@ashstack/react/no-context-provider"
+  | "@ashstack/react/require-destructured-router"
+  | "@ashstack/react/require-effect-cleanup"
   | "@ashstack/query/no-inline-keys"
   | "@ashstack/query/no-deprecated-filters"
   | "@ashstack/query/require-destructured-hooks"
@@ -98,6 +102,38 @@ declare module "oxlint" {
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react.md#ashstackreactcomponents-tsx-only
      */
     "@ashstack/react/components-tsx-only"?: RuleSetting<[{ dir?: string }]>;
+    /**
+     * Disallow the `"use no memo"` directive. It removes a component or file from the React Compiler, which clears the bailout report without fixing it.
+     *
+     * **Default: on.**
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react.md#ashstackreactno-use-no-memo
+     */
+    "@ashstack/react/no-use-no-memo"?: RuleSetting;
+    /**
+     * Disallow `<Context.Provider>` for a context made by React's `createContext`. React 19 renders the context itself as the provider, and `.Provider` is deprecated.
+     *
+     * **Default: on.**
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react.md#ashstackreactno-context-provider
+     */
+    "@ashstack/react/no-context-provider"?: RuleSetting;
+    /**
+     * Require destructuring the result of `useRouter` and `useNavigation` at the call site. A method called on the whole object makes the React Compiler cache on that object instead of on the function.
+     *
+     * **Default: on.**
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react.md#ashstackreactrequire-destructured-router
+     */
+    "@ashstack/react/require-destructured-router"?: RuleSetting;
+    /**
+     * Require a `useEffect` or `useLayoutEffect` that adds a listener, subscribes, starts an interval, or opens a `WebSocket` or `AbortController` to return a cleanup. Without one, every re-run and unmount leaves the previous one running.
+     *
+     * **Default: on.**
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/react.md#ashstackreactrequire-effect-cleanup
+     */
+    "@ashstack/react/require-effect-cleanup"?: RuleSetting;
     /**
      * Disallow a query key written as an array literal at the call site instead of coming from a keys factory.
      *

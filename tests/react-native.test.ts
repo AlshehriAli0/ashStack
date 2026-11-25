@@ -2566,4 +2566,47 @@ export const Toolbar = () => (
       },
     ],
   },
+  "no-react-lazy": {
+    valid: [
+      {
+        name: "a static import",
+        code: `import { Details } from "./details";
+export const Screen = () => <Details />;
+`,
+      },
+      {
+        name: "a lazy that is not React's",
+        code: `import { lazy } from "./lazy";
+export const value = lazy(() => 1);
+`,
+      },
+      {
+        name: "a lazy member on something other than the react import",
+        code: `import React from "react";
+export const value = cache.lazy(() => 1);
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "lazy, React.lazy and a namespace import",
+        code: `import React, { lazy as load } from "react";
+import * as R from "react";
+export const A = load(() => import("./a"));
+export const B = React.lazy(() => import("./b"));
+export const C = R.lazy(() => import("./c"));
+`,
+        errors: [
+          {
+            message:
+              "Import this component statically, or `require` a heavy one at first use. The router already loads each screen lazily, and the Suspense boundary `lazy` adds holds a blank fallback for up to 300ms and can loop rendering forever inside a frozen screen.",
+            line: 3,
+            column: 18,
+          },
+          { line: 4, column: 18 },
+          { line: 5, column: 18 },
+        ],
+      },
+    ],
+  },
 });

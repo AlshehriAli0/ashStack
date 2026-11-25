@@ -37,6 +37,10 @@ export const reactRegistry: ModuleMeta[] = [
       "hoist-intl": {},
       "prefer-design-system": { defaultOff: true },
       "components-tsx-only": { defaultOff: true },
+      "no-use-no-memo": {},
+      "no-context-provider": {},
+      "require-destructured-router": {},
+      "require-effect-cleanup": {},
     },
   },
   {
@@ -149,6 +153,7 @@ export const reactNativeRegistry: ModuleMeta[] = [
       "hoist-stateless-function": {},
       "no-manual-memo": {},
       "no-dynamic-import": {},
+      "no-react-lazy": {},
     },
   },
   {
