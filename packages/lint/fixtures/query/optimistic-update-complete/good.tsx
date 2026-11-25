@@ -12,8 +12,8 @@ export const useToggleLike = () => {
       queryClient.setQueryData(postQueries.detail(id).queryKey, post => post && { ...post, liked });
       return { previous };
     },
-    onError: (_error, { id }, context) => {
-      queryClient.setQueryData(postQueries.detail(id).queryKey, context?.previous);
+    onError: (_error, { id }, onMutateResult) => {
+      queryClient.setQueryData(postQueries.detail(id).queryKey, onMutateResult?.previous);
     },
     mutationFn: toggleLike,
   });

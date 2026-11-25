@@ -1,4 +1,12 @@
-import { calleeName, findInSubtree, gate, problem, propertyKeyName, propertyValue } from "../../../lib/ast.js";
+import {
+  calleeName,
+  findInSubtree,
+  gate,
+  problem,
+  propertyKeyName,
+  propertyValue,
+  receiverName,
+} from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 import { optionsArgument, QUERY_OPTIONS_CALLS, queryFunctions } from "./shared.js";
 
@@ -28,19 +36,17 @@ export const forwardSignal: Rule = problem(
         },
         ImportDeclaration(node) {
           if (!REQUESTS_MODULE.test(node.source.value)) return;
-          for (const specifier of node.specifiers) {
-            if (specifier.type !== "ImportNamespaceSpecifier") requests.add(specifier.local.name);
-          }
+          for (const specifier of node.specifiers) requests.add(specifier.local.name);
         },
         CallExpression(node) {
           const options = optionsArgument(node, QUERY_OPTIONS_CALLS);
           for (const fn of queryFunctions(propertyValue(options, "queryFn"))) {
             if (!dropsSignal(fn)) continue;
-            const call = findInSubtree(
-              fn,
-              inner =>
-                inner.type === "CallExpression" && inner.callee.type === "Identifier" && requests.has(inner.callee.name)
-            );
+            const call = findInSubtree(fn, inner => {
+              if (inner.type !== "CallExpression") return false;
+              const name = inner.callee.type === "Identifier" ? inner.callee.name : receiverName(inner);
+              return name !== null && requests.has(name);
+            });
             if (call === null) continue;
             context.report({
               node: fn,

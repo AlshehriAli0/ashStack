@@ -3,7 +3,8 @@ import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 import { MUTATION_OPTIONS_CALLS, optionsArgument, QUERY_OPTIONS_CALLS } from "./shared.js";
 
 const CALLBACKS = new Set(["onSuccess", "onError", "onSettled"]);
-const GUARDED = new Set([...CALLBACKS, "mutationFn", "queryFn", "queryKey"]);
+const GUARDED = new Set(["onMutate", ...CALLBACKS, "mutationFn", "queryFn", "queryKey"]);
+const OPTIONS_CALLS = new Set([...QUERY_OPTIONS_CALLS, ...MUTATION_OPTIONS_CALLS]);
 
 /** The keys a spread of `rest` cannot carry, because `const { onSuccess, ...rest } = config` took them out. */
 const keysTakenOut = (context: RuleContext, spread: AstNode): Set<string> => {
@@ -23,11 +24,11 @@ const messageFor = (keys: string[]): string => {
     callback === undefined
       ? ""
       : ` To keep the caller's \`${callback}\` too, destructure it out (\`const { ${callback}, ...rest } = config\`) and call it from yours.`;
-  return `Move this spread above ${listed}: a later spread replaces every key it shares, so the value written here is silently dropped.${keepBoth}`;
+  return `Move this spread above ${listed}: a spread replaces every key it shares with the properties written before it.${keepBoth}`;
 };
 
 export const noOverriddenCallbacks: Rule = problem(
-  "Disallow a spread after `onSuccess`, `onError`, `onSettled`, `mutationFn`, `queryFn` or `queryKey` in a query or mutation options object. Whatever the spread carries under those keys replaces the ones written before it.",
+  "Disallow a spread after `onMutate`, `onSuccess`, `onError`, `onSettled`, `mutationFn`, `queryFn` or `queryKey` in a query or mutation options object. Whatever the spread carries under those keys replaces the ones written before it.",
   {
     createOnce(context: RuleContext) {
       return {
@@ -35,7 +36,7 @@ export const noOverriddenCallbacks: Rule = problem(
           return gate(context, "...");
         },
         CallExpression(node) {
-          const options = optionsArgument(node, QUERY_OPTIONS_CALLS) ?? optionsArgument(node, MUTATION_OPTIONS_CALLS);
+          const options = optionsArgument(node, OPTIONS_CALLS);
           if (options?.type !== "ObjectExpression") return;
           const written: string[] = [];
           for (const property of options.properties) {

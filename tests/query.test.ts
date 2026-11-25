@@ -335,6 +335,17 @@ export const make = <T,>(id: string) => {
 `,
       },
       {
+        name: "the query client is never a key part",
+        code: `
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+
+export const usePrefetched = (id: string) => {
+  const queryClient = useQueryClient();
+  return useQuery({ queryKey: ["post", id], queryFn: () => loadThrough(queryClient, id) });
+};
+`,
+      },
+      {
         name: "a key that is not an array literal is not checked",
         code: `
 import { useQuery } from "@tanstack/react-query";
@@ -400,6 +411,16 @@ import { skipToken, useQuery } from "@tanstack/react-query";
 export const usePost = (id?: string) => useQuery({ queryKey: ["post"], queryFn: id ? () => load(id) : skipToken });
 `,
         errors: [{ message: "Add `id`" }],
+      },
+      {
+        name: "a property name in the key is not the variable it shares a name with",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+
+export const search = (term: string, user: { id: string }, id: string) =>
+  queryOptions({ queryKey: ["search", { term: "all" }, user.id], queryFn: () => find(term, id) });
+`,
+        errors: [{ message: "Add `term`" }, { message: "Add `id`" }],
       },
       {
         name: "a component's local state",
@@ -474,7 +495,7 @@ export const useCreate = (config: Config) =>
         errors: [
           {
             message:
-              "Move this spread above `mutationFn`, `onSuccess`: a later spread replaces every key it shares, so the value written here is silently dropped. To keep the caller's `onSuccess` too, destructure it out (`const { onSuccess, ...rest } = config`) and call it from yours.",
+              "Move this spread above `mutationFn`, `onSuccess`: a spread replaces every key it shares with the properties written before it. To keep the caller's `onSuccess` too, destructure it out (`const { onSuccess, ...rest } = config`) and call it from yours.",
             line: 5,
             column: 60,
           },
@@ -493,6 +514,15 @@ export const useCreate = (config: Config) => {
         errors: [{ message: "Move this spread above `onError`:" }],
       },
       {
+        name: "a spread can replace onMutate",
+        code: `
+import { useMutation } from "@tanstack/react-query";
+
+export const useToggle = (config: Config) => useMutation({ onMutate: snapshot, ...config });
+`,
+        errors: [{ message: "Move this spread above `onMutate`:" }],
+      },
+      {
         name: "a queryKey a spread can replace",
         code: `
 import { queryOptions } from "@tanstack/react-query";
@@ -500,7 +530,7 @@ import { queryOptions } from "@tanstack/react-query";
 export const detail = (id: string, extra: object) =>
   queryOptions({ queryKey: ["post", id], queryFn: () => load(id), ...extra });
 `,
-        errors: [{ message: /^Move this spread above `queryKey`, `queryFn`: .* dropped\.$/ }],
+        errors: [{ message: /^Move this spread above `queryKey`, `queryFn`: .* before it\.$/ }],
       },
     ],
   },
@@ -615,6 +645,20 @@ export const toggle = mutationOptions({
         errors: [{ message: "Await `queryClient.cancelQueries" }],
       },
       {
+        name: "returning the cache write returns the new data, not a snapshot",
+        code: `
+import { useMutation } from "@tanstack/react-query";
+
+export const useToggle = () =>
+  useMutation({
+    onMutate: ({ id }) => queryClient.setQueryData(key(id), toggle),
+    onError: rollback,
+    mutationFn: toggleLike,
+  });
+`,
+        errors: [{ message: "Return the snapshot from `onMutate`" }, { message: "Await `queryClient.cancelQueries" }],
+      },
+      {
         name: "a return inside a nested callback is not onMutate's",
         code: `
 import { useMutation } from "@tanstack/react-query";
@@ -692,6 +736,16 @@ export const detail = (id: string) => queryOptions({ queryKey: ["post", id], que
             column: 87,
           },
         ],
+      },
+      {
+        name: "a namespace import of a requests module",
+        code: `
+import { queryOptions } from "@tanstack/react-query";
+import * as posts from "./posts.requests";
+
+export const detail = (id: string) => queryOptions({ queryKey: ["post", id], queryFn: () => posts.fetchPost(id) });
+`,
+        errors: [{ message: "pass it to `fetchPost`" }],
       },
       {
         name: "a destructure that takes the page but not the signal",

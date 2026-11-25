@@ -16,7 +16,7 @@ const MESSAGES = {
   cancel:
     "Await `queryClient.cancelQueries({ queryKey })` before this first cache write. A refetch already in flight can otherwise land after it and silently revert the optimistic value.",
   snapshot:
-    "Return the snapshot from `onMutate`: `return { previous }`. It becomes `onError`'s context, the only record of what to restore.",
+    "Return the snapshot from `onMutate`: `return { previous }`. It reaches `onError` as its third argument, the only record of what to restore.",
   rollback:
     "Add an `onError` that writes the `onMutate` snapshot back. Without it a failed mutation leaves the optimistic value in the cache.",
 };
@@ -33,15 +33,18 @@ const awaitsCancelBefore = (onMutate: AstNode, write: AstNode): boolean =>
       subtreeHas(node.argument, inner => isMemberCall(inner, "cancelQueries"))
   );
 
-const returnsValue = (onMutate: AstNode): boolean =>
-  (onMutate.type === "ArrowFunctionExpression" && onMutate.expression) ||
-  subtreeHas(
+/** Whether `onMutate` returns something other than a cache write's own result, which is no snapshot. */
+const returnsSnapshot = (onMutate: AstNode): boolean => {
+  if (onMutate.type === "ArrowFunctionExpression" && onMutate.expression) return !isCacheWrite(onMutate.body);
+  return subtreeHas(
     onMutate,
     node =>
       node.type === "ReturnStatement" &&
       node.argument !== null &&
+      !isCacheWrite(node.argument) &&
       !crossesFunctionBefore(node, onMutate, FUNCTION_TYPES)
   );
+};
 
 export const optimisticUpdateComplete: Rule = problem(
   "Require a mutation whose `onMutate` writes the query cache to await `cancelQueries` before the write, return a snapshot, and roll back in `onError`. Skip one and the UI looks right until the next refresh.",
@@ -58,7 +61,7 @@ export const optimisticUpdateComplete: Rule = problem(
           const write = findInSubtree(onMutate, isCacheWrite);
           if (write === null) return;
           if (!awaitsCancelBefore(onMutate, write)) context.report({ node: write, message: MESSAGES.cancel });
-          if (!returnsValue(onMutate)) context.report({ node: onMutate, message: MESSAGES.snapshot });
+          if (!returnsSnapshot(onMutate)) context.report({ node: onMutate, message: MESSAGES.snapshot });
           if (propertyValue(options, "onError") === null)
             context.report({ node: onMutate, message: MESSAGES.rollback });
         },

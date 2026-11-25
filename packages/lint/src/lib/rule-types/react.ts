@@ -147,7 +147,7 @@ declare module "oxlint" {
      */
     "@ashstack/query/exhaustive-key"?: RuleSetting;
     /**
-     * Disallow a spread after `onSuccess`, `onError`, `onSettled`, `mutationFn`, `queryFn` or `queryKey` in a query or mutation options object. Whatever the spread carries under those keys replaces the ones written before it.
+     * Disallow a spread after `onMutate`, `onSuccess`, `onError`, `onSettled`, `mutationFn`, `queryFn` or `queryKey` in a query or mutation options object. Whatever the spread carries under those keys replaces the ones written before it.
      *
      * **Default: on**, when `@tanstack/react-query` is a dependency.
      *

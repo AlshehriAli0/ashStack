@@ -243,7 +243,7 @@ export const postQueries = {
 
 ## `@ashstack/query/no-overridden-callbacks`
 
-Disallow a spread after `onSuccess`, `onError`, `onSettled`, `mutationFn`, `queryFn` or `queryKey` in a query or mutation options object. Whatever the spread carries under those keys replaces the ones written before it.
+Disallow a spread after `onMutate`, `onSuccess`, `onError`, `onSettled`, `mutationFn`, `queryFn` or `queryKey` in a query or mutation options object. Whatever the spread carries under those keys replaces the ones written before it.
 
 **Default: on**, when `@tanstack/react-query` is a dependency.
 
@@ -329,8 +329,8 @@ export const useToggleLike = () => {
       queryClient.setQueryData(postQueries.detail(id).queryKey, post => post && { ...post, liked });
       return { previous };
     },
-    onError: (_error, { id }, context) => {
-      queryClient.setQueryData(postQueries.detail(id).queryKey, context?.previous);
+    onError: (_error, { id }, onMutateResult) => {
+      queryClient.setQueryData(postQueries.detail(id).queryKey, onMutateResult?.previous);
     },
     mutationFn: toggleLike,
   });

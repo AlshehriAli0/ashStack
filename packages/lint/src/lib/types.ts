@@ -14,6 +14,11 @@ export type RuleContext = Parameters<CreateRule["create"]>[0];
 
 export type Visitor = OxVisitor;
 
+export type Scope = ReturnType<RuleContext["sourceCode"]["getScope"]>;
+
+/** A binding in a `Scope`, with every reference to it. */
+export type Variable = Scope["variables"][number];
+
 /**
  * oxlint's rule metadata plus the two fields this package reads: `defaultOff`
  * for rules a consumer opts into, `packages` for a rule gated on a dependency
