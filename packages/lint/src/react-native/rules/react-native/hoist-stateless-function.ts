@@ -1,25 +1,9 @@
-import { ancestors, COMPONENT_OR_HOOK, isFunction, problem } from "../../../lib/ast.js";
+import { boundFunctionName, enclosingComponentOrHook, problem } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
 const COMPONENT_NAME = /^[A-Z]/;
 
 type Scope = ReturnType<RuleContext["sourceCode"]["getScope"]>;
-
-const boundFunctionName = (node: AstNode): string | null => {
-  if (node.type === "FunctionDeclaration") return node.id?.name ?? null;
-  const { parent } = node;
-  if (parent === null || parent.type !== "VariableDeclarator" || parent.id.type !== "Identifier") return null;
-  return parent.id.name;
-};
-
-const enclosingReactFunction = (node: AstNode): AstNode | null => {
-  for (const current of ancestors(node)) {
-    if (!isFunction(current)) continue;
-    const name = boundFunctionName(current);
-    if (name !== null && COMPONENT_OR_HOOK.test(name)) return current;
-  }
-  return null;
-};
 
 const scopeContains = (scope: Scope | null | undefined, ancestor: Scope): boolean => {
   for (let current = scope; current !== null && current !== undefined; current = current.upper) {
@@ -43,7 +27,7 @@ export const hoistStatelessFunction: Rule = problem(
         const name = boundFunctionName(node);
         if (name === null || COMPONENT_NAME.test(name)) return;
 
-        const component = enclosingReactFunction(node);
+        const component = enclosingComponentOrHook(node);
         if (component === null) return;
 
         const scope = context.sourceCode.getScope(node);

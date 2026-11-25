@@ -85,7 +85,7 @@ const compilerOnlyRules = (reactCompiler: boolean): RuleMap =>
 /**
  * React Native / Expo entry — everything in react plus generic RN rules, with
  * per-library modules (unistyles, legendList, legendState, reanimated,
- * turboImage, skia, keyboard, gestureHandler) auto-detected from your dependencies. Your
+ * turboImage, skia, keyboard, gestureHandler, worklets) auto-detected from your dependencies. Your
  * `rules` block always overrides.
  *
  * @see [every rule `react-native()` sets](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/entries/react-native.md#react-native)

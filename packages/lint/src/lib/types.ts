@@ -146,6 +146,8 @@ export type ReactNativeOptions = ReactOptions & {
   keyboard?: boolean;
   /** [`@ashstack/gesture-handler` import bans](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/gesture-handler.md#ashstackgesture-handler) on the Gesture Handler 2 API — `react-native-gesture-handler` 3 or later */
   gestureHandler?: boolean;
+  /** [`@ashstack/worklets/` rules](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/worklets.md#ashstackworklets) — `react-native-worklets` */
+  worklets?: boolean;
 };
 
 /** The config object an entry returns: oxlint's own shape, so `defineConfig({ extends: [core()] })` typechecks. */

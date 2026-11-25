@@ -26,6 +26,7 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 - [`@ashstack/skia`](../skia.md) — auto-enabled when `@shopify/react-native-skia` is a dependency.
 - [`@ashstack/keyboard`](../keyboard.md) — auto-enabled when `react-native-keyboard-controller` is a dependency.
 - [`@ashstack/gesture-handler`](../gesture-handler.md) — auto-enabled when `react-native-gesture-handler` 3 or later is a dependency.
+- [`@ashstack/worklets`](../worklets.md) — auto-enabled when `react-native-worklets` is a dependency.
 
 ### Import bans without a module
 
