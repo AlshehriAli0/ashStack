@@ -1,5 +1,23 @@
 # @ashstack/lint
 
+## 0.12.0 (2026-11-25)
+
+### Features
+
+- worklets module ([`92aeb1d`](https://github.com/AlshehriAli0/ashStack/commit/92aeb1d))
+- ban the Gesture Handler 2 API on Gesture Handler 3 ([`22d15ae`](https://github.com/AlshehriAli0/ashStack/commit/22d15ae))
+- gate a module or ban group on an installed major version ([`c9670b4`](https://github.com/AlshehriAli0/ashStack/commit/c9670b4))
+- reject redundant theme and runtime style arguments ([`2c5253b`](https://github.com/AlshehriAli0/ashStack/commit/2c5253b))
+
+### Bug Fixes
+
+- leave worklet-side timers alone and reuse the shared AST helpers ([`45ff603`](https://github.com/AlshehriAli0/ashStack/commit/45ff603))
+- name the right Gesture Handler 3 replacements, in fewer bans ([`75675d0`](https://github.com/AlshehriAli0/ashStack/commit/75675d0))
+
+### Performance
+
+- avoid repeated Unistyles argument resolution ([`aae909f`](https://github.com/AlshehriAli0/ashStack/commit/aae909f))
+
 ## 0.11.0 (2026-09-30)
 
 ### Features
