@@ -1,5 +1,5 @@
 import legendState from "../packages/lint/dist/react-native/rules/legend-state/index.js";
-import { moduleTests } from "./harness.js";
+import { banTests, moduleTests } from "./harness.js";
 
 moduleTests(legendState, {
   naming: {
@@ -1331,9 +1331,210 @@ export const useCount = () =>
           { message: "`count$.get()`", line: 9, column: 12 },
         ],
       },
+      {
+        name: "a computed observable tracks like a selector",
+        code: `import { observable } from "@legendapp/state";
+import { count$ } from "../stores/counter";
+
+export const doubled$ = observable(() => count$.peek() * 2);
+`,
+        errors: [{ message: "Use `count$.get()` inside this selector", line: 4, column: 42 }],
+      },
     ],
   },
 
+  "no-untracked-collection-read": {
+    valid: [
+      {
+        name: "the docs' fix: read the collection, then ask it",
+        code: `import { useValue } from "@legendapp/state/react";
+import { selectedIds$ } from "../stores/selection";
+
+export const useSelected = (id: string) => useValue(() => selectedIds$.get().has(id));
+`,
+      },
+      {
+        name: "has in an event handler is a plain read, which is what a handler wants",
+        code: `import { selectedIds$ } from "../stores/selection";
+
+export const onPress = (id: string) => {
+  if (selectedIds$.has(id)) selectedIds$.delete(id);
+};
+`,
+      },
+      {
+        name: "forEach tracks on an observable array",
+        code: `import { useValue } from "@legendapp/state/react";
+import { todos$ } from "../stores/todos";
+
+export const useCount = () =>
+  useValue(() => {
+    let count = 0;
+    todos$.forEach(() => count++);
+    return count;
+  });
+`,
+      },
+      {
+        name: "a receiver without the dollar suffix is not an observable",
+        code: `import { useValue } from "@legendapp/state/react";
+import { cache } from "../lib/cache";
+
+export const useCached = (id: string) => useValue(() => cache.has(id));
+`,
+      },
+      {
+        name: "only the first argument of when() is tracked",
+        code: `import { when } from "@legendapp/state";
+import { ready$, ids$ } from "../stores/selection";
+
+when(ready$, () => console.log(ids$.has("a")));
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "has on an observable Set inside useValue",
+        code: `import { useValue } from "@legendapp/state/react";
+import { selectedIds$ } from "../stores/selection";
+
+export const useSelected = (id: string) => useValue(() => selectedIds$.has(id));
+`,
+        errors: [
+          {
+            message:
+              "Read `selectedIds$.get().has(…)` to track the collection, or keep per-item flags in a record and read one key (`flags$[id].get()`). `has` on an observable `Map` or `Set` subscribes to nothing, so this never re-runs.",
+            line: 4,
+            column: 59,
+          },
+        ],
+      },
+      {
+        name: "keys on a nested observable Map inside a computed observable",
+        code: `import { observable } from "@legendapp/state";
+import { settings$ } from "../stores/settings";
+
+export const tagNames$ = observable(() => [...settings$.tags.keys()]);
+`,
+        errors: [{ message: "Read `settings$.tags.get().keys(…)`", line: 4, column: 47 }],
+      },
+      {
+        name: "the predicate of useWhen is tracked",
+        code: `import { useWhen } from "@legendapp/state/react";
+import { selectedIds$ } from "../stores/selection";
+
+export const useOnSelected = (id: string) => useWhen(() => selectedIds$.has(id), notify);
+`,
+        errors: [{ message: "`has` on an observable" }],
+      },
+      {
+        name: "entries and values inside observe and useObserve, and inside a callback nested in one",
+        code: `import { observe } from "@legendapp/state";
+import { useObserve } from "@legendapp/state/react";
+import { prices$ } from "../stores/prices";
+
+observe(() => send([...prices$.entries()]));
+
+export const useTotal = () =>
+  useObserve(() => {
+    record(Array.from(prices$.values()).map(price => prices$.has(price)));
+  });
+`,
+        errors: [
+          { message: "`entries` on an observable", line: 5 },
+          { message: "`values` on an observable", line: 9 },
+          { message: "`has` on an observable", line: 9 },
+        ],
+      },
+    ],
+  },
+  "dispose-observe": {
+    valid: [
+      {
+        name: "module scope lives as long as the app, so nothing needs disposing",
+        code: `import { observe } from "@legendapp/state";
+import { settings$ } from "../stores/settings";
+
+observe(() => applyTheme(settings$.theme.get()));
+`,
+      },
+      {
+        name: "useObserve disposes on unmount",
+        code: `import { useObserve } from "@legendapp/state/react";
+import { settings$ } from "../stores/settings";
+
+export const useThemeSync = () => {
+  useObserve(() => applyTheme(settings$.theme.get()));
+};
+`,
+      },
+      {
+        name: "the dispose function kept and returned as the effect cleanup",
+        code: `import { observe } from "@legendapp/state";
+import { useEffect } from "react";
+import { settings$ } from "../stores/settings";
+
+export const useThemeSync = () => {
+  useEffect(() => observe(() => applyTheme(settings$.theme.get())), []);
+};
+`,
+      },
+      {
+        name: "a setup function outside React that runs once",
+        code: `import { observe } from "@legendapp/state";
+import { settings$ } from "../stores/settings";
+
+export const startThemeSync = () => {
+  observe(() => applyTheme(settings$.theme.get()));
+};
+`,
+      },
+      {
+        name: "an observe that is not Legend State's",
+        code: `import { observe } from "../lib/intersection";
+
+export const useSeen = (node: Element) => {
+  observe(node);
+};
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "an observe statement in a component body",
+        code: `import { observe } from "@legendapp/state";
+import { settings$ } from "../stores/settings";
+
+export const ThemeSync = () => {
+  observe(() => applyTheme(settings$.theme.get()));
+  return null;
+};
+`,
+        errors: [
+          {
+            message:
+              "Use `useObserve` here, which disposes on unmount, or keep the function `observe` returns and call it in a cleanup. Dropped, each run starts another observer that nothing ever stops.",
+            line: 5,
+            column: 3,
+          },
+        ],
+      },
+      {
+        name: "an aliased observe inside an effect that returns no cleanup",
+        code: `import { observe as watch } from "@legendapp/state";
+import { useEffect } from "react";
+import { settings$ } from "../stores/settings";
+
+export const useThemeSync = () => {
+  useEffect(() => {
+    watch(() => applyTheme(settings$.theme.get()));
+  }, []);
+};
+`,
+        errors: [{ line: 7, column: 5 }],
+      },
+    ],
+  },
   "no-react-mirror": {
     valid: [
       {
@@ -1828,4 +2029,23 @@ export class Counter extends Component {
       },
     ],
   },
+});
+
+banTests("@ashstack/legend-state import bans", legendState.restrictedImports!, {
+  valid: ['import { useObservable, useValue } from "@legendapp/state/react";\n'],
+  invalid: [
+    {
+      name: "observer",
+      code: 'import { observer } from "@legendapp/state/react";\n',
+      errors: [{ message: "Read the value with `useValue` instead of wrapping the component in `observer`" }],
+    },
+    {
+      name: "the deprecated hooks",
+      code: 'import { use$, useSelector } from "@legendapp/state/react";\n',
+      errors: [
+        { message: "`use$` and `useSelector` are deprecated" },
+        { message: "`use$` and `useSelector` are deprecated" },
+      ],
+    },
+  ],
 });

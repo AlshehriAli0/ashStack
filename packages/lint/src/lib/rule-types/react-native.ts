@@ -49,6 +49,8 @@ export type ReactNativeRuleId =
   | "@ashstack/legend-state/no-peek-in-selector"
   | "@ashstack/legend-state/no-object-selector"
   | "@ashstack/legend-state/no-observable-in-component"
+  | "@ashstack/legend-state/no-untracked-collection-read"
+  | "@ashstack/legend-state/dispose-observe"
   | "@ashstack/reanimated/animated-reaction-safety"
   | "@ashstack/reanimated/animated-style-needs-animated-component"
   | "@ashstack/reanimated/animated-updater-purity"
@@ -406,6 +408,22 @@ declare module "oxlint" {
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-state.md#ashstacklegend-stateno-observable-in-component
      */
     "@ashstack/legend-state/no-observable-in-component"?: RuleSetting;
+    /**
+     * Disallow `has`, `entries`, `keys` or `values` called on an observable inside a tracking context. On an observable `Map` or `Set` they read the raw collection and subscribe to nothing, so the selector never re-runs.
+     *
+     * **Default: on**, when `@legendapp/state` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-state.md#ashstacklegend-stateno-untracked-collection-read
+     */
+    "@ashstack/legend-state/no-untracked-collection-read"?: RuleSetting;
+    /**
+     * Disallow an `observe(...)` statement inside a component or hook that drops the dispose function it returns. Each run starts an observer nothing ever stops.
+     *
+     * **Default: on**, when `@legendapp/state` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/legend-state.md#ashstacklegend-statedispose-observe
+     */
+    "@ashstack/legend-state/dispose-observe"?: RuleSetting;
     /**
      * A `useAnimatedReaction` result callback loops forever if it writes a shared value the prepare callback reads. Guard `scheduleOnRN` there on the current result differing from the previous one.
      *

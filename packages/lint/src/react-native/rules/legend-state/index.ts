@@ -1,4 +1,5 @@
 import { defineModule } from "../../../lib/module.js";
+import { disposeObserve } from "./dispose-observe.js";
 import { naming } from "./naming.js";
 import { noAssignment } from "./no-assignment.js";
 import { noNestedObservable } from "./no-nested-observable.js";
@@ -6,6 +7,7 @@ import { noObjectSelector } from "./no-object-selector.js";
 import { noObservableInComponent } from "./no-observable-in-component.js";
 import { noPeekInSelector } from "./no-peek-in-selector.js";
 import { noReactMirror } from "./no-react-mirror.js";
+import { noUntrackedCollectionRead } from "./no-untracked-collection-read.js";
 import { noUntrackedGetInJsx } from "./no-untracked-get-in-jsx.js";
 
 export default defineModule({
@@ -23,6 +25,8 @@ export default defineModule({
     "no-peek-in-selector": noPeekInSelector,
     "no-object-selector": noObjectSelector,
     "no-observable-in-component": noObservableInComponent,
+    "no-untracked-collection-read": noUntrackedCollectionRead,
+    "dispose-observe": disposeObserve,
   },
   restrictedImports: {
     paths: [
@@ -30,6 +34,12 @@ export default defineModule({
         name: "@legendapp/state/react",
         importNames: ["use$", "useSelector"],
         message: "Use `useValue` from `@legendapp/state/react`; `use$` and `useSelector` are deprecated.",
+      },
+      {
+        name: "@legendapp/state/react",
+        importNames: ["observer"],
+        message:
+          "Read the value with `useValue` instead of wrapping the component in `observer`; the React Compiler and `useValue` cover what it did. Inside `observer` a bare `.get()` tracks, and moved out of it the same line silently stops updating.",
       },
     ],
   },
