@@ -158,6 +158,37 @@ export const importedNames = (node: AstNode, source: string): { imported: string
   return names;
 };
 
+/**
+ * The names a file reaches one export of a module by: its named import, or a
+ * default or namespace import it hangs off. `add` each import declaration,
+ * `clear` per file, then `isCall` matches `lazy(...)` and `React.lazy(...)`.
+ */
+export const importBinding = (source: string, name: string) => {
+  const named = new Set<string>();
+  const modules = new Set<string>();
+  return {
+    clear(): void {
+      named.clear();
+      modules.clear();
+    },
+    add(node: AstNode): void {
+      for (const specifier of importedSpecifiers(node, source)) {
+        if (specifier.type === "ImportDefaultSpecifier" || specifier.type === "ImportNamespaceSpecifier") {
+          modules.add(specifier.local.name);
+        }
+      }
+      for (const { imported, local } of importedNames(node, source)) {
+        if (imported === name) named.add(local);
+      }
+    },
+    isCall(node: AstNode | null | undefined): boolean {
+      if (node?.type !== "CallExpression") return false;
+      if (node.callee.type === "Identifier") return named.has(node.callee.name);
+      return isMemberCall(node, name) && modules.has(receiverName(node) ?? "");
+    },
+  };
+};
+
 /** A property's key as a string: `{ select: f }` and `{ "select": f }` both read as `select`. */
 export const propertyKeyName = (node: AstNode): string => {
   if (node.type !== "Property" || node.computed) return "";

@@ -505,41 +505,6 @@ export const Route = () => <HeavyScreen />;
 `,
       },
       {
-        name: "wrapped in React.lazy",
-        code: `
-import React from "react";
-
-export const HeavyScreen = React.lazy(() => import("./HeavyScreen"));
-`,
-      },
-      {
-        name: "wrapped in a bare lazy",
-        code: `
-import { lazy } from "react";
-
-export const HeavyScreen = lazy(() => import("./HeavyScreen"));
-`,
-      },
-      {
-        name: "wrapped in dynamic",
-        code: `
-import dynamic from "next/dynamic";
-
-export const Chart = dynamic(() => import("./Chart"), { ssr: false });
-`,
-      },
-      {
-        name: "buried inside an async lazy factory",
-        code: `
-import { lazy } from "react";
-
-export const HeavyScreen = lazy(async () => {
-  const loaded = await import("./HeavyScreen");
-  return { default: loaded.HeavyScreen };
-});
-`,
-      },
-      {
         name: "import.meta is not an import expression",
         code: `
 export const here = import.meta.url;
@@ -584,41 +549,16 @@ import("./analytics").then(mod => mod.init());
         errors: 1,
       },
       {
-        name: "a wrapper that is not lazy or dynamic",
-        code: `
-export const Chart = preload(() => import("./Chart"));
-`,
-        errors: [{ message: "static `import`", line: 2, column: 36 }],
-      },
-      {
-        name: "a near-miss wrapper name",
-        code: `
-export const Chart = lazily(() => import("./Chart"));
-`,
-        errors: 1,
-      },
-      {
-        name: "a capitalised React.Lazy is not the lazy wrapper",
-        code: `
-import React from "react";
-
-export const Chart = React.Lazy(() => import("./Chart"));
-`,
-        errors: 1,
-      },
-      {
-        name: "a factory hoisted out of the lazy call loses the wrapper ancestor",
+        name: "inside a lazy wrapper too, which no-react-lazy reports on its own",
         code: `
 import { lazy } from "react";
 
-const load = () => import("./HeavyScreen");
-
-export const HeavyScreen = lazy(load);
+export const HeavyScreen = lazy(() => import("./HeavyScreen"));
 `,
-        errors: [{ message: "static `import`", line: 4, column: 20 }],
+        errors: [{ message: "static `import`", line: 4, column: 39 }],
       },
       {
-        name: "two unwrapped dynamic imports",
+        name: "two dynamic imports",
         code: `
 export const loadChart = () => import("./Chart");
 export const loadTable = () => import("./Table");
@@ -627,16 +567,6 @@ export const loadTable = () => import("./Table");
           { line: 2, column: 32 },
           { line: 3, column: 32 },
         ],
-      },
-      {
-        name: "a lazy wrapper elsewhere does not excuse an unrelated dynamic import",
-        code: `
-import { lazy } from "react";
-
-export const Chart = lazy(() => import("./Chart"));
-export const loadTable = () => import("./Table");
-`,
-        errors: [{ line: 5, column: 32 }],
       },
     ],
   },
@@ -2562,6 +2492,49 @@ export const Toolbar = () => (
         errors: [
           { message: "icon-only touchable", line: 7, column: 6 },
           { message: "icon-only Expo UI", line: 10, column: 6 },
+        ],
+      },
+    ],
+  },
+  "no-react-lazy": {
+    valid: [
+      {
+        name: "a static import",
+        code: `import { Details } from "./details";
+export const Screen = () => <Details />;
+`,
+      },
+      {
+        name: "a lazy that is not React's",
+        code: `import { lazy } from "./lazy";
+export const value = lazy(() => 1);
+`,
+      },
+      {
+        name: "a lazy member on something other than the react import",
+        code: `import React from "react";
+export const value = cache.lazy(() => 1);
+`,
+      },
+    ],
+    invalid: [
+      {
+        name: "lazy, React.lazy and a namespace import",
+        code: `import React, { lazy as load } from "react";
+import * as R from "react";
+export const A = load(() => import("./a"));
+export const B = React.lazy(() => import("./b"));
+export const C = R.lazy(() => import("./c"));
+`,
+        errors: [
+          {
+            message:
+              "Import this component statically, or `require` a heavy one at first use. The router already loads each screen lazily, and the Suspense boundary `lazy` adds holds a blank fallback for up to 300ms and can loop rendering forever inside a frozen screen.",
+            line: 3,
+            column: 18,
+          },
+          { line: 4, column: 18 },
+          { line: 5, column: 18 },
         ],
       },
     ],

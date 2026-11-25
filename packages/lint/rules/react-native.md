@@ -17,6 +17,7 @@ _always on via `reactNative()`._
 - [`hoist-stateless-function`](#ashstackreact-nativehoist-stateless-function)
 - [`no-manual-memo`](#ashstackreact-nativeno-manual-memo)
 - [`no-dynamic-import`](#ashstackreact-nativeno-dynamic-import)
+- [`no-react-lazy`](#ashstackreact-nativeno-react-lazy)
 
 **Import bans that ship with this module**
 
@@ -336,7 +337,7 @@ export function useGoodTotal(items: number[]) {
 
 ## `@ashstack/react-native/no-dynamic-import`
 
-Disallow dynamic `import()` outside a `React.lazy` or `dynamic` wrapper. Metro inlines it into the same bundle, so nothing is deferred and the module is hidden from the typechecker.
+Disallow dynamic `import()`. Metro inlines it into the same bundle, so nothing is deferred and the module is hidden from the typechecker.
 
 **Default: on.**
 
@@ -353,10 +354,31 @@ export const Panel = () => <View />;
 **Passes**
 
 ```tsx
-import { lazy } from "react";
 import { View } from "react-native";
 
-export const Details = lazy(() => import("./details"));
+import { formatPrice } from "./helpers";
 
-export const Panel = () => <View />;
+export const Panel = () => <View accessibilityLabel={formatPrice(1)} />;
+```
+
+## `@ashstack/react-native/no-react-lazy`
+
+Disallow `lazy` and `React.lazy` from `react`. The router already loads screens lazily, and the Suspense boundary `lazy` adds holds its fallback for up to 300ms and can loop forever inside a frozen screen.
+
+**Default: on.**
+
+**Fails**
+
+```tsx
+import { lazy } from "react";
+
+export const Details = lazy(() => import("./details"));
+```
+
+**Passes**
+
+```tsx
+import { Details } from "./details";
+
+export { Details };
 ```

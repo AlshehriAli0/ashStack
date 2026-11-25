@@ -5,6 +5,7 @@ import { noDynamicImport } from "./no-dynamic-import.js";
 import { noKeyboardWillEvents } from "./no-keyboard-will-events.js";
 import { noLeakedRender } from "./no-leaked-render.js";
 import { noManualMemo } from "./no-manual-memo.js";
+import { noReactLazy } from "./no-react-lazy.js";
 import { noRedundantViewNesting } from "./no-redundant-view-nesting.js";
 import { noRnImageNetworkSource } from "./no-rn-image-network-source.js";
 import { noRnNamespaceImport } from "./no-rn-namespace-import.js";
@@ -27,6 +28,7 @@ export default defineModule({
     "hoist-stateless-function": hoistStatelessFunction,
     "no-manual-memo": noManualMemo,
     "no-dynamic-import": noDynamicImport,
+    "no-react-lazy": noReactLazy,
   },
   restrictedImports: {
     paths: [
