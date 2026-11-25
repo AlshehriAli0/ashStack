@@ -86,7 +86,9 @@ import ReanimatedSwipeable from "react-native-gesture-handler/ReanimatedSwipeabl
     {
       name: "the Gesture builder object",
       code: `import { Gesture, GestureDetector } from "react-native-gesture-handler";\n`,
-      errors: [{ message: /'Gesture' import .*`usePanGesture`.*`useSimultaneousGestures`/, line: 1, column: 10 }],
+      errors: [
+        { message: /'Gesture' import .*`usePanGesture`.*`useCompetingGestures` \(was `Race`\)/, line: 1, column: 10 },
+      ],
     },
     {
       name: "a renamed Gesture import",

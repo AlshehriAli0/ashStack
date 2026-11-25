@@ -35,16 +35,14 @@ const BUTTON_TYPES = [
   "TouchableWithoutFeedbackProps",
 ];
 
-const LEGACY_COMPONENTS = [
+/** Gesture Handler 2 names whose Gesture Handler 3 replacement is the same name without `Legacy`. */
+const LEGACY_PREFIXED = [
   "LegacyPressable",
   "LegacyScrollView",
   "LegacyFlatList",
   "LegacyRefreshControl",
   "LegacySwitch",
   "LegacyTextInput",
-];
-
-const LEGACY_TYPES = [
   "LegacyPressableProps",
   "LegacyFlingGesture",
   "LegacyHoverGesture",
@@ -57,9 +55,6 @@ const LEGACY_TYPES = [
   "LegacyComposedGesture",
   "LegacyGestureStateManager",
 ];
-
-const GESTURE_HOOKS =
-  "`usePanGesture`, `useTapGesture`, `useLongPressGesture`, `usePinchGesture`, `useRotationGesture`, `useFlingGesture`, `useNativeGesture`";
 
 export default defineModule({
   meta: { name: "@ashstack/gesture-handler" },
@@ -74,29 +69,26 @@ export default defineModule({
       {
         name: RNGH,
         importNames: ["Gesture"],
-        message: `\`Gesture.*()\` builders are the Gesture Handler 2 API. Create each gesture with its hook (${GESTURE_HOOKS}) and pass it to \`GestureDetector\`; combine gestures with \`useSimultaneousGestures\`, \`useCompetingGestures\` or \`useExclusiveGestures\`.`,
+        message:
+          "`Gesture.*()` builders are the Gesture Handler 2 API. Create each gesture with its hook (`Gesture.Pan()` → `usePanGesture`) and pass it to `GestureDetector`; combine gestures with `useSimultaneousGestures`, `useCompetingGestures` (was `Race`) or `useExclusiveGestures`.",
       },
       {
         name: RNGH,
         importNames: HANDLER_COMPONENTS,
-        message: `\`*GestureHandler\` components are the Gesture Handler 2 API. Create the gesture with its hook (${GESTURE_HOOKS}) and wrap the view in \`GestureDetector\`. Force touch has no Gesture Handler 3 gesture.`,
-      },
-      {
-        name: RNGH,
-        importNames: [...BUTTONS, ...BUTTONS.map(name => `Legacy${name}`), ...TOUCHABLES],
         message:
-          "Use `Touchable` from `react-native-gesture-handler`, with `activeOpacity` for an opacity press effect or `activeUnderlayOpacity` for a highlight. Gesture Handler 3 deprecates its buttons and `Touchable*` components.",
+          "`*GestureHandler` components are the Gesture Handler 2 API. Create the gesture with its hook (`PanGestureHandler` → `usePanGesture`, `NativeViewGestureHandler` → `useNativeGesture`) and wrap the view in `GestureDetector`. Force touch has no Gesture Handler 3 gesture.",
       },
       {
         name: RNGH,
-        importNames: BUTTON_TYPES,
-        message: "Type the props as `TouchableProps`, the props of Gesture Handler 3's `Touchable`.",
-      },
-      {
-        name: RNGH,
-        importNames: LEGACY_COMPONENTS,
+        importNames: [...BUTTONS, ...BUTTONS.map(name => `Legacy${name}`), ...TOUCHABLES, ...BUTTON_TYPES],
         message:
-          "Import the name without the `Legacy` prefix (`LegacyScrollView` → `ScrollView`). `Legacy*` components are the Gesture Handler 2 versions.",
+          "Use `Touchable` from `react-native-gesture-handler`, typed `TouchableProps`: `activeOpacity` for an opacity press effect, `activeUnderlayOpacity` for a highlight, `androidRipple` for a ripple. Gesture Handler 3 deprecates its buttons and `Touchable*` components.",
+      },
+      {
+        name: RNGH,
+        importNames: LEGACY_PREFIXED,
+        message:
+          "Import the name without the `Legacy` prefix (`LegacyScrollView` → `ScrollView`, `LegacyPanGesture` → `PanGesture`). `Legacy*` names are the Gesture Handler 2 API.",
       },
       {
         name: RNGH,
@@ -126,12 +118,6 @@ export default defineModule({
         importNames: HANDLER_TYPES,
         message:
           "Use the Gesture Handler 3 type for the gesture: `PanGestureConfig` for its config, `PanGestureEvent` (or `PanGestureActiveEvent`, `PanGestureBeginEvent`, …) for its callbacks. These types describe the Gesture Handler 2 handler components.",
-      },
-      {
-        name: RNGH,
-        importNames: LEGACY_TYPES,
-        message:
-          "Import the type without the `Legacy` prefix (`LegacyPanGesture` → `PanGesture`). `Legacy*` types describe the Gesture Handler 2 API.",
       },
       {
         name: RNGH,

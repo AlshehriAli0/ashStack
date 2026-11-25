@@ -357,7 +357,7 @@ export const reactNativeRegistry: ModuleMeta[] = [
           name: "react-native-gesture-handler",
           importNames: ["Gesture"],
           message:
-            "`Gesture.*()` builders are the Gesture Handler 2 API. Create each gesture with its hook (`usePanGesture`, `useTapGesture`, `useLongPressGesture`, `usePinchGesture`, `useRotationGesture`, `useFlingGesture`, `useNativeGesture`) and pass it to `GestureDetector`; combine gestures with `useSimultaneousGestures`, `useCompetingGestures` or `useExclusiveGestures`.",
+            "`Gesture.*()` builders are the Gesture Handler 2 API. Create each gesture with its hook (`Gesture.Pan()` → `usePanGesture`) and pass it to `GestureDetector`; combine gestures with `useSimultaneousGestures`, `useCompetingGestures` (was `Race`) or `useExclusiveGestures`.",
         },
         {
           name: "react-native-gesture-handler",
@@ -372,7 +372,7 @@ export const reactNativeRegistry: ModuleMeta[] = [
             "NativeViewGestureHandler",
           ],
           message:
-            "`*GestureHandler` components are the Gesture Handler 2 API. Create the gesture with its hook (`usePanGesture`, `useTapGesture`, `useLongPressGesture`, `usePinchGesture`, `useRotationGesture`, `useFlingGesture`, `useNativeGesture`) and wrap the view in `GestureDetector`. Force touch has no Gesture Handler 3 gesture.",
+            "`*GestureHandler` components are the Gesture Handler 2 API. Create the gesture with its hook (`PanGestureHandler` → `usePanGesture`, `NativeViewGestureHandler` → `useNativeGesture`) and wrap the view in `GestureDetector`. Force touch has no Gesture Handler 3 gesture.",
         },
         {
           name: "react-native-gesture-handler",
@@ -389,13 +389,6 @@ export const reactNativeRegistry: ModuleMeta[] = [
             "TouchableHighlight",
             "TouchableWithoutFeedback",
             "TouchableNativeFeedback",
-          ],
-          message:
-            "Use `Touchable` from `react-native-gesture-handler`, with `activeOpacity` for an opacity press effect or `activeUnderlayOpacity` for a highlight. Gesture Handler 3 deprecates its buttons and `Touchable*` components.",
-        },
-        {
-          name: "react-native-gesture-handler",
-          importNames: [
             "RawButtonProps",
             "LegacyRawButtonProps",
             "LegacyRawButtonProperties",
@@ -412,7 +405,8 @@ export const reactNativeRegistry: ModuleMeta[] = [
             "TouchableHighlightProps",
             "TouchableWithoutFeedbackProps",
           ],
-          message: "Type the props as `TouchableProps`, the props of Gesture Handler 3's `Touchable`.",
+          message:
+            "Use `Touchable` from `react-native-gesture-handler`, typed `TouchableProps`: `activeOpacity` for an opacity press effect, `activeUnderlayOpacity` for a highlight, `androidRipple` for a ripple. Gesture Handler 3 deprecates its buttons and `Touchable*` components.",
         },
         {
           name: "react-native-gesture-handler",
@@ -423,9 +417,20 @@ export const reactNativeRegistry: ModuleMeta[] = [
             "LegacyRefreshControl",
             "LegacySwitch",
             "LegacyTextInput",
+            "LegacyPressableProps",
+            "LegacyFlingGesture",
+            "LegacyHoverGesture",
+            "LegacyLongPressGesture",
+            "LegacyManualGesture",
+            "LegacyPanGesture",
+            "LegacyPinchGesture",
+            "LegacyRotationGesture",
+            "LegacyTapGesture",
+            "LegacyComposedGesture",
+            "LegacyGestureStateManager",
           ],
           message:
-            "Import the name without the `Legacy` prefix (`LegacyScrollView` → `ScrollView`). `Legacy*` components are the Gesture Handler 2 versions.",
+            "Import the name without the `Legacy` prefix (`LegacyScrollView` → `ScrollView`, `LegacyPanGesture` → `PanGesture`). `Legacy*` names are the Gesture Handler 2 API.",
         },
         {
           name: "react-native-gesture-handler",
@@ -490,24 +495,6 @@ export const reactNativeRegistry: ModuleMeta[] = [
           ],
           message:
             "Use the Gesture Handler 3 type for the gesture: `PanGestureConfig` for its config, `PanGestureEvent` (or `PanGestureActiveEvent`, `PanGestureBeginEvent`, …) for its callbacks. These types describe the Gesture Handler 2 handler components.",
-        },
-        {
-          name: "react-native-gesture-handler",
-          importNames: [
-            "LegacyPressableProps",
-            "LegacyFlingGesture",
-            "LegacyHoverGesture",
-            "LegacyLongPressGesture",
-            "LegacyManualGesture",
-            "LegacyPanGesture",
-            "LegacyPinchGesture",
-            "LegacyRotationGesture",
-            "LegacyTapGesture",
-            "LegacyComposedGesture",
-            "LegacyGestureStateManager",
-          ],
-          message:
-            "Import the type without the `Legacy` prefix (`LegacyPanGesture` → `PanGesture`). `Legacy*` types describe the Gesture Handler 2 API.",
         },
         {
           name: "react-native-gesture-handler",

@@ -93,6 +93,27 @@ const spanOf = (diagnostic: Diagnostic): Span | undefined => diagnostic.labels?.
 const messageMatches = (actual: string, expected: string | RegExp): boolean =>
   typeof expected === "string" ? actual.includes(expected) : expected.test(actual);
 
+/** A diagnostic's message plus its help, which is where `no-restricted-imports` puts the configured message. */
+const textOf = (diagnostic: Diagnostic): string =>
+  diagnostic.help === undefined ? diagnostic.message : `${diagnostic.message} ${diagnostic.help}`;
+
+const shown = (diagnostic: Diagnostic): string =>
+  `${spanOf(diagnostic)?.line}:${spanOf(diagnostic)?.column} ${textOf(diagnostic)}`;
+
+/** Assert the diagnostics one invalid case fired, in source order, against what it expects. */
+const expectErrors = (fired: Diagnostic[], want: InvalidCase["errors"]): void => {
+  expect(fired.map(shown)).toHaveLength(typeof want === "number" ? want : want.length);
+  if (typeof want === "number") return;
+  want.forEach((expected, position) => {
+    const got = fired[position]!;
+    if (expected.message !== undefined && !messageMatches(textOf(got), expected.message)) {
+      throw new Error(`error ${position}: ${JSON.stringify(textOf(got))} does not match ${expected.message}`);
+    }
+    if (expected.line !== undefined) expect(spanOf(got)?.line).toBe(expected.line);
+    if (expected.column !== undefined) expect(spanOf(got)?.column).toBe(expected.column);
+  });
+};
+
 const runOxlint = async (dir: string, config: object): Promise<Diagnostic[]> => {
   writeFileSync(join(dir, "oxlint.config.json"), JSON.stringify(config));
   const run = Bun.spawn([OXLINT, "-c", "oxlint.config.json", "--disable-nested-config", "--format", "json", "."], {
@@ -239,9 +260,6 @@ export const moduleTests = (module: ModuleManifest, byRule: Record<string, RuleC
     return fixedByPath.get(placedByKey.get(key)!.path)!;
   };
 
-  const shown = (diagnostic: Diagnostic): string =>
-    `${spanOf(diagnostic)?.line}:${spanOf(diagnostic)?.column} ${diagnostic.message}`;
-
   describe(module.meta.name, () => {
     for (const [rule, cases] of Object.entries(byRule)) {
       describe(rule, () => {
@@ -253,19 +271,7 @@ export const moduleTests = (module: ModuleManifest, byRule: Record<string, RuleC
 
         cases.invalid.forEach((testCase, index) => {
           it(`invalid: ${label(testCase)}`, async () => {
-            const fired = await firedOn(`${rule}::invalid::${index}`);
-            const want = testCase.errors;
-            expect(fired.map(shown)).toHaveLength(typeof want === "number" ? want : want.length);
-            if (typeof want === "number") return;
-
-            want.forEach((expected, position) => {
-              const got = fired[position]!;
-              if (expected.message !== undefined && !messageMatches(got.message, expected.message)) {
-                throw new Error(`error ${position}: ${JSON.stringify(got.message)} does not match ${expected.message}`);
-              }
-              if (expected.line !== undefined) expect(spanOf(got)?.line).toBe(expected.line);
-              if (expected.column !== undefined) expect(spanOf(got)?.column).toBe(expected.column);
-            });
+            expectErrors(await firedOn(`${rule}::invalid::${index}`), testCase.errors);
           });
 
           const { output } = testCase;
@@ -306,9 +312,6 @@ export const banTests = (title: string, bans: RestrictedImports, cases: RuleCase
     (await linted)
       .filter(diagnostic => diagnostic.filename === path)
       .sort((a, b) => (spanOf(a)?.offset ?? 0) - (spanOf(b)?.offset ?? 0));
-  const text = (diagnostic: Diagnostic): string => `${diagnostic.message} ${diagnostic.help ?? ""}`;
-  const shown = (diagnostic: Diagnostic): string =>
-    `${spanOf(diagnostic)?.line}:${spanOf(diagnostic)?.column} ${text(diagnostic)}`;
 
   describe(title, () => {
     cases.valid.forEach((input, index) => {
@@ -318,18 +321,7 @@ export const banTests = (title: string, bans: RestrictedImports, cases: RuleCase
     });
     cases.invalid.forEach((testCase, index) => {
       it(`invalid: ${label(testCase)}`, async () => {
-        const fired = await firedOn(pathOf("invalid", index));
-        const want = testCase.errors;
-        expect(fired.map(shown)).toHaveLength(typeof want === "number" ? want : want.length);
-        if (typeof want === "number") return;
-        want.forEach((expected, position) => {
-          const got = fired[position]!;
-          if (expected.message !== undefined && !messageMatches(text(got), expected.message)) {
-            throw new Error(`error ${position}: ${JSON.stringify(text(got))} does not match ${expected.message}`);
-          }
-          if (expected.line !== undefined) expect(spanOf(got)?.line).toBe(expected.line);
-          if (expected.column !== undefined) expect(spanOf(got)?.column).toBe(expected.column);
-        });
+        expectErrors(await firedOn(pathOf("invalid", index)), testCase.errors);
       });
     });
   });
