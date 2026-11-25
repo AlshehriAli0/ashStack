@@ -13,7 +13,7 @@
 Two packages: [`@ashstack/lint`](packages/lint) and [`@ashstack/fmt`](packages/fmt). Install once per project instead of copying a lint config around and watching the copies drift.<!-- rule-counts -->
 
 - **116 rules** on plain TypeScript, **211** with React, **269** on React Native, 83 of them custom-built
-- library-specific rules ship only when you depend on that library: 14 self-detecting modules<!-- /rule-counts -->
+- library-specific rules ship only when you depend on that library: 15 self-detecting modules<!-- /rule-counts -->
 - every rule is in [RULES.md](packages/lint/RULES.md), with options and examples, generated and CI-checked
 - your `rules` block always wins
 
@@ -89,6 +89,7 @@ One module per library: one rule namespace, one toggle. A module turns on when i
 | `@ashstack/turbo-image`     | `react-native-turbo-image`                                                               |
 | `@ashstack/skia`            | `@shopify/react-native-skia`                                                             |
 | `@ashstack/keyboard`        | `react-native-keyboard-controller`                                                       |
+| `@ashstack/gesture-handler` | `react-native-gesture-handler` 3 or later (bans the Gesture Handler 2 API)               |
 
 Detection only sets the default. Turn any module on or off yourself, whatever your dependencies say:
 

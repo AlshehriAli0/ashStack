@@ -75,9 +75,9 @@ diagnostic that the rest are gone.
 
 ## Library-specific rules, auto-detected
 
-One module per library: one rule namespace, one toggle. A module turns on when its library is in your `package.json`, searched up to the repo root.
+One module per library: one rule namespace, one toggle. A module turns on when its library is in your `package.json`, searched up to the repo root. `@ashstack/gesture-handler` also needs Gesture Handler 3 or later, read from `node_modules` or, before an install, from the declared range.
 
-`@ashstack/zod` · `@ashstack/query` · `@ashstack/zustand` · `@ashstack/i18n` · `@ashstack/stylex` · `@ashstack/unistyles` · `@ashstack/legend-list` · `@ashstack/legend-state` · `@ashstack/reanimated` · `@ashstack/turbo-image` · `@ashstack/skia` · `@ashstack/keyboard`
+`@ashstack/zod` · `@ashstack/query` · `@ashstack/zustand` · `@ashstack/i18n` · `@ashstack/stylex` · `@ashstack/unistyles` · `@ashstack/legend-list` · `@ashstack/legend-state` · `@ashstack/reanimated` · `@ashstack/turbo-image` · `@ashstack/skia` · `@ashstack/keyboard` · `@ashstack/gesture-handler`
 
 Detection only sets the default. Turn any module on or off yourself, whatever your dependencies say:
 

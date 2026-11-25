@@ -1,5 +1,6 @@
 import coreModule from "./core/rules/core/index.js";
 import zodModule from "./core/rules/zod/index.js";
+import gestureHandlerModule from "./react-native/rules/gesture-handler/index.js";
 import keyboardModule from "./react-native/rules/keyboard/index.js";
 import legendListModule from "./react-native/rules/legend-list/index.js";
 import legendStateModule from "./react-native/rules/legend-state/index.js";
@@ -46,4 +47,5 @@ export const reactNativeModules = [
   turboImageModule,
   skiaModule,
   keyboardModule,
+  gestureHandlerModule,
 ];

@@ -25,6 +25,7 @@ Plugins: `eslint`, `typescript`, `import`, `unicorn`, `promise`, `oxc`, `react`,
 - [`@ashstack/turbo-image`](../turbo-image.md) — auto-enabled when `react-native-turbo-image` is a dependency.
 - [`@ashstack/skia`](../skia.md) — auto-enabled when `@shopify/react-native-skia` is a dependency.
 - [`@ashstack/keyboard`](../keyboard.md) — auto-enabled when `react-native-keyboard-controller` is a dependency.
+- [`@ashstack/gesture-handler`](../gesture-handler.md) — auto-enabled when `react-native-gesture-handler` 3 or later is a dependency.
 
 ### Import bans without a module
 

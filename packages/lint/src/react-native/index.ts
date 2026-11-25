@@ -20,7 +20,7 @@ export const banGroups: BanGroup[] = [
             "TouchableNativeFeedback",
           ],
           message:
-            "Import `Pressable` from `react-native-gesture-handler`. Inside a SwiftUI/Compose host view, keep React Native's `Pressable` and suppress this rule naming the host.",
+            "Import `Pressable` from `react-native-gesture-handler`; on Gesture Handler 3, its `Touchable` for an opacity or highlight press effect. Inside a SwiftUI/Compose host view, keep React Native's `Pressable` and suppress this rule naming the host.",
         },
       ],
     },
@@ -85,7 +85,7 @@ const compilerOnlyRules = (reactCompiler: boolean): RuleMap =>
 /**
  * React Native / Expo entry — everything in react plus generic RN rules, with
  * per-library modules (unistyles, legendList, legendState, reanimated,
- * turboImage, skia, keyboard) auto-detected from your dependencies. Your
+ * turboImage, skia, keyboard, gestureHandler) auto-detected from your dependencies. Your
  * `rules` block always overrides.
  *
  * @see [every rule `react-native()` sets](https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/entries/react-native.md#react-native)
