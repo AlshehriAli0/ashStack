@@ -17,6 +17,10 @@ export type ReactRuleId =
   | "@ashstack/query/require-destructured-hooks"
   | "@ashstack/query/no-fetch-in-query-fn"
   | "@ashstack/query/next-page-param-undefined"
+  | "@ashstack/query/exhaustive-key"
+  | "@ashstack/query/no-overridden-callbacks"
+  | "@ashstack/query/optimistic-update-complete"
+  | "@ashstack/query/forward-signal"
   | "@ashstack/zustand/require-selector"
   | "@ashstack/i18n/no-bare-text"
   | "@ashstack/i18n/no-bare-attrs"
@@ -134,6 +138,38 @@ declare module "oxlint" {
      * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/query.md#ashstackquerynext-page-param-undefined
      */
     "@ashstack/query/next-page-param-undefined"?: RuleSetting;
+    /**
+     * Require every value a `queryFn` reads from the function around it in that query's `queryKey` array. The cache keeps one entry per key, so a value left out shares one result across all of its values and never triggers a refetch.
+     *
+     * **Default: on**, when `@tanstack/react-query` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/query.md#ashstackqueryexhaustive-key
+     */
+    "@ashstack/query/exhaustive-key"?: RuleSetting;
+    /**
+     * Disallow a spread after `onMutate`, `onSuccess`, `onError`, `onSettled`, `mutationFn`, `queryFn` or `queryKey` in a query or mutation options object. Whatever the spread carries under those keys replaces the ones written before it.
+     *
+     * **Default: on**, when `@tanstack/react-query` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/query.md#ashstackqueryno-overridden-callbacks
+     */
+    "@ashstack/query/no-overridden-callbacks"?: RuleSetting;
+    /**
+     * Require a mutation whose `onMutate` writes the query cache to await `cancelQueries` before the write, return a snapshot, and roll back in `onError`. Skip one and the UI looks right until the next refresh.
+     *
+     * **Default: on**, when `@tanstack/react-query` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/query.md#ashstackqueryoptimistic-update-complete
+     */
+    "@ashstack/query/optimistic-update-complete"?: RuleSetting;
+    /**
+     * Require an inline `queryFn` that calls a `*.requests` function to take the `signal` from its context. TanStack Query aborts that signal when the query is cancelled or nothing uses it any more, and only a request that received it can stop.
+     *
+     * **Default: on**, when `@tanstack/react-query` is a dependency.
+     *
+     * @see https://github.com/AlshehriAli0/ashStack/blob/main/packages/lint/rules/query.md#ashstackqueryforward-signal
+     */
+    "@ashstack/query/forward-signal"?: RuleSetting;
     /**
      * Require a selector on a store hook, rather than no arguments or `undefined` in its place.
      *

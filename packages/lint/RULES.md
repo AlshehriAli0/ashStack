@@ -10,7 +10,7 @@ Turn any rule off by id in your own `rules` block: `"@ashstack/unistyles/no-marg
 
 Each entry lists the oxlint plugins it turns on, below. You never need to add them: your own `plugins` array is added to the entry's set, not swapped for it. A bare oxlint install runs `eslint`, `typescript`, `unicorn`, `oxc`; `import`, `promise`, `react`, `jsx-a11y`, `react-perf` come from here.
 
-Counting what each entry sets with every module on: **116** rules for plain TypeScript, **211** with React, **273** on React Native, 87 of them written for this package. oxlint's own `correctness` category runs alongside these.
+Counting what each entry sets with every module on: **116** rules for plain TypeScript, **215** with React, **277** on React Native, 91 of them written for this package. oxlint's own `correctness` category runs alongside these.
 
 ## Entry settings
 
@@ -29,7 +29,7 @@ Match the diagnostic prefix, or use the activation column when configuring a lib
 | [`@ashstack/core`](rules/core.md) | `core()` | 5 | always on via `core()` and every entry above it |
 | [`@ashstack/zod`](rules/zod.md) | `core()` | 1 | auto-enabled when `zod` is a dependency |
 | [`@ashstack/react`](rules/react.md) | `react()` | 5 | always on via `react()` and every entry above it |
-| [`@ashstack/query`](rules/query.md) | `react()` | 5 | auto-enabled by `react()` when `@tanstack/react-query` is a dependency |
+| [`@ashstack/query`](rules/query.md) | `react()` | 9 | auto-enabled by `react()` when `@tanstack/react-query` is a dependency |
 | [`@ashstack/zustand`](rules/zustand.md) | `react()` | 1 | auto-enabled by `react()` when `zustand` is a dependency |
 | [`@ashstack/i18n`](rules/i18n.md) | `react()` | 3 | auto-enabled by `react()` when an i18n library (i18next, lingui, react-intl, use-intl, next-intl, expo-localization) is a dependency |
 | [`@ashstack/stylex`](rules/stylex.md) | `react()` | 5 | auto-enabled by `react()` when `@stylexjs/stylex` is a dependency |
