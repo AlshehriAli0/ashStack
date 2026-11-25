@@ -1419,6 +1419,15 @@ export const tagNames$ = observable(() => [...settings$.tags.keys()]);
         errors: [{ message: "Read `settings$.tags.get().keys(…)`", line: 4, column: 47 }],
       },
       {
+        name: "the predicate of useWhen is tracked",
+        code: `import { useWhen } from "@legendapp/state/react";
+import { selectedIds$ } from "../stores/selection";
+
+export const useOnSelected = (id: string) => useWhen(() => selectedIds$.has(id), notify);
+`,
+        errors: [{ message: "`has` on an observable" }],
+      },
+      {
         name: "entries and values inside observe and useObserve, and inside a callback nested in one",
         code: `import { observe } from "@legendapp/state";
 import { useObserve } from "@legendapp/state/react";

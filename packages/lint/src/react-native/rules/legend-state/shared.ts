@@ -36,6 +36,8 @@ const TRACKING_CONTEXT_CALLEES = new Set([
   "useObserveEffect",
   "when",
   "whenReady",
+  "useWhen",
+  "useWhenReady",
   "observable",
   "useObservable",
   "useComputed",
