@@ -1217,7 +1217,7 @@ export const useBar = (progress) =>
         errors: [{ message: "relayouts every frame", line: 4, column: 37 }],
       },
       {
-        name: "each platform-only shadow property points at boxShadow",
+        name: "each platform-only shadow property points at boxShadow; shadowColor also tints Android's",
         code: `import { useAnimatedStyle } from "react-native-reanimated";
 export const useLift = (lift) =>
   useAnimatedStyle(() => ({
@@ -1231,13 +1231,12 @@ export const useLift = (lift) =>
         errors: [
           {
             message:
-              "Animate `boxShadow` instead, which works on both platforms. `shadowOffset`, `shadowOpacity`, `shadowRadius` and `shadowColor` only render on iOS, and `elevation` only on Android.",
+              "Animate `boxShadow` instead, which renders on both platforms. `shadowOffset`, `shadowOpacity` and `shadowRadius` render on iOS only, and `elevation` on Android only.",
             line: 4,
             column: 5,
           },
           { message: "Animate `boxShadow` instead", line: 5 },
           { message: "Animate `boxShadow` instead", line: 6 },
-          { message: "Animate `boxShadow` instead", line: 7 },
           { message: "Animate `boxShadow` instead", line: 8 },
         ],
       },
@@ -2931,6 +2930,22 @@ export const fling = (x, velocity, onStop) =>
   );
 `,
         errors: [{ message: "Take `finished`", line: 5, column: 29 }],
+      },
+      {
+        name: "withRepeat's callback is its fourth argument",
+        code: `import { withRepeat, withTiming } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+export const pulse = (scale, onDone) => scale.set(withRepeat(withTiming(1.2), 3, true, () => scheduleOnRN(onDone)));
+`,
+        errors: [{ message: "Take `finished`", line: 3, column: 88 }],
+      },
+      {
+        name: "a layout animation's withCallback",
+        code: `import { FadeOut } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+export const exit = (onGone) => FadeOut.withCallback(() => scheduleOnRN(onGone));
+`,
+        errors: [{ message: "Take `finished`" }],
       },
       {
         name: "a withSpring callback as a function expression",

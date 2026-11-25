@@ -1,11 +1,13 @@
 import { calleeName, gate, isFunction, problem, subtreeHas } from "../../../lib/ast.js";
 import type { AstNode, Rule, RuleContext } from "../../../lib/types.js";
 
-/** Animation factory to the index of the completion callback it takes. */
+/** Animation factory, or a layout animation's `withCallback`, to the index of the completion callback it takes. */
 const CALLBACK_ARGUMENT = new Map([
   ["withTiming", 2],
   ["withSpring", 2],
   ["withDecay", 1],
+  ["withRepeat", 3],
+  ["withCallback", 0],
 ]);
 
 const CHECK_FINISHED =

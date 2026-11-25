@@ -6,10 +6,10 @@ const GPU_PROPERTIES_ONLY =
   "Animate `transform` and `opacity` instead — a panel that grows is `scaleY` with `transformOrigin`, a slide is `translateY`. This property relayouts every frame.";
 
 const BOX_SHADOW =
-  "Animate `boxShadow` instead, which works on both platforms. `shadowOffset`, `shadowOpacity`, `shadowRadius` and `shadowColor` only render on iOS, and `elevation` only on Android.";
+  "Animate `boxShadow` instead, which renders on both platforms. `shadowOffset`, `shadowOpacity` and `shadowRadius` render on iOS only, and `elevation` on Android only.";
 
-/** Shadow properties that each render on one platform only. */
-const PLATFORM_SHADOW_PROPS = new Set(["shadowOffset", "shadowOpacity", "shadowRadius", "shadowColor", "elevation"]);
+/** Shadow properties that each render on one platform only. `shadowColor` also tints Android's elevation shadow. */
+const PLATFORM_SHADOW_PROPS = new Set(["shadowOffset", "shadowOpacity", "shadowRadius", "elevation"]);
 
 /** Style properties whose animation forces a layout pass. */
 const LAYOUT_PROPS = new Set([
@@ -55,7 +55,7 @@ const isShadowOffset = (object: AstNode): boolean =>
   object.parent !== null && propertyKeyName(object.parent) === "shadowOffset";
 
 export const gpuPropertiesOnly: Rule = problem(
-  "Animate `transform` and `opacity` in `useAnimatedStyle` and `useAnimatedProps`, and `boxShadow` for a shadow. Layout properties such as `width` or `margin` recalculate layout every frame, and the `shadow*` properties and `elevation` each render on one platform only.",
+  "Animate `transform` and `opacity` in `useAnimatedStyle` and `useAnimatedProps`, and `boxShadow` for a shadow. Layout properties such as `width` or `margin` recalculate layout every frame, and `shadowOffset`, `shadowOpacity`, `shadowRadius` and `elevation` each render on one platform only.",
   {
     createOnce(context: RuleContext) {
       let depth = 0;

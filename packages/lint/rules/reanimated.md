@@ -150,7 +150,7 @@ export function useGoodUpdater() {
 
 ## `@ashstack/reanimated/gpu-properties-only`
 
-Animate `transform` and `opacity` in `useAnimatedStyle` and `useAnimatedProps`, and `boxShadow` for a shadow. Layout properties such as `width` or `margin` recalculate layout every frame, and the `shadow*` properties and `elevation` each render on one platform only.
+Animate `transform` and `opacity` in `useAnimatedStyle` and `useAnimatedProps`, and `boxShadow` for a shadow. Layout properties such as `width` or `margin` recalculate layout every frame, and `shadowOffset`, `shadowOpacity`, `shadowRadius` and `elevation` each render on one platform only.
 
 **Default: on**, when `react-native-reanimated` is a dependency.
 
