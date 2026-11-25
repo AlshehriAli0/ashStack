@@ -156,7 +156,7 @@ declare module "oxlint" {
      */
     "@ashstack/react-native/no-manual-memo"?: RuleSetting;
     /**
-     * Disallow dynamic `import()`. Metro inlines it into the same bundle, so nothing is deferred and the module is hidden from the typechecker. One inside a `lazy` or `dynamic` wrapper is left to `no-react-lazy`, which reports the wrapper.
+     * Disallow dynamic `import()`. Metro inlines it into the same bundle, so nothing is deferred and the module is hidden from the typechecker.
      *
      * **Default: on.**
      *

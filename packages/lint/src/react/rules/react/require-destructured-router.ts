@@ -14,5 +14,5 @@ export const requireDestructuredRouter: Rule = requireDestructured(
       ROUTER_HOOKS[node.source.value]?.has(imported) ? [local] : []
     ),
   hook =>
-    `Destructure what you call from \`${hook}()\`, as in \`const { push } = useRouter()\`. Called on the whole object, the React Compiler caches on the object instead of on the function.`
+    `Destructure the methods you call from \`${hook}()\`, as in \`const { push } = ${hook}()\`. Called on the whole object, the React Compiler caches on the object instead of on the function.`
 );

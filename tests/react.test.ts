@@ -1318,6 +1318,15 @@ export const Chart = () => null;
 `,
         errors: [{ line: 1, column: 1 }],
       },
+      {
+        name: "the older use no forget spelling",
+        code: `export const Chart = () => {
+  "use no forget";
+  return null;
+};
+`,
+        errors: [{ message: 'Delete `"use no forget"`' }],
+      },
     ],
   },
   "no-context-provider": {
@@ -1353,7 +1362,7 @@ export const App = ({ children }) => <ThemeContext.Provider value="dark">{childr
         errors: [
           {
             message:
-              "Render `<ThemeContext value={…}>` instead of `<ThemeContext.Provider>`. React 19 makes the context its own provider, and `.Provider` is deprecated.",
+              "Render `<ThemeContext value={…}>` instead of `<ThemeContext.Provider>`. React 19 makes the context its own provider, and React plans to deprecate `.Provider`.",
             line: 3,
             column: 39,
           },
@@ -1419,7 +1428,7 @@ export const Back = () => {
         errors: [
           {
             message:
-              "Destructure what you call from `useRouter()`, as in `const { push } = useRouter()`. Called on the whole object, the React Compiler caches on the object instead of on the function.",
+              "Destructure the methods you call from `useRouter()`, as in `const { push } = useRouter()`. Called on the whole object, the React Compiler caches on the object instead of on the function.",
             line: 3,
             column: 9,
           },
@@ -1543,6 +1552,21 @@ export const useFeed = url => {
         errors: [
           { message: "undoes `new WebSocket`", line: 4 },
           { message: "undoes `new AbortController`", line: 8 },
+        ],
+      },
+      {
+        name: "a returned interval id or socket is not a cleanup",
+        code: `import { useEffect } from "react";
+export const useTicker = (tick, url) => {
+  useEffect(() => setInterval(tick, 1000), [tick]);
+  useEffect(() => {
+    return new WebSocket(url);
+  }, [url]);
+};
+`,
+        errors: [
+          { message: "undoes `setInterval`", line: 3 },
+          { message: "undoes `new WebSocket`", line: 5 },
         ],
       },
       {

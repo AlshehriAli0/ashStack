@@ -103,7 +103,7 @@ declare module "oxlint" {
      */
     "@ashstack/react/components-tsx-only"?: RuleSetting<[{ dir?: string }]>;
     /**
-     * Disallow the `"use no memo"` directive. It removes a component or file from the React Compiler, which clears the bailout report without fixing it.
+     * Disallow the `"use no memo"` directive, and its older `"use no forget"` spelling. It removes a component or file from the React Compiler, which clears the bailout report without fixing it.
      *
      * **Default: on.**
      *
@@ -111,7 +111,7 @@ declare module "oxlint" {
      */
     "@ashstack/react/no-use-no-memo"?: RuleSetting;
     /**
-     * Disallow `<Context.Provider>` for a context made by React's `createContext`. React 19 renders the context itself as the provider, and `.Provider` is deprecated.
+     * Disallow `<Context.Provider>` for a context made by React's `createContext`. React 19 renders the context itself as the provider, and React plans to deprecate `.Provider`.
      *
      * **Default: on.**
      *

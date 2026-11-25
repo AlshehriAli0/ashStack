@@ -17,22 +17,32 @@ const REGISTERING_CALLS = new Set(["addEventListener", "addListener", "subscribe
 /** Constructors whose instance an effect has to close or abort. */
 const REGISTERING_CONSTRUCTORS = new Set(["WebSocket", "AbortController"]);
 
-const registers = (node: AstNode): boolean =>
-  REGISTERING_CALLS.has(calleeName(node)) ||
-  (node.type === "NewExpression" &&
-    node.callee.type === "Identifier" &&
-    REGISTERING_CONSTRUCTORS.has(node.callee.name));
+const isRegisteringConstructor = (node: AstNode): boolean =>
+  node.type === "NewExpression" && node.callee.type === "Identifier" && REGISTERING_CONSTRUCTORS.has(node.callee.name);
+
+const registers = (node: AstNode): boolean => REGISTERING_CALLS.has(calleeName(node)) || isRegisteringConstructor(node);
 
 const registeredName = (node: AstNode): string =>
   node.type === "NewExpression" && node.callee.type === "Identifier" ? `new ${node.callee.name}` : calleeName(node);
 
-const returnsCleanup = (effect: AstNode): boolean =>
-  (effect.type === "ArrowFunctionExpression" && effect.expression) ||
-  subtreeHas(
+/**
+ * Whether a returned value can be the cleanup. A listener call may return its own unsubscribe
+ * (`useEffect(() => store.subscribe(fn))`), but an interval id or a `new` instance never is one.
+ */
+const canBeCleanup = (value: AstNode): boolean =>
+  calleeName(value) !== "setInterval" && !isRegisteringConstructor(value);
+
+const returnsCleanup = (effect: AstNode): boolean => {
+  if (effect.type === "ArrowFunctionExpression" && effect.expression) return canBeCleanup(effect.body);
+  return subtreeHas(
     effect,
     node =>
-      node.type === "ReturnStatement" && node.argument !== null && !crossesFunctionBefore(node, effect, FUNCTION_TYPES)
+      node.type === "ReturnStatement" &&
+      node.argument !== null &&
+      canBeCleanup(node.argument) &&
+      !crossesFunctionBefore(node, effect, FUNCTION_TYPES)
   );
+};
 
 export const requireEffectCleanup: Rule = problem(
   "Require a `useEffect` or `useLayoutEffect` that adds a listener, subscribes, starts an interval, or opens a `WebSocket` or `AbortController` to return a cleanup. Without one, every re-run and unmount leaves the previous one running.",
