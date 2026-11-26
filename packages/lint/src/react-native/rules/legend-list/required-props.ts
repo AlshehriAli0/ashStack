@@ -8,7 +8,7 @@ export const requiredProps: Rule = problem(
     createOnce: context => ({
       before: () => gate(context, LIST),
       JSXElement(node) {
-        if (!isListElement(node) || hasSpread(node)) return;
+        if (!isListElement(context, node) || hasSpread(node)) return;
 
         if (!attributeNamed(node, "keyExtractor")) {
           context.report({

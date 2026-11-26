@@ -45,7 +45,7 @@ export const typedItemsNeedItemType: Rule = problem(
           rowRenderersByName.set(id.name, init);
         },
         JSXElement(node) {
-          if (!isListElement(node) || hasSpread(node)) return;
+          if (!isListElement(context, node) || hasSpread(node)) return;
           if (attributeNamed(node, "getItemType")) return;
 
           const renderItem = attributeNamed(node, "renderItem");
