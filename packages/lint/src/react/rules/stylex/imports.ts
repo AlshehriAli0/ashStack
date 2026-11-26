@@ -1,3 +1,4 @@
+import { bindingOf } from "../../../lib/ast.js";
 import type { AstNode, RuleContext } from "../../../lib/types.js";
 
 const SOURCES = new Set(["@stylexjs/stylex", "stylex"]);
@@ -21,16 +22,8 @@ export const collectImports = (statements: AstNode[], method: string, bindings: 
   }
 };
 
-export const isImportedBinding = (context: RuleContext, node: AstNode): boolean => {
-  if (node.type !== "Identifier") return false;
-  let scope: ReturnType<typeof context.sourceCode.getScope> | null = context.sourceCode.getScope(node);
-  while (scope) {
-    const binding = scope.set.get(node.name);
-    if (binding) return binding.defs.some(definition => definition.type === "ImportBinding");
-    scope = scope.upper;
-  }
-  return false;
-};
+export const isImportedBinding = (context: RuleContext, node: AstNode): boolean =>
+  bindingOf(context, node)?.defs.some(definition => definition.type === "ImportBinding") ?? false;
 
 export const isStylexCall = (context: RuleContext, node: AstNode, method: string, bindings: Bindings): boolean => {
   if (node.type !== "CallExpression") return false;

@@ -1,18 +1,12 @@
+import { bindingOf } from "../../../lib/ast.js";
 import type { AstNode, RuleContext } from "../../../lib/types.js";
 import { isStylexCall, type Bindings } from "./imports.js";
 
 export const initializerOf = (context: RuleContext, node: AstNode): AstNode | null => {
-  if (node.type !== "Identifier") return null;
-  let scope: ReturnType<typeof context.sourceCode.getScope> | null = context.sourceCode.getScope(node);
-  while (scope) {
-    const variable = scope.set.get(node.name);
-    if (variable) {
-      const declaration = variable.defs.find(definition => definition.node.type === "VariableDeclarator")?.node;
-      return declaration?.type === "VariableDeclarator" ? (declaration.init ?? null) : null;
-    }
-    scope = scope.upper;
-  }
-  return null;
+  const declaration = bindingOf(context, node)?.defs.find(
+    definition => definition.node.type === "VariableDeclarator"
+  )?.node;
+  return declaration?.type === "VariableDeclarator" ? (declaration.init ?? null) : null;
 };
 
 const rootIdentifier = (node: AstNode): AstNode | null => {

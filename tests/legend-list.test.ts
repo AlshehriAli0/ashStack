@@ -93,6 +93,24 @@ const Loop = wrap(Loop);
 export const Feed = () => <Loop />;
 `,
       },
+      {
+        name: "a component that renders the list is not the list",
+        code: `
+${IMPORT}
+const CatalogList = forwardRef((props, ref) => <LegendList {...props} ref={ref} />);
+
+export const Feed = ({ rows }) => <CatalogList data={rows} />;
+`,
+      },
+      {
+        name: "a name destructured out of a call on the list is not the list",
+        code: `
+${IMPORT}
+const [Empty] = useState(LegendList);
+
+export const Feed = () => <Empty />;
+`,
+      },
     ],
     invalid: [
       {

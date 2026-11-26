@@ -38,15 +38,17 @@ const isListValue = (context: RuleContext, node: AstNode | null | undefined): bo
   if (isTypeWrapper(node)) return isListValue(context, node.expression);
   if (node.type === "CallExpression") return isListValue(context, node.arguments[0]);
   if (componentName(node) === LIST) return true;
-  if (node.type !== "Identifier" && node.type !== "JSXIdentifier") return false;
 
   const binding = bindingOf(context, node);
   if (!binding) return false;
   const cached = aliasCache.get(binding);
   if (cached !== undefined) return cached;
   aliasCache.set(binding, false);
-  const [definition] = binding.defs;
-  const resolved = definition?.node.type === "VariableDeclarator" && isListValue(context, definition.node.init);
+  const declarator = binding.defs[0]?.node;
+  const resolved =
+    declarator?.type === "VariableDeclarator" &&
+    declarator.id.type === "Identifier" &&
+    isListValue(context, declarator.init);
   aliasCache.set(binding, resolved);
   return resolved;
 };
