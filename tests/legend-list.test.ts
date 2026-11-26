@@ -75,6 +75,42 @@ ${IMPORT}
 export const Feed = ({ rows }) => <Animated.LegendList data={rows} keyExtractor={k} recycleItems />;
 `,
       },
+      {
+        name: "a wrapper call around something other than the list is never checked",
+        code: `
+${IMPORT}
+const Panel = withUnistyles(View);
+
+export const Feed = () => <Panel />;
+`,
+      },
+      {
+        name: "an alias that refers to itself ends the lookup",
+        code: `
+${IMPORT}
+const Loop = wrap(Loop);
+
+export const Feed = () => <Loop />;
+`,
+      },
+      {
+        name: "a component that renders the list is not the list",
+        code: `
+${IMPORT}
+const CatalogList = forwardRef((props, ref) => <LegendList {...props} ref={ref} />);
+
+export const Feed = ({ rows }) => <CatalogList data={rows} />;
+`,
+      },
+      {
+        name: "a name destructured out of a call on the list is not the list",
+        code: `
+${IMPORT}
+const [Empty] = useState(LegendList);
+
+export const Feed = () => <Empty />;
+`,
+      },
     ],
     invalid: [
       {
@@ -122,6 +158,27 @@ export const Feed = ({ rows }) => <AnimatedLegendList data={rows} />;
 ${IMPORT}
 
 export const Feed = ({ rows }) => <Animated.LegendList data={rows} />;
+`,
+        errors: 2,
+      },
+      {
+        name: "a list wrapped and renamed with withUnistyles",
+        code: `
+${IMPORT}
+const CatalogList = withUnistyles(LegendList<Product>);
+
+export const Feed = ({ rows }) => <CatalogList data={rows} />;
+`,
+        errors: 2,
+      },
+      {
+        name: "a list behind nested wrappers and a plain alias",
+        code: `
+${IMPORT}
+const Styled = memo(withUnistyles(LegendList));
+const Feed = Styled;
+
+export const Screen = ({ rows }) => <Feed data={rows} />;
 `,
         errors: 2,
       },

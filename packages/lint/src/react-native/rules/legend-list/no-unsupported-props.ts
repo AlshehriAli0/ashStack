@@ -17,7 +17,7 @@ export const noUnsupportedProps: Rule = problem(
     createOnce: context => ({
       before: () => gate(context, LIST),
       JSXElement(node) {
-        if (!isListElement(node)) return;
+        if (!isListElement(context, node)) return;
 
         for (const attribute of attributesOf(node)) {
           if (attribute.type !== "JSXAttribute") continue;

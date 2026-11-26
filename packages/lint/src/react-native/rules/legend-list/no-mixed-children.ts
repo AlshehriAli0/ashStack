@@ -18,7 +18,7 @@ export const noMixedChildren: Rule = problem(
     createOnce: context => ({
       before: () => gate(context, LIST),
       JSXElement(node) {
-        if (!isListElement(node)) return;
+        if (!isListElement(context, node)) return;
         if (!attributeNamed(node, "data")) return;
         if (!rendersRealChild(node)) return;
 

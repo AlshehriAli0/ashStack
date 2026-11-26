@@ -1,4 +1,4 @@
-import type { AstNode, Rule, RuleBody, RuleContext, Visitor } from "./types.js";
+import type { AstNode, Rule, RuleBody, RuleContext, Scope, Variable, Visitor } from "./types.js";
 
 const SKIPPED_KEYS = new Set(["parent", "loc", "range", "start", "end", "type"]);
 
@@ -136,6 +136,16 @@ export const componentName = (node: AstNode | null | undefined): string => {
   if (dot !== -1) return WRAPPER_PREFIX.test(path.slice(0, dot)) ? path.slice(dot + 1) : "";
   const unwrapped = path.replace(WRAPPER_PREFIX, "");
   return unwrapped === "" ? path : unwrapped;
+};
+
+/** The binding an identifier resolves to, walking out from its own scope. */
+export const bindingOf = (context: RuleContext, node: AstNode): Variable | undefined => {
+  if (node.type !== "Identifier" && node.type !== "JSXIdentifier") return undefined;
+  for (let scope: Scope | null = context.sourceCode.getScope(node); scope; scope = scope.upper) {
+    const binding = scope.set.get(node.name);
+    if (binding) return binding;
+  }
+  return undefined;
 };
 
 export const attributeName = (attribute: AstNode): string => {

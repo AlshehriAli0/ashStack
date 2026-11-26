@@ -65,7 +65,7 @@ export const noFlexInContentContainer: Rule = problem(
         },
         JSXAttribute(node) {
           if (attributeName(node) !== "contentContainerStyle") return;
-          if (!isListElement(node.parent.parent)) return;
+          if (!isListElement(context, node.parent.parent)) return;
           const parts = styleParts(expressionOf(node));
           if (parts.length > 0) candidates.push({ node, parts });
         },

@@ -1,5 +1,5 @@
-import { gate, problem, subtreeHas } from "../../../lib/ast.js";
-import type { AstNode, RuleContext } from "../../../lib/types.js";
+import { bindingOf, gate, problem, subtreeHas } from "../../../lib/ast.js";
+import type { AstNode, RuleContext, Variable } from "../../../lib/types.js";
 
 type Origin =
   | "hook"
@@ -54,18 +54,6 @@ const MEMBER_ORIGINS = new Map<Origin, Map<string, Origin>>([
   ["I18nManager", new Map([["isRTL", "runtime"]])],
   ["StatusBar", new Map([["currentHeight", "runtime"]])],
 ]);
-type Scope = ReturnType<RuleContext["sourceCode"]["getScope"]>;
-type Variable = Scope["variables"][number];
-
-const bindingOf = (context: RuleContext, node: AstNode): Variable | undefined => {
-  if (node.type !== "Identifier") return undefined;
-  for (let scope: Scope | null = context.sourceCode.getScope(node); scope; scope = scope.upper) {
-    const binding = scope.set.get(node.name);
-    if (binding) return binding;
-  }
-  return undefined;
-};
-
 const memberName = (node: AstNode): string => {
   if (node.type !== "MemberExpression") return "";
   if (!node.computed && node.property.type === "Identifier") return node.property.name;

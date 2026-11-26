@@ -8,7 +8,7 @@ export const noRemountKey: Rule = problem(
     createOnce: context => ({
       before: () => gate(context, LIST),
       JSXElement(node) {
-        if (!isListElement(node)) return;
+        if (!isListElement(context, node)) return;
         const key = attributeNamed(node, "key");
         if (!key) return;
 

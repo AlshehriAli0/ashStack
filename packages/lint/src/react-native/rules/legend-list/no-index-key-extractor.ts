@@ -9,7 +9,7 @@ export const noIndexKeyExtractor: Rule = problem(
       before: () => gate(context, "keyExtractor"),
       JSXAttribute(node) {
         if (attributeName(node) !== "keyExtractor") return;
-        if (!isListElement(node.parent.parent)) return;
+        if (!isListElement(context, node.parent.parent)) return;
 
         const fn = expressionOf(node);
         if (fn?.type !== "ArrowFunctionExpression" && fn?.type !== "FunctionExpression") return;
