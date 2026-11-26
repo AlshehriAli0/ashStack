@@ -1,5 +1,11 @@
 # @ashstack/lint
 
+## 0.14.0 (2026-11-26)
+
+### Bug Fixes
+
+- follow a Legend List through local aliases and wrapping calls ([`19fe755`](https://github.com/AlshehriAli0/ashStack/commit/19fe755))
+
 ## 0.13.0 (2026-11-25)
 
 ### Features
