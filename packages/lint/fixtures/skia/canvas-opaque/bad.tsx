@@ -1,4 +1,4 @@
-import { Canvas } from "@shopify/react-native-skia";
+import { Canvas } from "react-native-skia";
 
 export function BadCanvas() {
   return <Canvas />;

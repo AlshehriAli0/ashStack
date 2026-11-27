@@ -4,24 +4,24 @@
 
 # `@ashstack/skia`
 
-_auto-enabled when `@shopify/react-native-skia` is a dependency._
+_auto-enabled when `react-native-skia` is a dependency._
 
 - [`canvas-opaque`](#ashstackskiacanvas-opaque)
 
 **Import bans that ship with this module**
 
-- `usePathValue`, `usePathInterpolation` from `@shopify/react-native-skia`
+- `usePathValue`, `usePathInterpolation` from `react-native-skia`
 
 ## `@ashstack/skia/canvas-opaque`
 
-Require an explicit `opaque` prop on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.
+Require an explicit `android={{ opaque }}` on a Skia `<Canvas>`. A fullscreen animated canvas wants it on; anything that needs transparency or a view transform wants it off.
 
-**Default: on**, when `@shopify/react-native-skia` is a dependency.
+**Default: on**, when `react-native-skia` is a dependency.
 
 **Fails**
 
 ```tsx
-import { Canvas } from "@shopify/react-native-skia";
+import { Canvas } from "react-native-skia";
 
 export function BadCanvas() {
   return <Canvas />;
@@ -31,10 +31,9 @@ export function BadCanvas() {
 **Passes**
 
 ```tsx
-import { Canvas } from "@shopify/react-native-skia";
-import { Platform } from "react-native";
+import { Canvas } from "react-native-skia";
 
 export function GoodCanvas() {
-  return <Canvas opaque={Platform.OS === "android"} />;
+  return <Canvas android={{ opaque: true }} />;
 }
 ```

@@ -1,6 +1,5 @@
-import { Canvas } from "@shopify/react-native-skia";
-import { Platform } from "react-native";
+import { Canvas } from "react-native-skia";
 
 export function GoodCanvas() {
-  return <Canvas opaque={Platform.OS === "android"} />;
+  return <Canvas android={{ opaque: true }} />;
 }
